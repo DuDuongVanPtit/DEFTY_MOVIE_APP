@@ -4,12 +4,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.defty_movie_app.model.ApiResponse;
-import com.example.defty_movie_app.model.LoginRequest;
-import com.example.defty_movie_app.model.LoginResponse;
-import com.example.defty_movie_app.model.RegisterRequest;
-import com.example.defty_movie_app.model.UserResponse;
-import com.example.defty_movie_app.repository.AuthRepository;
+import com.example.defty_movie_app.data.model.response.ApiResponse;
+import com.example.defty_movie_app.data.model.request.LoginRequest;
+import com.example.defty_movie_app.data.model.response.LoginResponse;
+import com.example.defty_movie_app.data.model.request.RegisterRequest;
+import com.example.defty_movie_app.data.model.response.UserResponse;
+import com.example.defty_movie_app.data.repository.AuthRepository;
 
 import retrofit2.Call;
 import retrofit2.Callback;

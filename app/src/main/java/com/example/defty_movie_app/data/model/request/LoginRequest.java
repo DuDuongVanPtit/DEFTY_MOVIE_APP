@@ -1,4 +1,4 @@
-package com.example.defty_movie_app.model;
+package com.example.defty_movie_app.data.model.request;
 
 public class LoginRequest {
     private String username;

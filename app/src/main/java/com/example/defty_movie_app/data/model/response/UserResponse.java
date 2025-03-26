@@ -1,4 +1,4 @@
-package com.example.defty_movie_app.model;
+package com.example.defty_movie_app.data.model.response;
 
 public class UserResponse {
     private String id;
