@@ -1,13 +1,16 @@
 package com.example.defty_movie_app.adapter;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.data.dto.Movie;
 
@@ -16,6 +19,11 @@ import java.util.List;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
     private List<Movie> movies = new ArrayList<>();
+    private Context context;
+
+    public MovieAdapter(Context context) {
+        this.context = context;
+    }
 
     public void setMovies(List<Movie> newMovies) {
         this.movies = newMovies;
@@ -24,14 +32,20 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     public static class MovieViewHolder extends RecyclerView.ViewHolder {
         TextView titleView;
+        ImageView imagePoster;
 
         public MovieViewHolder(@NonNull View itemView) {
             super(itemView);
             titleView = itemView.findViewById(R.id.titleView);
+            imagePoster = itemView.findViewById(R.id.imagePoster);
         }
 
-        public void bind(Movie movie) {
+        public void bind(Context context, Movie movie) {
             titleView.setText(movie.getTitle());
+
+            Glide.with(context)
+                    .load(movie.getImageUrl())
+                    .into(imagePoster);
         }
     }
 
@@ -45,7 +59,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     @Override
     public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
-        holder.bind(movies.get(position));
+        holder.bind(context, movies.get(position));
     }
 
     @Override
@@ -53,4 +67,3 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         return movies.size();
     }
 }
-
