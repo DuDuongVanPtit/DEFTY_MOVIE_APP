@@ -60,7 +60,7 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this, "Login Success: " + loginResponse.getToken(), Toast.LENGTH_SHORT).show();
 
                     // Chuyển sang màn hình chính
-                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                    Intent intent = new Intent(LoginActivity.this, ProfileActivity.class);
                     startActivity(intent);
                     finish();
                 } else {

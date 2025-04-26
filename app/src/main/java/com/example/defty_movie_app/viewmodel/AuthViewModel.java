@@ -20,10 +20,6 @@ public class AuthViewModel extends ViewModel {
     private MutableLiveData<ApiResponse<LoginResponse>> loginResult = new MutableLiveData<>();
     private MutableLiveData<ApiResponse<UserResponse>> registerResult = new MutableLiveData<>();
 
-    public AuthViewModel() {
-        repository = new AuthRepository();
-    }
-
     public LiveData<ApiResponse<LoginResponse>> getLoginResult() {
         return loginResult;
     }

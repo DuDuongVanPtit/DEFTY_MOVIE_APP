@@ -5,4 +5,6 @@
     <color name="purple">#9C27B0</color>
     <color name="green">#146616</color>
     <color name="background">#181818</color>
+    <color name="text_category">#349B49</color>
+    <color name="button_category">#26252A</color>
 </resources>

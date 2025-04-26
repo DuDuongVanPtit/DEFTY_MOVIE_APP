@@ -64,9 +64,8 @@ public class LoginWithPasswordBottomSheetDialog extends BottomSheetDialogFragmen
                 if (response.isSuccessful() && response.body() != null) {
                     LoginResponse loginResponse = response.body().getData();
                     Toast.makeText(getContext(), "Login Success: " + loginResponse.getToken(), Toast.LENGTH_SHORT).show();
-
                     // Chuyển sang HomeActivity
-                    Intent intent = new Intent(getContext(), HomeActivity.class);
+                    Intent intent = new Intent(getContext(), ProfileActivity.class);
                     startActivity(intent);
                     dismiss(); // Đóng BottomSheetDialog sau khi đăng nhập thành công
                 } else {
