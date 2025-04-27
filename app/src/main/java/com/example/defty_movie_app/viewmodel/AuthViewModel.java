@@ -1,14 +1,18 @@
 package com.example.defty_movie_app.viewmodel;
 
+import android.app.Application;
+
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.defty_movie_app.data.model.response.ApiResponse;
 import com.example.defty_movie_app.data.model.request.LoginRequest;
+import com.example.defty_movie_app.data.model.request.SignUpRequest;
+import com.example.defty_movie_app.data.model.response.ApiResponse;
 import com.example.defty_movie_app.data.model.response.LoginResponse;
-import com.example.defty_movie_app.data.model.request.RegisterRequest;
-import com.example.defty_movie_app.data.model.response.UserResponse;
+import com.example.defty_movie_app.data.model.response.SignUpResponse;
+import com.example.defty_movie_app.data.remote.AuthApiService;
 import com.example.defty_movie_app.data.repository.AuthRepository;
 
 import retrofit2.Call;
@@ -16,42 +20,69 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class AuthViewModel extends ViewModel {
-    private AuthRepository repository;
-    private MutableLiveData<ApiResponse<LoginResponse>> loginResult = new MutableLiveData<>();
-    private MutableLiveData<ApiResponse<UserResponse>> registerResult = new MutableLiveData<>();
 
-    public LiveData<ApiResponse<LoginResponse>> getLoginResult() {
-        return loginResult;
+    private AuthApiService apiService;
+
+    // LiveData để theo dõi kết quả đăng nhập và đăng ký
+    private MutableLiveData<Boolean> loginSuccess = new MutableLiveData<>();
+    private MutableLiveData<Boolean> signUpSuccess = new MutableLiveData<>();
+    private MutableLiveData<String> errorMessage = new MutableLiveData<>();
+
+    public AuthViewModel() {
+        apiService = AuthRepository.getInstance().getApi();
     }
 
-    public LiveData<ApiResponse<UserResponse>> getRegisterResult() {
-        return registerResult;
+    // Getter để truy cập LiveData
+    public LiveData<Boolean> isLoginSuccess() {
+        return loginSuccess;
     }
 
-    public void login(String username, String password) {
-        repository.getApi().login(new LoginRequest(username, password)).enqueue(new Callback<ApiResponse<LoginResponse>>() {
+    public LiveData<Boolean> isSignUpSuccess() {
+        return signUpSuccess;
+    }
+
+    public LiveData<String> getErrorMessage() {
+        return errorMessage;
+    }
+
+    // Phương thức đăng nhập
+    public void loginUser(String email, String password) {
+        LoginRequest loginRequest = new LoginRequest(email, password);
+
+        apiService.login(loginRequest).enqueue(new Callback<ApiResponse<LoginResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<LoginResponse>> call, Response<ApiResponse<LoginResponse>> response) {
-                loginResult.setValue(response.body());
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    loginSuccess.setValue(true);
+                } else {
+                    errorMessage.setValue("Login Failed. Please check your credentials.");
+                }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
-                loginResult.setValue(null);
+                errorMessage.setValue("Error: " + t.getMessage());
             }
         });
     }
 
-    public void register(String username, String password, String email) {
-        repository.getApi().register(new RegisterRequest(username, password, email)).enqueue(new Callback<ApiResponse<UserResponse>>() {
+    // Phương thức đăng ký
+    public void signUpUser(String email, String username, String password, String fullName) {
+        SignUpRequest signUpRequest = new SignUpRequest(email, username, password, fullName);
+
+        apiService.signUp(signUpRequest).enqueue(new Callback<ApiResponse<SignUpResponse>>() {
             @Override
-            public void onResponse(Call<ApiResponse<UserResponse>> call, Response<ApiResponse<UserResponse>> response) {
-                registerResult.setValue(response.body());
+            public void onResponse(Call<ApiResponse<SignUpResponse>> call, Response<ApiResponse<SignUpResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    signUpSuccess.setValue(true);
+                } else {
+                    errorMessage.setValue("Sign Up Failed. Please try again.");
+                }
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<UserResponse>> call, Throwable t) {
-                registerResult.setValue(null);
+            public void onFailure(Call<ApiResponse<SignUpResponse>> call, Throwable t) {
+                errorMessage.setValue("Error: " + t.getMessage());
             }
         });
     }

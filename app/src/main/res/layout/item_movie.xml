@@ -17,14 +17,26 @@
             android:scaleType="centerCrop"
             android:background="@drawable/rounded_image"
             android:clipToOutline="true" />
+
+        <!-- Thêm cái label phim ở đây -->
+        <TextView
+            android:id="@+id/labelType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="8dp"
+            android:padding="4dp"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/label_shape"
+            android:elevation="4dp" />
     </FrameLayout>
 
     <TextView
         android:id="@+id/titleView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#FFFFFF"
-        android:text="Movie Title"
+        android:textColor="#979393"
         android:textSize="14sp"
         android:paddingTop="4dp"
         android:maxLines="2"

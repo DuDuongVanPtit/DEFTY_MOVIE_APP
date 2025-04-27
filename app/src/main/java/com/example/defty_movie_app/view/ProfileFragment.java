@@ -22,7 +22,7 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_profile, container, false);
+        View view = inflater.inflate(R.layout.profile_fragment, container, false);
 
         TextView loginText = view.findViewById(R.id.login_text);
         loginText.setOnClickListener(v -> {

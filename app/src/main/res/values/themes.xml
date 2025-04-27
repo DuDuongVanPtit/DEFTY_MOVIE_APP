@@ -3,7 +3,10 @@
     <style name="Base.Theme.DEFTY_MOVIE_APP" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+        <!-- Customize Button style -->
     </style>
 
     <style name="Theme.DEFTY_MOVIE_APP" parent="Base.Theme.DEFTY_MOVIE_APP" />
+
 </resources>

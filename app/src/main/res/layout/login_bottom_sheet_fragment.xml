@@ -8,12 +8,14 @@
     android:orientation="vertical">
 
     <!-- Nút Đóng -->
-    <ImageView
-        android:id="@+id/btnClose"
+    <ImageButton
+        android:id="@+id/btClose"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_gravity="end"
-        android:src="@drawable/ic_close" />
+        android:src="@drawable/ic_close"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/close" />
 
     <!-- Tiêu đề -->
     <TextView
@@ -24,7 +26,6 @@
         android:textStyle="bold"
         android:textColor="@android:color/white"
         android:gravity="center"
-        android:layout_marginTop="10dp"
         android:layout_gravity="center_horizontal"/>
 
     <!-- Nút Đăng nhập với Password -->
@@ -78,13 +79,5 @@
             android:layout_marginStart="12dp"/>
     </LinearLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="DEFTY"
-        android:textSize="22sp"
-        android:textColor="@android:color/darker_gray"
-        android:gravity="center"
-        android:layout_marginTop="12dp"
-        android:layout_gravity="center_horizontal"/>
+
 </LinearLayout>

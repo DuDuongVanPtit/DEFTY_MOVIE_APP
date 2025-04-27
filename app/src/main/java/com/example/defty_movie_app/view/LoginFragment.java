@@ -1,7 +1,7 @@
 package com.example.defty_movie_app.view;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,22 +12,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.defty_movie_app.R;
-import com.example.defty_movie_app.data.model.request.LoginRequest;
-import com.example.defty_movie_app.data.model.response.ApiResponse;
-import com.example.defty_movie_app.data.model.response.LoginResponse;
-import com.example.defty_movie_app.data.remote.AuthApiService;
-import com.example.defty_movie_app.data.repository.AuthRepository;
+import com.example.defty_movie_app.viewmodel.AuthViewModel;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class LoginFragment extends Fragment {
 
     private EditText edtUsername, edtPassword;
     private Button btnLogin;
+    private AuthViewModel loginViewModel;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -37,55 +32,66 @@ public class LoginFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_login, container, false);
+        View view = inflater.inflate(R.layout.log_in_bottom_sheet, container, false);
+        initViews(view);
 
+        // Khởi tạo ViewModel
+        loginViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
+        // Quan sát các LiveData
+        loginViewModel.isLoginSuccess().observe(getViewLifecycleOwner(), isSuccess -> {
+            if (isSuccess) {
+                goToHome();
+                Toast.makeText(getContext(), "Login Successful!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        loginViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        setListeners(view);
+        return view;
+    }
+
+    private void initViews(View view) {
         edtUsername = view.findViewById(R.id.edtUsername);
         edtPassword = view.findViewById(R.id.edtPassword);
         btnLogin = view.findViewById(R.id.btnLogin);
+    }
 
+    private void setListeners(View view) {
         btnLogin.setOnClickListener(v -> {
             String username = edtUsername.getText().toString().trim();
             String password = edtPassword.getText().toString().trim();
 
-            if (username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(getContext(), "Please enter email and password", Toast.LENGTH_SHORT).show();
-            } else {
-                loginUser(username, password);
+            if (validateInput(username, password)) {
+                loginViewModel.loginUser(username, password);
             }
         });
-
-        return view;
     }
 
-    private void loginUser(String email, String password) {
-        Toast.makeText(getContext(), "Logging in...", Toast.LENGTH_SHORT).show();
+    private boolean validateInput(String username, String password) {
+        if (TextUtils.isEmpty(username)) {
+            edtUsername.setError("Username is required");
+            edtUsername.requestFocus();
+            return false;
+        }
+        if (TextUtils.isEmpty(password)) {
+            edtPassword.setError("Password is required");
+            edtPassword.requestFocus();
+            return false;
+        }
+        return true;
+    }
 
-        AuthApiService apiService = AuthRepository.getInstance().getApi();
-        LoginRequest loginRequest = new LoginRequest(email, password);
-
-        Call<ApiResponse<LoginResponse>> call = apiService.login(loginRequest);
-        call.enqueue(new Callback<ApiResponse<LoginResponse>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<LoginResponse>> call, Response<ApiResponse<LoginResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    LoginResponse loginResponse = response.body().getData();
-                    Toast.makeText(getContext(), "Login Success!", Toast.LENGTH_SHORT).show();
-
-                    // Chuyển Fragment sau khi login thành công
-                    requireActivity().getSupportFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.contentLayout, new ProfileFragment()) // Hoặc fragment mới
-                            .addToBackStack(null)
-                            .commit();
-                } else {
-                    Toast.makeText(getContext(), "Login Failed", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
-                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+    private void goToHome() {
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentLayout, new HomeFragment())
+                .addToBackStack(null)
+                .commit();
     }
 }

@@ -35,7 +35,7 @@ public class LibraryFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_library, container, false);
+        View view = inflater.inflate(R.layout.library_fragment, container, false);
 
         initializeViews(view);
 
@@ -110,7 +110,7 @@ public class LibraryFragment extends Fragment {
     private void loadInitialData() {
         showProgressBar();
         libraryViewModel.fetchShowons(0, 20, "category", "", 1);
-        libraryViewModel.fetchMoviesByCategory(0, 20, "Popular");
+        libraryViewModel.fetchMoviesByCategory(0, 20, "Phim Hành Động");
     }
 
     private void setupTabsWithData(TabLayout tabLayout, List<ShowonResponse> showonList) {

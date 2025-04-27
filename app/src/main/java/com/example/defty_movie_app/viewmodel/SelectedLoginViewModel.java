@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class LoginViewModel extends ViewModel {
+public class SelectedLoginViewModel extends ViewModel {
     private final MutableLiveData<Boolean> _navigateToPasswordLogin = new MutableLiveData<>();
     public LiveData<Boolean> navigateToPasswordLogin = _navigateToPasswordLogin;
 
@@ -17,4 +17,5 @@ public class LoginViewModel extends ViewModel {
     public void resetNavigation() {
         _navigateToPasswordLogin.setValue(false);
     }
+
 }
