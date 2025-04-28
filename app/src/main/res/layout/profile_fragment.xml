@@ -31,7 +31,7 @@
                 android:id="@+id/avatar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/white"
+                android:background="#928C8C"
                 android:padding="5dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_avatar" />
@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
-            android:text="Login / Signup"
+            android:text="Login / Sign Up"
             android:textColor="@android:color/white"
             android:textSize="16sp"
             android:textStyle="bold" />

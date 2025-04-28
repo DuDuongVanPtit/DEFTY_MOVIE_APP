@@ -31,7 +31,6 @@ public class SignUpBottomSheetDialog extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.sign_up_bottom_sheet, container, false);
 
-        // Ánh xạ các thành phần UI
         edtEmail = view.findViewById(R.id.edtEmail);
         edtUsername = view.findViewById(R.id.edtUsername);
         edtPassword = view.findViewById(R.id.edtPassword);
@@ -41,10 +40,8 @@ public class SignUpBottomSheetDialog extends BottomSheetDialogFragment {
         btnClose = view.findViewById(R.id.btnClose1);
         tvLogin = view.findViewById(R.id.tvLogin);
 
-        // Khởi tạo ViewModel
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-        // Lắng nghe kết quả đăng ký
         authViewModel.isSignUpSuccess().observe(getViewLifecycleOwner(), success -> {
             if (success) {
                 showSnackbar("Registration successful!");
@@ -56,17 +53,14 @@ public class SignUpBottomSheetDialog extends BottomSheetDialogFragment {
 
         authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> showSnackbar(message));
 
-        // Xử lý sự kiện nút Back
         btnBack.setOnClickListener(v -> {
             dismiss();
             LoginBottomSheetDialog loginBottomSheetDialog = new LoginBottomSheetDialog();
             loginBottomSheetDialog.show(getParentFragmentManager(), "SignUpBottomSheet");
         });
 
-        // Xử lý sự kiện nút Close
         btnClose.setOnClickListener(v -> dismiss());
 
-        // Xử lý sự kiện nút Sign Up
         btnSignUp.setOnClickListener(v -> {
             String email = edtEmail.getText().toString().trim();
             String username = edtUsername.getText().toString().trim();
@@ -78,7 +72,6 @@ public class SignUpBottomSheetDialog extends BottomSheetDialogFragment {
             }
         });
 
-        // Xử lý sự kiện chuyển đến trang Login
         tvLogin.setOnClickListener(v -> {
             dismiss();
             LoginWithPasswordBottomSheetDialog loginDialog = new LoginWithPasswordBottomSheetDialog();

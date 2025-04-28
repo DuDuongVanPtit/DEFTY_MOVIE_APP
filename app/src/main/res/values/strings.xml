@@ -1,4 +1,5 @@
 <resources>
+    <string name="default_web_client_id">302765188541-f0gvbfljg0bafpos7i4666cu9bf5plba.apps.googleusercontent.com</string>
     <string name="app_name">DEFTY_MOVIE_APP</string>
     <string name="my_diamond">My Diamond</string>
     <string name="my_vip_gift_cards">My VIP Gift Cards</string>
