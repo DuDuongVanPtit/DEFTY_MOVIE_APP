@@ -19,6 +19,9 @@
     <string name="gender">Gender</string>
     <string name="password">Password</string>
     <string name="login">Login</string>
+    <string name="language_select">Language</string>
+    <string name="search">Search</string>
+    <string name="selected">Selected</string>
     <string-array name="gender_array">
         <item>Select Gender</item>
         <item>Male</item>

@@ -1,9 +1,12 @@
 package com.example.defty_movie_app.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,6 +40,13 @@ public class ProfileFragment extends Fragment {
         });
 
         observeUserData();
+
+        LinearLayout languageItem = view.findViewById(R.id.language_item);
+        languageItem.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), LanguageActivity.class);
+            startActivity(intent);
+        });
+
 
         return view;
     }
