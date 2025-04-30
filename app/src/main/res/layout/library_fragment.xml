@@ -16,7 +16,7 @@
         android:background="#111111">
 
         <TextView
-            android:text="Library"
+            android:text="@string/library"
             android:textSize="20sp"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
@@ -25,7 +25,8 @@
             android:layout_height="wrap_content" />
 
         <ImageView
-            android:src="@android:drawable/ic_menu_search"
+            android:id="@+id/btSearch"
+            android:src="@drawable/ic_search"
             android:layout_width="24dp"
             android:layout_height="24dp"
             app:tint="#FFFFFF" />

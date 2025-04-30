@@ -19,6 +19,7 @@ public class LanguageAdapter extends RecyclerView.Adapter<LanguageAdapter.Langua
 
     private final List<Language> languageList;
     private final LanguageViewModel viewModel;
+    private String selectedLanguageCode = ""; // Lưu ngôn ngữ đã chọn
 
     public LanguageAdapter(List<Language> languageList, LanguageViewModel viewModel) {
         this.languageList = languageList;
@@ -38,7 +39,19 @@ public class LanguageAdapter extends RecyclerView.Adapter<LanguageAdapter.Langua
         holder.flagImage.setImageResource(language.getFlagResId());
         holder.languageText.setText(language.getDisplayName());
 
-        holder.itemView.setOnClickListener(v -> viewModel.setLanguage(language.getCode()));
+        // Hiển thị dấu tích nếu ngôn ngữ này được chọn
+        if (language.getCode().equals(selectedLanguageCode)) {
+            holder.languageSelected.setVisibility(View.VISIBLE); // Hiển thị dấu tích
+        } else {
+            holder.languageSelected.setVisibility(View.GONE); // Ẩn dấu tích
+        }
+
+        // Xử lý sự kiện click
+        holder.itemView.setOnClickListener(v -> {
+            selectedLanguageCode = language.getCode(); // Cập nhật ngôn ngữ được chọn
+            viewModel.setLanguage(language.getCode()); // Gọi ViewModel để thay đổi ngôn ngữ
+            notifyDataSetChanged(); // Cập nhật lại RecyclerView để hiển thị dấu tích mới
+        });
     }
 
     @Override
@@ -47,13 +60,14 @@ public class LanguageAdapter extends RecyclerView.Adapter<LanguageAdapter.Langua
     }
 
     static class LanguageViewHolder extends RecyclerView.ViewHolder {
-        ImageView flagImage;
+        ImageView flagImage, languageSelected;
         TextView languageText;
 
         public LanguageViewHolder(@NonNull View itemView) {
             super(itemView);
             flagImage = itemView.findViewById(R.id.language_flag);
             languageText = itemView.findViewById(R.id.language_name);
+            languageSelected = itemView.findViewById(R.id.language_selected); // Dấu tích
         }
     }
 }

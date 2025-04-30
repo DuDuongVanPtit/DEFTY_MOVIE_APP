@@ -1,3 +1,4 @@
+
 <resources>
     <string name="default_web_client_id">302765188541-f0gvbfljg0bafpos7i4666cu9bf5plba.apps.googleusercontent.com</string>
     <string name="app_name">DEFTY_MOVIE_APP</string>
@@ -22,6 +23,12 @@
     <string name="language_select">Language</string>
     <string name="search">Search</string>
     <string name="selected">Selected</string>
+    <string name="login_sign_up">Login / Sign Up</string>
+    <string name="library">Library</string>
+    <string name="home">Home</string>
+    <string name="short_tab">Short</string>
+    <string name="download">Download</string>
+    <string name="profile">Profile</string>
     <string-array name="gender_array">
         <item>Select Gender</item>
         <item>Male</item>

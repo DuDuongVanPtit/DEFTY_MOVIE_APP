@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
-            android:text="Login / Sign Up"
+            android:text="@string/login_sign_up"
             android:textColor="@android:color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
