@@ -7,7 +7,7 @@
     android:layout_marginVertical="8dp"
     android:clickable="true"
     android:focusable="true"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="5dp"
     app:cardElevation="2dp"
     app:cardBackgroundColor="#1E1E1E">
 
@@ -19,7 +19,7 @@
         <!-- Flag -->
         <ImageView
             android:id="@+id/language_flag"
-            android:layout_width="40dp"
+            android:layout_width="60dp"
             android:layout_height="40dp"
             android:contentDescription="TODO"
             android:scaleType="centerCrop"
@@ -27,47 +27,33 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
-        <!-- Language Name -->
+
         <TextView
             android:id="@+id/language_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            app:layout_constraintStart_toEndOf="@id/language_flag"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/language_native_name"
-            app:layout_constraintEnd_toStartOf="@id/language_selected"
             android:layout_marginStart="12dp"
+            android:layout_marginTop="8dp"
+            android:ellipsize="end"
             android:maxLines="1"
-            android:ellipsize="end" />
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/language_selected"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@id/language_flag"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Native Name -->
-        <TextView
-            android:id="@+id/language_native_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textColor="#BBBBBB"
-            android:textSize="14sp"
-            app:layout_constraintStart_toStartOf="@id/language_name"
-            app:layout_constraintTop_toBottomOf="@id/language_name"
-            app:layout_constraintEnd_toEndOf="@id/language_name"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:maxLines="1"
-            android:ellipsize="end" />
-
-        <!-- Checkmark (Visible only when selected) -->
         <ImageView
             android:id="@+id/language_selected"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:contentDescription="@string/selected"
             android:src="@drawable/ic_check_circle"
             android:visibility="gone"
-            android:contentDescription="@string/selected"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:tint="#BB86FC" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
