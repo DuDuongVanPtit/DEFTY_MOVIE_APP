@@ -1,7 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/nav_home" android:icon="@drawable/ic_home" android:title="Home" />
-    <item android:id="@+id/nav_explore" android:icon="@drawable/ic_explore" android:title="Explore" />
-    <item android:id="@+id/nav_short" android:icon="@drawable/ic_short" android:title="Short" />
-    <item android:id="@+id/nav_download" android:icon="@drawable/ic_download" android:title="Download" />
-    <item android:id="@+id/nav_me" android:icon="@drawable/ic_me" android:title="Me" />
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_home"
+        android:title="@string/home"/>
+    <item
+        android:id="@+id/nav_explore"
+        android:icon="@drawable/ic_explore"
+        android:title="@string/library"/>
+    <item
+        android:id="@+id/nav_short"
+        android:icon="@drawable/ic_short"
+        android:title="@string/short_tab"/>
+    <item
+        android:id="@+id/nav_download"
+        android:icon="@drawable/ic_download"
+        android:title="@string/download"/>
+    <item
+        android:id="@+id/nav_me"
+        android:icon="@drawable/ic_personal"
+        android:title="@string/profile"/>
 </menu>
