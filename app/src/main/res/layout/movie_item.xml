@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="120dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="4dp"
+    android:background="@android:color/transparent"> <FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="160dp">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" app:cardCornerRadius="4dp"
+        app:cardElevation="0dp"  app:cardBackgroundColor="@android:color/transparent"> <ImageView
+        android:id="@+id/posterImageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" android:scaleType="centerCrop"
+        android:src="@android:drawable/ic_menu_report_image" /> </androidx.cardview.widget.CardView>
+    <TextView
+        android:id="@+id/limitedTagTextView" android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_margin="4dp"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="2dp"
+        android:background="@drawable/tag_background" android:text="Limited"
+        android:textColor="#FFFFFF"
+        android:textSize="10sp"
+        android:visibility="gone" /> <TextView
+    android:id="@+id/qualityTagTextView" android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="top|end"
+    android:layout_margin="4dp"
+    android:paddingHorizontal="6dp"
+    android:paddingVertical="2dp"
+    android:background="@drawable/quality_tag_background" android:text="4K"
+    android:textColor="#FFFFFF"
+    android:textSize="10sp" />
+</FrameLayout>
+
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:textColor="#FFFFFF" android:textSize="12sp"
+        android:textStyle="bold"
+        android:text="Movie Title" /> <TextView
+        android:id="@+id/infoTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="2dp" android:paddingBottom="8dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textColor="#AAAAAA" android:textSize="10sp"
+        android:text="Additional Info" /> </LinearLayout>

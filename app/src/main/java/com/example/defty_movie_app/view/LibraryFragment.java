@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -106,8 +107,19 @@ public class LibraryFragment extends Fragment {
 
     private void loadInitialData() {
         showProgressBar();
+
         libraryViewModel.fetchShowons(0, 20, "category", "", 1);
-        libraryViewModel.fetchMoviesByCategory(0, 20, "Phim Hành Động");
+
+        libraryViewModel.getShowonData().observe(getViewLifecycleOwner(), showons -> {
+            if (showons != null && !showons.isEmpty()) {
+                String firstCategory = showons.get(0).getContentName();
+                libraryViewModel.fetchMoviesByCategory(0, 20, firstCategory);
+            } else {
+                hideProgressBar();
+                Toast.makeText(getContext(), "Không có danh mục nào", Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     private void setupTabsWithData(TabLayout tabLayout, List<ShowonResponse> showonList) {

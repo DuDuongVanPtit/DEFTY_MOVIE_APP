@@ -39,22 +39,21 @@
                         android:scaleType="centerCrop"
                         android:src="@drawable/sample_video_thumbnail" />
 
-                    <!-- VideoView -->
+                    <!-- Nút Play -->
+                    <ImageButton
+                        android:id="@+id/btnPlay"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_gravity="center"
+                        android:src="@android:drawable/ic_media_play"
+                        android:background="@android:color/transparent" />
+
+                    <!-- VideoView phát trailer -->
                     <VideoView
                         android:id="@+id/videoView"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:visibility="gone" />
-
-                    <!-- Nút Play -->
-                    <ImageButton
-                        android:id="@+id/btnPlay"
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:layout_gravity="center"
-                        android:src="@android:drawable/ic_media_play"
-                        android:background="@android:color/transparent"
-                        android:contentDescription="Play button" />
                 </FrameLayout>
 
                 <!-- Thông tin phim -->
@@ -102,19 +101,198 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerCastCrew"
+                    <HorizontalScrollView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:clipToPadding="false"
-                        android:overScrollMode="never"
-                        android:scrollbars="none"
-                        android:layout_gravity="center"
-                        android:orientation="horizontal"
-                        tools:listitem="@layout/item_cast_crew"/>
+                        android:padding="12dp"
+                        android:layout_marginTop="20dp">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:id="@+id/imagePerson"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginEnd="8dp"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/default_cover_image"
+                                android:background="@drawable/circle_background"
+                                android:clipToOutline="true" />
+
+                            <LinearLayout
+                                android:orientation="vertical"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:id="@+id/textName"
+                                    android:text="John Smith"
+                                    android:textColor="#000"
+                                    android:textSize="14sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <TextView
+                                    android:id="@+id/textRole"
+                                    android:text="Actor"
+                                    android:textColor="#666"
+                                    android:textSize="12sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginEnd="8dp"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/default_cover_image"
+                                android:background="@drawable/circle_background"
+                                android:clipToOutline="true" />
+
+                            <LinearLayout
+                                android:orientation="vertical"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:text="John Smith"
+                                    android:textColor="#000"
+                                    android:textSize="14sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <TextView
+                                    android:text="Actor"
+                                    android:textColor="#666"
+                                    android:textSize="12sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginEnd="8dp"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/default_cover_image"
+                                android:background="@drawable/circle_background"
+                                android:clipToOutline="true" />
+
+                            <LinearLayout
+                                android:orientation="vertical"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:text="John Smith"
+                                    android:textColor="#000"
+                                    android:textSize="14sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <TextView
+                                    android:text="Actor"
+                                    android:textColor="#666"
+                                    android:textSize="12sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginEnd="8dp"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/default_cover_image"
+                                android:background="@drawable/circle_background"
+                                android:clipToOutline="true" />
+
+                            <LinearLayout
+                                android:orientation="vertical"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:text="John Smith"
+                                    android:textColor="#000"
+                                    android:textSize="14sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <TextView
+                                    android:text="Actor"
+                                    android:textColor="#666"
+                                    android:textSize="12sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginEnd="8dp"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/default_cover_image"
+                                android:background="@drawable/circle_background"
+                                android:clipToOutline="true" />
+
+                            <LinearLayout
+                                android:orientation="vertical"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:text="John Smith"
+                                    android:textColor="#000"
+                                    android:textSize="14sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <TextView
+                                    android:text="Actor"
+                                    android:textColor="#666"
+                                    android:textSize="12sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginEnd="8dp"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/default_cover_image"
+                                android:background="@drawable/circle_background"
+                                android:clipToOutline="true" />
+
+                            <LinearLayout
+                                android:orientation="vertical"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:text="John Smith"
+                                    android:textColor="#000"
+                                    android:textSize="14sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <TextView
+                                    android:text="Actor"
+                                    android:textColor="#666"
+                                    android:textSize="12sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+                            </LinearLayout>
+
+
+                        </LinearLayout>
+                    </HorizontalScrollView>
+
                 </LinearLayout>
 
 
@@ -181,40 +359,52 @@
                 </HorizontalScrollView>
 
                 <!-- Exclusive Clips -->
-                <TextView
-                    android:text="Recommended For You"
-                    android:textColor="#FFF"
-                    android:textSize="18sp"
-                    android:paddingStart="12dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+<!--                <TextView-->
+<!--                    android:text="Exclusive Clips"-->
+<!--                    android:textColor="#FFF"-->
+<!--                    android:textSize="18sp"-->
+<!--                    android:paddingStart="12dp"-->
+<!--                    android:layout_marginTop="8dp"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content" />-->
 
-
-                <!-- ProgressBar hiển thị khi tải dữ liệu -->
-                <ProgressBar
-                    android:id="@+id/progressBar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:visibility="visible" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerViewRecommended"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="16dp"
-                    android:visibility="gone"
-                    android:scrollbars="vertical"
-                    android:background="#DDDDDD" />
-
-<!--                <androidx.recyclerview.widget.RecyclerView-->
-<!--                    android:id="@+id/recyclerViewRecommended"-->
+<!--                <HorizontalScrollView-->
 <!--                    android:layout_width="match_parent"-->
 <!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginTop="16dp"-->
-<!--                    android:visibility="gone" />-->
+<!--                    android:padding="12dp">-->
 
+<!--                    <LinearLayout-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:orientation="horizontal">-->
+
+<!--                        <ImageView-->
+<!--                            android:layout_width="150dp"-->
+<!--                            android:layout_height="100dp"-->
+<!--                            android:layout_marginEnd="8dp"-->
+<!--                            android:src="@drawable/default_cover_image"-->
+<!--                            android:scaleType="centerCrop" />-->
+
+<!--                        <ImageView-->
+<!--                            android:layout_width="150dp"-->
+<!--                            android:layout_height="100dp"-->
+<!--                            android:layout_marginEnd="8dp"-->
+<!--                            android:src="@drawable/clip2"-->
+<!--                            android:scaleType="centerCrop" />-->
+
+<!--                        <ImageView-->
+<!--                            android:layout_width="150dp"-->
+<!--                            android:layout_height="100dp"-->
+<!--                            android:src="@drawable/clip3"-->
+<!--                            android:scaleType="centerCrop" />-->
+
+<!--                        <ImageView-->
+<!--                            android:layout_width="150dp"-->
+<!--                            android:layout_height="100dp"-->
+<!--                            android:src="@drawable/clip4"-->
+<!--                            android:scaleType="centerCrop" />-->
+<!--                    </LinearLayout>-->
+<!--                </HorizontalScrollView>-->
             </LinearLayout>
             <!-- Video player, Thông tin phim, Tabs, Episode, Exclusive Clips -->
 

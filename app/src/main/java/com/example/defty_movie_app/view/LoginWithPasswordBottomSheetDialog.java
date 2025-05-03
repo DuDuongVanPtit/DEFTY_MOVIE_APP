@@ -48,7 +48,8 @@ public class LoginWithPasswordBottomSheetDialog extends BottomSheetDialogFragmen
         btnClose = view.findViewById(R.id.btnClose);
         tvSignUp = view.findViewById(R.id.tvSignUp);
 
-        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
+
 
         // Xử lý sự kiện nút Back
         btnBack.setOnClickListener(v -> {

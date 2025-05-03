@@ -56,7 +56,7 @@ public class ProfileFragment extends Fragment {
             if (user != null) {
                 System.out.println("User data: " + user.getFullName());
                 loginText.setText(user.getFullName());
-                loginText.setClickable(false);
+                loginText.setClickable(true);
             } else {
                 System.out.println("No user data available");
                 loginText.setText("Login / Signup");
