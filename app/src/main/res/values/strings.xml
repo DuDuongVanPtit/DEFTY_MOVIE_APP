@@ -24,4 +24,8 @@
         <item>Female</item>
         <item>Other</item>
     </string-array>
+    <string name="limited_free_shows_title">Limited Free Shows</string>
+    <string name="top_10_shows_title">TOP 10 Shows</string>
+    <string name="premium_content_title">Premium Content</string>
+    <string name="banner_image_description">Banner Image</string>
 </resources>
