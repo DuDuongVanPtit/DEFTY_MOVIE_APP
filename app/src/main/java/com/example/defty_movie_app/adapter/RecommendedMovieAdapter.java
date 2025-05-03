@@ -55,8 +55,8 @@ public class RecommendedMovieAdapter extends RecyclerView.Adapter<RecommendedMov
 
         public MovieViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageMovie = itemView.findViewById(R.id.imageMovie);
-            textMovieName = itemView.findViewById(R.id.textMovieName);
+            imageMovie = itemView.findViewById(R.id.imagePoster);
+            textMovieName = itemView.findViewById(R.id.titleView);
         }
 
         public void bind(RecommendedMovieResponse.RecommendedMovie movie) {
