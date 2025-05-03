@@ -24,10 +24,9 @@
     android:layout_gravity="bottom|end"
     android:layout_marginEnd="16dp"
     android:layout_marginBottom="24dp"
-    android:background="?attr/selectableItemBackgroundBorderless"
-    android:src="@android:drawable/ic_media_play"
-    app:tint="#FFFFFF"
-    android:contentDescription="Play banner content" />
+    android:background="@drawable/play_button_background" android:src="@android:drawable/ic_media_play"       app:tint="#FFFFFF"                                  android:contentDescription="Play banner content"
+    android:elevation="4dp"                             android:padding="12dp"                              />
+
 
 
     <LinearLayout
@@ -44,22 +43,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="25sp"
             android:textStyle="bold"
             android:maxLines="2"
             android:ellipsize="end"
+            android:layout_marginBottom="20dp"
             tools:text="Banner Title Placeholder" />
-
-        <TextView
-            android:id="@+id/bannerSubtitleTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="#E0E0E0"
-            android:textSize="14sp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            tools:text="Banner Subtitle or Details" />
 
     </LinearLayout>
 

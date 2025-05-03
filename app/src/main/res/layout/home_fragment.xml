@@ -97,24 +97,20 @@
 
                     <LinearLayout
                         android:id="@+id/searchBarLayout"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
+                        android:layout_width="0dp" android:layout_height="40dp"
                         android:layout_marginStart="8dp"
                         android:layout_marginEnd="8dp"
                         android:background="@drawable/search_background_translucent"
                         android:gravity="center_vertical"
                         android:paddingStart="12dp"
                         android:paddingEnd="12dp"
-                        android:minWidth="150dp"
-                        android:layout_weight="1">
-
-                        <TextView
-                            android:id="@+id/searchTextView"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Search"
-                            android:textColor="#E0E0E0"
-                            android:textSize="16sp" />
+                        android:layout_weight="1"> <TextView
+                        android:id="@+id/searchTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Search"
+                        android:textColor="#E0E0E0"
+                        android:textSize="16sp" />
                     </LinearLayout>
 
                     <Button
@@ -124,7 +120,9 @@
                         android:minWidth="45dp"
                         android:text="VIP"
                         android:textColor="#000000"
-                        android:background="@drawable/vip_button_background" app:backgroundTint="@null" android:drawableStart="@drawable/ic_crown_vip"
+                        android:background="@drawable/vip_button_background"
+                        app:backgroundTint="@null"
+                        android:drawableStart="@drawable/ic_crown_vip"
                         android:drawablePadding="4dp"
                         android:paddingStart="12dp"
                         android:paddingEnd="12dp"
@@ -142,108 +140,22 @@
             app:tabSelectedTextColor="#FFFFFF"
             app:tabTextColor="#AAAAAA"
             app:tabMode="scrollable"
-            android:background="#111111"
-            app:layout_scrollFlags="noScroll" />
-    </com.google.android.material.appbar.AppBarLayout>
+            android:background="@drawable/category_background_default" app:layout_scrollFlags="noScroll" /> </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:fillViewport="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
+            android:id="@+id/showonSectionsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="16dp">
-
-            <LinearLayout
-                android:id="@+id/limitedFreeSectionContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="16dp"
-                android:paddingBottom="8dp">
-                <TextView
-                    android:id="@+id/limitedFreeTitleTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:text="@string/limited_free_shows_title" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/limitedFreeRecyclerView"
-                    android:layout_width="match_parent"
-                    android:layout_height="180dp"
-                    android:layout_marginTop="8dp"
-                    android:clipToPadding="false"
-                    android:paddingEnd="16dp"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/item_movie_home"
-                    tools:orientation="horizontal" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/topShowsSectionContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="16dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp">
-                <TextView
-                    android:id="@+id/topShowsTitleTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:text="@string/top_10_shows_title" />
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/topShowsRecyclerView"
-                    android:layout_width="match_parent"
-                    android:layout_height="180dp"
-                    android:layout_marginTop="8dp"
-                    android:clipToPadding="false"
-                    android:paddingEnd="16dp"
-                    tools:orientation="horizontal"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/item_movie_home" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/premiumContentSectionContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="16dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="16dp">
-                <TextView
-                    android:id="@+id/premiumContentTitleTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:text="@string/premium_content_title" />
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/premiumContentRecyclerView"
-                    android:layout_width="match_parent"
-                    android:layout_height="180dp"
-                    android:layout_marginTop="8dp"
-                    android:clipToPadding="false"
-                    android:paddingEnd="16dp"
-                    tools:orientation="horizontal"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/item_movie_home" />
-            </LinearLayout>
-
-        </LinearLayout>
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"> </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

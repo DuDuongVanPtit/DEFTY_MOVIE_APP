@@ -57,8 +57,7 @@ public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.BannerView
     // ViewHolder cập nhật
     class BannerViewHolder extends RecyclerView.ViewHolder {
         ImageView bannerImageView;
-        TextView bannerTitleTextView;    // TextView cho tiêu đề
-        TextView bannerSubtitleTextView; // TextView cho phụ đề
+        TextView bannerTitleTextView;
         ImageButton bannerPlayButton;    // Nút Play
 
         public BannerViewHolder(@NonNull View itemView) {
@@ -66,7 +65,6 @@ public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.BannerView
             // Ánh xạ các view mới từ item_banner.xml
             bannerImageView = itemView.findViewById(R.id.bannerImageView);
             bannerTitleTextView = itemView.findViewById(R.id.bannerTitleTextView);
-            bannerSubtitleTextView = itemView.findViewById(R.id.bannerSubtitleTextView);
             bannerPlayButton = itemView.findViewById(R.id.bannerPlayButton);
 
             // Xử lý sự kiện click vào nút Play
@@ -113,9 +111,6 @@ public class BannerAdapter extends RecyclerView.Adapter<BannerAdapter.BannerView
             } else if (banner.getSubBannerResponse() != null && banner.getSubBannerResponse().getDescription() != null) {
                 subtitle = banner.getSubBannerResponse().getDescription();
             }
-            // Bạn có thể kết hợp nhiều thông tin hơn nếu muốn
-            bannerSubtitleTextView.setText(subtitle);
-            bannerSubtitleTextView.setVisibility(subtitle.isEmpty() ? View.GONE : View.VISIBLE);
 
 
             // Tải ảnh nền banner
