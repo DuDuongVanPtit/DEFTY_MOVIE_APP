@@ -45,7 +45,9 @@ public class LibraryViewModel extends ViewModel {
                                 List<Movie> movies1 = s.getContentItems();
                                 if (movies1 != null) {
                                     for (Movie movieItem : movies1) {
-                                        Movie movie = new Movie(movieItem.getTitle(), movieItem.getImageUrl(), movieItem.getSlug());
+                                        Movie movie = new Movie(movieItem.getTitle(),
+                                                movieItem.getImageUrl(),
+                                                movieItem.getSlug());
                                         movies.add(movie);
                                         System.out.println(movieItem.getTitle());
                                         System.out.println(movieItem.getImageUrl());

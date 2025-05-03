@@ -9,7 +9,9 @@ import com.example.defty_movie_app.data.model.response.UserResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 public interface AuthApiService {
     @POST("api/v1/user/auth/login")
@@ -17,4 +19,7 @@ public interface AuthApiService {
 
     @POST("api/v1/user/auth/register")
     Call<ApiResponse<SignUpResponse>> signUp(@Body SignUpRequest request);
+
+    @GET("api/v1/user/auth/check-account-token")
+    Call<ApiResponse<UserResponse>> checkAccount(@Query("token") String token);
 }

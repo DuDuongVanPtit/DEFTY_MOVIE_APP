@@ -49,4 +49,6 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
+    implementation ("com.google.android.gms:play-services-auth:20.7.0")
+    implementation ("com.google.firebase:firebase-auth:21.0.1")
 }
