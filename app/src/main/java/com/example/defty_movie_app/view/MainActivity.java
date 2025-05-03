@@ -43,7 +43,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         Fragment selectedFragment = null;
         int itemId = item.getItemId();
 
-        if (itemId == R.id.nav_explore) {
+        if (itemId == R.id.nav_home) {
+            selectedFragment = new HomeFragment();
+        } else if (itemId == R.id.nav_explore) {
             selectedFragment = new LibraryFragment();
         } else if (itemId == R.id.nav_me) {
             selectedFragment = new ProfileFragment();

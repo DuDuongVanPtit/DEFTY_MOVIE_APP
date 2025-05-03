@@ -9,4 +9,10 @@
     <color name="button_category">#26252A</color>
     <color name="icon_color">#FF5722</color>
     <color name="text_color">#FFFFFF</color>
+    <color name="top_rated_background">#3300AA00</color>
+    <color name="good_rated_background">#33FFA500</color>
+    <color name="normal_rated_background">#33555555</color>
+    <color name="header_solid_background">#111111</color>
+    <color name="toolbar_background">#111111</color>
+    <color name="transparent">#00000000</color>
 </resources>
