@@ -74,6 +74,41 @@ public class LibraryViewModel extends ViewModel {
         return paidCategory;
     }
 
+    public void searchMovies(String category, String region, Integer releaseYear, Integer paidCategory) {
+        categoryRepository.getApi().searchMovie(category, region, releaseYear, paidCategory)
+                .enqueue(new Callback<ApiResponse<List<Movie>>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<List<Movie>>> call, Response<ApiResponse<List<Movie>>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            List<Movie> movies = response.body().getData();
+                            System.out.println(movies);
+
+                            List<Movie> movieList1 = new ArrayList<>();
+                            for (Movie movieItem : movies) {
+                                Movie movie = new Movie(
+                                        movieItem.getTitle(),
+                                        movieItem.getImageUrl(),
+                                        movieItem.getSlug(),
+                                        movieItem.isPremium()
+                                );
+                                movieList1.add(movie);
+                            }
+
+                            movieList.setValue(movieList1);
+                        } else {
+                            movieList.setValue(new ArrayList<>());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<List<Movie>>> call, Throwable t) {
+                        System.out.println("API call failed: " + t.getMessage());
+                        movieList.setValue(new ArrayList<>());
+                    }
+                });
+    }
+
+
     public void fetchCategories() {
         categoryRepository.getApi().getCategories()
                 .enqueue(new Callback<ApiResponse<Category>>() {
@@ -101,8 +136,6 @@ public class LibraryViewModel extends ViewModel {
                 });
     }
     public void fetchMoviesByCategory(int page, int size, String categoryName) {
-        System.out.println("Fetching movies for category: " + categoryName);
-
         showonRepository.getApi().getAllShowons(page, size, "category", categoryName, 1)
                 .enqueue(new Callback<ApiResponse<PaginationResponse<ShowonResponse>>>() {
                     @Override
@@ -120,7 +153,6 @@ public class LibraryViewModel extends ViewModel {
                                                 movieItem.getSlug(),
                                                 movieItem.isPremium());
                                         movies.add(movie);
-                                        System.out.println(movieItem.isPremium());
                                     }
                                 }
                             }

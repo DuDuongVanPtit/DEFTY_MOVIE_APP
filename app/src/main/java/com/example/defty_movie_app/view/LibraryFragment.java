@@ -40,6 +40,13 @@ public class LibraryFragment extends Fragment {
     private TabLayout tabLayout;
     private ProgressBar progressBar;
 
+    private String currentCategory = null;
+    private String selectedRegion = null;
+    private String selectedPaidCategory = null;
+    private String selectedReleaseDate = null;
+
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -57,6 +64,7 @@ public class LibraryFragment extends Fragment {
         libraryViewModel = new ViewModelProvider(this).get(LibraryViewModel.class);
 
         setupObservers();
+        setupChipListeners();
 
         loadInitialData();
     }
@@ -117,12 +125,6 @@ public class LibraryFragment extends Fragment {
             }
         });
 
-        libraryViewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
-            if (categories != null && !categories.isEmpty()) {
-                displayCategories(categories);
-            }
-        });
-
         libraryViewModel.getPaidCategory().observe(getViewLifecycleOwner(), categories -> {
             if (categories != null && !categories.isEmpty()) {
                 displayPaidCategories(categories);
@@ -152,12 +154,68 @@ public class LibraryFragment extends Fragment {
         return chip;
     }
 
+    private void setupChipListeners() {
+        ChipGroup regionChipGroup = requireView().findViewById(R.id.regionFilterChips);
+        ChipGroup paidCategoryChipGroup = requireView().findViewById(R.id.paidFilterChips);
+        ChipGroup timeChipGroup = requireView().findViewById(R.id.timeFilterChips);
+
+        regionChipGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            Chip selectedChip = group.findViewById(checkedId);
+            selectedRegion = selectedChip != null ? selectedChip.getText().toString() : null;
+            applyFilters(currentCategory, selectedRegion, selectedPaidCategory, selectedReleaseDate);
+        });
+
+        paidCategoryChipGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            Chip selectedChip = group.findViewById(checkedId);
+            selectedPaidCategory = selectedChip != null ? selectedChip.getText().toString() : null;
+            applyFilters(currentCategory, selectedRegion, selectedPaidCategory, selectedReleaseDate);
+        });
+
+        timeChipGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            Chip selectedChip = group.findViewById(checkedId);
+            selectedReleaseDate = selectedChip != null ? selectedChip.getText().toString() : null;
+            applyFilters(currentCategory, selectedRegion, selectedPaidCategory, selectedReleaseDate);
+        });
+    }
+
+    private void applyFilters(String category, String region, String paidCategory, String releaseDate) {
+        showProgressBar();
+        Integer adjustedPaidCategory = null;
+        if ("All Paid Categories".equalsIgnoreCase(paidCategory)) {
+            adjustedPaidCategory = null;
+        } else if (paidCategory != null) {
+            // Xử lý trường hợp còn lại
+            if ("normal".equalsIgnoreCase(paidCategory)) {
+                adjustedPaidCategory = 3;
+            } else {
+                adjustedPaidCategory = 1;
+            }
+        }
+
+        Integer releaseYear = null;
+        if (releaseDate != null && !releaseDate.isEmpty()) {
+            try {
+                releaseYear = Integer.parseInt(releaseDate);
+            } catch (NumberFormatException e) {
+                releaseYear = null;
+            }
+        } else if ("All Time Periods".equalsIgnoreCase(releaseDate)) {
+            releaseYear = null;
+        }
+
+        if ("All Regions".equalsIgnoreCase(region)) {
+            region = null;
+        }
+
+        libraryViewModel.searchMovies(category, region, releaseYear, adjustedPaidCategory);
+    }
+
+
+
     private void displayChips(int chipGroupId, String allLabel, List<String> items) {
         ChipGroup chipGroup = requireView().findViewById(chipGroupId);
         chipGroup.removeAllViews();
-
         chipGroup.addView(createCustomChip(allLabel, true));
-
         for (String item : items) {
             chipGroup.addView(createCustomChip(item, false));
         }
@@ -165,10 +223,6 @@ public class LibraryFragment extends Fragment {
 
     private void displayRegions(List<String> regions) {
         displayChips(R.id.regionFilterChips, "All Regions", regions);
-    }
-
-    private void displayCategories(List<String> categories) {
-        displayChips(R.id.categoryFilterChips, "All Categories", categories);
     }
 
     private void displayPaidCategories(List<String> paidCategories) {
@@ -184,13 +238,13 @@ public class LibraryFragment extends Fragment {
 
     private void loadInitialData() {
         showProgressBar();
-
         libraryViewModel.fetchShowons(0, 20, "category", "", 1);
         libraryViewModel.fetchCategories();
         libraryViewModel.getShowonData().observe(getViewLifecycleOwner(), showons -> {
             if (showons != null && !showons.isEmpty()) {
                 String firstCategory = showons.get(0).getContentName();
                 libraryViewModel.fetchMoviesByCategory(0, 20, firstCategory);
+                currentCategory = firstCategory;
             } else {
                 hideProgressBar();
                 Toast.makeText(getContext(), "Không có danh mục nào", Toast.LENGTH_SHORT).show();
@@ -214,6 +268,8 @@ public class LibraryFragment extends Fragment {
                 ShowonResponse selectedShowon = (ShowonResponse) tab.getTag();
                 showProgressBar();
                 loadMoviesForCategory(selectedShowon.getContentName());
+                currentCategory = selectedShowon.getContentName();
+                resetChipSelections();
             }
 
             @Override
@@ -229,9 +285,10 @@ public class LibraryFragment extends Fragment {
     }
 
     private void loadMoviesForCategory(String categoryName) {
+        currentCategory = categoryName;
         libraryViewModel.fetchMoviesByCategory(0, 20, categoryName);
-
     }
+
 
     private void showProgressBar() {
         progressBar.setVisibility(View.VISIBLE);
@@ -290,5 +347,36 @@ public class LibraryFragment extends Fragment {
 
         emptyTextView.setText(message);
         emptyTextView.setVisibility(View.VISIBLE);
+    }
+    private void resetChipSelections() {
+        ChipGroup regionChipGroup = requireView().findViewById(R.id.regionFilterChips);
+        ChipGroup paidCategoryChipGroup = requireView().findViewById(R.id.paidFilterChips);
+        ChipGroup timeChipGroup = requireView().findViewById(R.id.timeFilterChips);
+
+        // Reset filter vùng về "All Regions"
+        for (int i = 0; i < regionChipGroup.getChildCount(); i++) {
+            Chip chip = (Chip) regionChipGroup.getChildAt(i);
+            chip.setChecked("All Regions".equals(chip.getText().toString()));
+        }
+
+        // Reset filter loại thanh toán về "All Paid Categories"
+        for (int i = 0; i < paidCategoryChipGroup.getChildCount(); i++) {
+            Chip chip = (Chip) paidCategoryChipGroup.getChildAt(i);
+            chip.setChecked("All Paid Categories".equals(chip.getText().toString()));
+        }
+
+        // Reset filter thời gian về "All Time Periods"
+        for (int i = 0; i < timeChipGroup.getChildCount(); i++) {
+            Chip chip = (Chip) timeChipGroup.getChildAt(i);
+            chip.setChecked("All Time Periods".equals(chip.getText().toString()));
+        }
+
+        // Đặt lại các biến lựa chọn region, paidCategory và releaseDate
+        selectedRegion = "All Regions";
+        selectedPaidCategory = "All Paid Categories";
+        selectedReleaseDate = "All Time Periods";
+
+        // Áp dụng lại các bộ lọc
+        applyFilters(currentCategory, selectedRegion, selectedPaidCategory, selectedReleaseDate);
     }
 }

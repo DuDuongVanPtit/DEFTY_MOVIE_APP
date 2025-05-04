@@ -64,10 +64,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                 membershipText = "Normal";
                 labelType.setBackgroundResource(R.drawable.label_type_normal); // Drawable for Normal
                 labelType.setTextColor(context.getResources().getColor(R.color.normalText));
-            } else {
-                membershipText = "Unknown";
             }
-
             labelType.setText(membershipText);
         }
 

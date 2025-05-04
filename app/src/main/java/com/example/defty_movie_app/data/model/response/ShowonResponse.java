@@ -100,7 +100,6 @@ public class ShowonResponse {
                     String thumbnail = (String) movieMap.get("movieThumbnail");
                     String slug = (String) movieMap.get("slug");
 
-                    // Lấy giá trị membershipType và kiểm tra kiểu dữ liệu
                     Object membershipTypeObj = movieMap.get("membershipType");
                     Integer isPremium = null;
 
@@ -116,7 +115,6 @@ public class ShowonResponse {
         }
         return new ArrayList<>();
     }
-
 
     public void setContentItems(Object contentItems) {
         this.contentItems = contentItems;

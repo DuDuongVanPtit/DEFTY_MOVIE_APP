@@ -1,19 +1,31 @@
 package com.example.defty_movie_app.data.dto;
 
+import static android.icu.util.UniversalTimeScale.toLong;
+
 import androidx.annotation.NonNull;
 
-public class Movie {
-    private String title;
-    private String imageUrl;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.internal.LinkedTreeMap;
 
+import java.util.ArrayList;
+import java.util.List;
+
+public class Movie {
+    @SerializedName("title")
+    private String title;
+    @SerializedName("thumbnail")
+    private String imageUrl;
+    @SerializedName("slug")
     private String slug;
     private Long id;
     private String description;
     private String posterPath;
     private String backdropPath;
+    @SerializedName("releaseDate")
     private String releaseDate;
     private String genre;
     private float rating;
+    @SerializedName("membershipType")
     private Integer isPremium;
     private String contentType; // "limited_free", "top_10", "premium", etc.
     private String videoUrl;
@@ -159,6 +171,14 @@ public class Movie {
         this.duration = duration;
     }
 
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
     @NonNull
     @Override
     public String toString() {
@@ -171,4 +191,5 @@ public class Movie {
                 ", contentType='" + contentType + '\'' +
                 '}';
     }
+
 }
