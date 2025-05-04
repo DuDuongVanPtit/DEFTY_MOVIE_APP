@@ -1,5 +1,7 @@
 package com.example.defty_movie_app.view;
 
+import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -21,9 +24,13 @@ import com.example.defty_movie_app.adapter.MovieAdapter;
 import com.example.defty_movie_app.data.dto.Movie;
 import com.example.defty_movie_app.data.model.response.ShowonResponse;
 import com.example.defty_movie_app.viewmodel.LibraryViewModel;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class LibraryFragment extends Fragment {
     private MovieAdapter adapter;
@@ -103,13 +110,83 @@ public class LibraryFragment extends Fragment {
                 showEmptyView("Không có phim nào trong danh mục này");
             }
         });
+
+        libraryViewModel.getRegions().observe(getViewLifecycleOwner(), regions -> {
+            if (regions != null && !regions.isEmpty()) {
+                displayRegions(regions);
+            }
+        });
+
+        libraryViewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
+            if (categories != null && !categories.isEmpty()) {
+                displayCategories(categories);
+            }
+        });
+
+        libraryViewModel.getPaidCategory().observe(getViewLifecycleOwner(), categories -> {
+            if (categories != null && !categories.isEmpty()) {
+                displayPaidCategories(categories);
+            }
+        });
+
+        libraryViewModel.getReleaseDate().observe(getViewLifecycleOwner(), years -> {
+            if (years != null && !years.isEmpty()) {
+                displayReleaseDate(years);
+            }
+        });
+
     }
+
+    private Chip createCustomChip(String text, boolean isChecked) {
+        Context context = getContext();
+        Chip chip = new Chip(context);
+        chip.setText(text);
+        chip.setCheckable(true);
+        chip.setChecked(isChecked);
+        assert context != null;
+        chip.setChipBackgroundColor(ContextCompat.getColorStateList(context, R.color.chip_background_color));
+        chip.setTextColor(ContextCompat.getColorStateList(context, R.color.chip_text_color));
+        chip.setChipStrokeWidth(0);
+        chip.setChipStrokeColor(null);
+        chip.setChipCornerRadius(8f);
+        return chip;
+    }
+
+    private void displayChips(int chipGroupId, String allLabel, List<String> items) {
+        ChipGroup chipGroup = requireView().findViewById(chipGroupId);
+        chipGroup.removeAllViews();
+
+        chipGroup.addView(createCustomChip(allLabel, true));
+
+        for (String item : items) {
+            chipGroup.addView(createCustomChip(item, false));
+        }
+    }
+
+    private void displayRegions(List<String> regions) {
+        displayChips(R.id.regionFilterChips, "All Regions", regions);
+    }
+
+    private void displayCategories(List<String> categories) {
+        displayChips(R.id.categoryFilterChips, "All Categories", categories);
+    }
+
+    private void displayPaidCategories(List<String> paidCategories) {
+        displayChips(R.id.paidFilterChips, "All Paid Categories", paidCategories);
+    }
+
+    private void displayReleaseDate(List<Integer> releaseDates) {
+        List<String> releaseDateStrings = releaseDates.stream().map(String::valueOf).collect(Collectors.toList());
+        displayChips(R.id.timeFilterChips, "All Time Periods", releaseDateStrings);
+    }
+
+
 
     private void loadInitialData() {
         showProgressBar();
 
         libraryViewModel.fetchShowons(0, 20, "category", "", 1);
-
+        libraryViewModel.fetchCategories();
         libraryViewModel.getShowonData().observe(getViewLifecycleOwner(), showons -> {
             if (showons != null && !showons.isEmpty()) {
                 String firstCategory = showons.get(0).getContentName();

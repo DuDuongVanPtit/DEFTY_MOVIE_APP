@@ -14,15 +14,16 @@ public class Movie {
     private String releaseDate;
     private String genre;
     private float rating;
-    private boolean isPremium;
+    private Integer isPremium;
     private String contentType; // "limited_free", "top_10", "premium", etc.
     private String videoUrl;
     private int duration; // in minutes
 
-    public Movie(String title, String imageUrl, String slug) {
+    public Movie(String title, String imageUrl, String slug, Integer isPremium) {
         this.title = title;
         this.imageUrl = imageUrl;
         this.slug = slug;
+        this.isPremium = isPremium;
     }
 
     public String getTitle() { return title; }
@@ -49,7 +50,7 @@ public class Movie {
     // Full constructor
     public Movie(Long id, String title, String description, String posterPath,
                  String backdropPath, String releaseDate, String genre,
-                 float rating, boolean isPremium, String contentType,
+                 float rating, Integer isPremium, String contentType,
                  String videoUrl, int duration) {
         this.id = id;
         this.title = title;
@@ -126,11 +127,11 @@ public class Movie {
         this.rating = rating;
     }
 
-    public boolean isPremium() {
+    public Integer isPremium() {
         return isPremium;
     }
 
-    public void setPremium(boolean premium) {
+    public void setPremium(Integer premium) {
         isPremium = premium;
     }
 

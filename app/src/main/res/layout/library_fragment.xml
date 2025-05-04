@@ -36,11 +36,95 @@
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#111111"
         app:tabIndicatorColor="#00FF00"
-        app:tabSelectedTextColor="#00FF00"
-        app:tabTextColor="#AAAAAA"
         app:tabMode="scrollable"
-        android:background="#111111" />
+        app:tabSelectedTextColor="#00FF00"
+        app:tabTextColor="#AAAAAA" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Region Filter -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:paddingVertical="4dp"
+                android:paddingHorizontal="8dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/regionFilterChips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true"
+                    app:singleLine="true" />
+            </HorizontalScrollView>
+
+            <!-- Categories Filter -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:paddingVertical="4dp"
+                android:paddingHorizontal="8dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/categoryFilterChips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true"
+                    app:singleLine="true" />
+            </HorizontalScrollView>
+
+            <!-- Paid Categories Filter -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:paddingVertical="4dp"
+                android:paddingHorizontal="8dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/paidFilterChips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true"
+                    app:singleLine="true" />
+            </HorizontalScrollView>
+
+            <!-- Time Periods Filter -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:paddingVertical="4dp"
+                android:paddingHorizontal="8dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/timeFilterChips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true"
+                    app:singleLine="true" />
+            </HorizontalScrollView>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:padding="8dp"
+                android:clipToPadding="false"
+                android:background="#111111"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <LinearLayout
         android:id="@+id/containerLayout"
@@ -49,16 +133,6 @@
         android:orientation="vertical"
         android:paddingVertical="8dp"
         android:background="#111111">
-
     </LinearLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp"
-        android:clipToPadding="false"
-        android:background="#111111"/>
 
 </LinearLayout>

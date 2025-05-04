@@ -95,16 +95,28 @@ public class ShowonResponse {
             for (Object item : items) {
                 if (item instanceof LinkedTreeMap) {
                     LinkedTreeMap<?, ?> movieMap = (LinkedTreeMap<?, ?>) item;
+
                     String title = (String) movieMap.get("movieTitle");
                     String thumbnail = (String) movieMap.get("movieThumbnail");
                     String slug = (String) movieMap.get("slug");
-                    movies.add(new Movie(title, thumbnail, slug));
+
+                    // Lấy giá trị membershipType và kiểm tra kiểu dữ liệu
+                    Object membershipTypeObj = movieMap.get("membershipType");
+                    Integer isPremium = null;
+
+                    if (membershipTypeObj instanceof Double) {
+                        isPremium = ((Double) membershipTypeObj).intValue();
+                    } else if (membershipTypeObj instanceof Integer) {
+                        isPremium = (Integer) membershipTypeObj;
+                    }
+                    movies.add(new Movie(title, thumbnail, slug, isPremium));
                 }
             }
             return movies;
         }
         return new ArrayList<>();
     }
+
 
     public void setContentItems(Object contentItems) {
         this.contentItems = contentItems;

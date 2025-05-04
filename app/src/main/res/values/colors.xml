@@ -15,4 +15,11 @@
     <color name="header_solid_background">#111111</color>
     <color name="toolbar_background">#111111</color>
     <color name="transparent">#00000000</color>
+    <!-- Premium colors -->
+    <color name="premiumBackground">#349B49</color>
+    <color name="premiumText">#FFFFFF</color>
+
+    <!-- Normal colors -->
+    <color name="normalBackground">#F3BE83</color>
+    <color name="normalText">#000000</color>
 </resources>

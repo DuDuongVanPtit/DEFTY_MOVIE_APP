@@ -3,30 +3,57 @@ package com.example.defty_movie_app.data.dto;
 import java.util.List;
 
 public class Category {
-    private String name;
-    private List<String> items;
+    List<Movie> movies;
+    List<String> regions;
+    List<String> paidCategories;
+    List<Integer> releaseDates;
+    List<String> categories;
 
-    public Category() {
+    public Category(List<Movie> movies, List<String> regions, List<String> paidCategories, List<Integer> releaseDates, List<String> categories) {
+        this.movies = movies;
+        this.regions = regions;
+        this.paidCategories = paidCategories;
+        this.releaseDates = releaseDates;
+        this.categories = categories;
     }
 
-    public Category(String name, List<String> items) {
-        this.name = name;
-        this.items = items;
+    public List<Movie> getMovies() {
+        return movies;
     }
 
-    public String getName() {
-        return name;
+    public void setMovies(List<Movie> movies) {
+        this.movies = movies;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public List<String> getRegions() {
+        return regions;
     }
 
-    public List<String> getItems() {
-        return items;
+    public void setRegions(List<String> regions) {
+        this.regions = regions;
     }
 
-    public void setItems(List<String> items) {
-        this.items = items;
+    public List<String> getPaidCategories() {
+        return paidCategories;
+    }
+
+    public void setPaidCategories(List<String> paidCategories) {
+        this.paidCategories = paidCategories;
+    }
+
+    public List<Integer> getReleaseDates() {
+        return releaseDates;
+    }
+
+    public void setReleaseDates(List<Integer> releaseDates) {
+        this.releaseDates = releaseDates;
+    }
+
+    public List<String> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<String> categories) {
+        this.categories = categories;
     }
 }
