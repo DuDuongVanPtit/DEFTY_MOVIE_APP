@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "462838914580",
+    "project_id": "food-app-9d476",
+    "storage_bucket": "food-app-9d476.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:462838914580:android:2bf74d99d8b9e1999f5101",
+        "android_client_info": {
+          "package_name": "com.example.defty_movie_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNDVV15IGVm8etpCMvRhIs9emw6FmyjjM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:462838914580:android:6d54bb7cf365cdba9f5101",
+        "android_client_info": {
+          "package_name": "com.example.foodapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNDVV15IGVm8etpCMvRhIs9emw6FmyjjM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

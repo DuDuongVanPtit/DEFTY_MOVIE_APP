@@ -1,28 +1,41 @@
 package com.example.defty_movie_app.data.dto;
 
+import static android.icu.util.UniversalTimeScale.toLong;
+
 import androidx.annotation.NonNull;
 
-public class Movie {
-    private String title;
-    private String imageUrl;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.internal.LinkedTreeMap;
 
+import java.util.ArrayList;
+import java.util.List;
+
+public class Movie {
+    @SerializedName("title")
+    private String title;
+    @SerializedName("thumbnail")
+    private String imageUrl;
+    @SerializedName("slug")
     private String slug;
     private Long id;
     private String description;
     private String posterPath;
     private String backdropPath;
+    @SerializedName("releaseDate")
     private String releaseDate;
     private String genre;
     private float rating;
-    private boolean isPremium;
+    @SerializedName("membershipType")
+    private Integer isPremium;
     private String contentType; // "limited_free", "top_10", "premium", etc.
     private String videoUrl;
     private int duration; // in minutes
 
-    public Movie(String title, String imageUrl, String slug) {
+    public Movie(String title, String imageUrl, String slug, Integer isPremium) {
         this.title = title;
         this.imageUrl = imageUrl;
         this.slug = slug;
+        this.isPremium = isPremium;
     }
 
     public String getTitle() { return title; }
@@ -49,7 +62,7 @@ public class Movie {
     // Full constructor
     public Movie(Long id, String title, String description, String posterPath,
                  String backdropPath, String releaseDate, String genre,
-                 float rating, boolean isPremium, String contentType,
+                 float rating, Integer isPremium, String contentType,
                  String videoUrl, int duration) {
         this.id = id;
         this.title = title;
@@ -126,11 +139,11 @@ public class Movie {
         this.rating = rating;
     }
 
-    public boolean isPremium() {
+    public Integer isPremium() {
         return isPremium;
     }
 
-    public void setPremium(boolean premium) {
+    public void setPremium(Integer premium) {
         isPremium = premium;
     }
 
@@ -158,6 +171,14 @@ public class Movie {
         this.duration = duration;
     }
 
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
     @NonNull
     @Override
     public String toString() {
@@ -170,4 +191,5 @@ public class Movie {
                 ", contentType='" + contentType + '\'' +
                 '}';
     }
+
 }

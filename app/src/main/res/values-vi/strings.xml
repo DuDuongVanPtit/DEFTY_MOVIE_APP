@@ -1,0 +1,37 @@
+<resources>
+    <string name="default_web_client_id">302765188541-f0gvbfljg0bafpos7i4666cu9bf5plba.apps.googleusercontent.com</string>
+    <string name="app_name">DEFTY_MOVIE_APP</string>
+    <string name="my_diamond">Kim cương của tôi</string>
+    <string name="my_vip_gift_cards">Thẻ quà tặng VIP của tôi</string>
+    <string name="subscribe_to_vip">Đăng ký VIP</string>
+    <string name="my_list">Danh sách của tôi</string>
+    <string name="history">Lịch sử</string>
+    <string name="language">Ngôn ngữ</string>
+    <string name="settings">Cài đặt</string>
+    <string name="feedback">Phản hồi</string>
+    <string name="already_have_an_account_login">Đã có tài khoản? Đăng nhập</string>
+    <string name="sign_up">Đăng ký</string>
+    <string name="back">Quay lại</string>
+    <string name="close">Đóng</string>
+    <string name="email">Email</string>
+    <string name="username">Tên đăng nhập</string>
+    <string name="full_name">Họ và tên</string>
+    <string name="gender">Giới tính</string>
+    <string name="password">Mật khẩu</string>
+    <string name="login">Đăng nhập</string>
+    <string name="language_select">Chọn ngôn ngữ</string>
+    <string name="search">Tìm kiếm</string>
+    <string name="selected">Đã chọn</string>
+    <string name="login_sign_up">Đăng nhập / Đăng ký</string>
+    <string name="home">Trang chủ</string>
+    <string name="library">Thư viện</string>
+    <string name="short_tab">Video ngắn</string>
+    <string name="download">Tải xuống</string>
+    <string name="profile">Hồ sơ</string>
+    <string-array name="gender_array">
+        <item>Chọn giới tính</item>
+        <item>Nam</item>
+        <item>Nữ</item>
+        <item>Khác</item>
+    </string-array>
+</resources>
