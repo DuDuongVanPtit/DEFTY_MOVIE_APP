@@ -247,8 +247,7 @@ public class HomeFragment extends Fragment {
         View searchBar = toolbar.findViewById(R.id.searchBarLayout);
         if (searchBar != null) {
             searchBar.setOnClickListener(v -> {
-                Toast.makeText(context, "Search Clicked", Toast.LENGTH_SHORT).show();
-                // TODO: Navigate to Search Fragment/Activity
+                SearchActivity.start(context);
             });
         }
     }
@@ -593,4 +592,5 @@ public class HomeFragment extends Fragment {
             // Log.d(TAG, "Page selected: " + position);
         }
     };
+
 }

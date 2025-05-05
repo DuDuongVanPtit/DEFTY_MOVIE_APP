@@ -34,13 +34,16 @@ public class ProfileFragment extends Fragment {
         loginText = view.findViewById(R.id.login_text);
         authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
 
+        // Sự kiện nhấn vào loginText để mở LoginBottomSheetDialog
         loginText.setOnClickListener(v -> {
             LoginBottomSheetDialog loginDialog = new LoginBottomSheetDialog();
             loginDialog.show(requireActivity().getSupportFragmentManager(), "LoginBottomSheetDialog");
         });
 
+        // Quan sát dữ liệu người dùng
         observeUserData();
 
+        // Sự kiện nhấn vào mục Language
         LinearLayout languageItem = view.findViewById(R.id.language_item);
         languageItem.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), LanguageActivity.class);
@@ -64,5 +67,4 @@ public class ProfileFragment extends Fragment {
             }
         });
     }
-
 }
