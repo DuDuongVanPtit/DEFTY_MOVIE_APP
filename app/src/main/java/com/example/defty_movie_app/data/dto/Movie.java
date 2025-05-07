@@ -59,6 +59,9 @@ public class Movie {
         this.rating = rating;
     }
 
+    public Movie(String title, String thumbnail, String slug){
+
+    }
     // Full constructor
     public Movie(Long id, String title, String description, String posterPath,
                  String backdropPath, String releaseDate, String genre,

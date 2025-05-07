@@ -1,19 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/suggestionMovieTitleOnly"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="8dp"
-    android:background="?android:attr/selectableItemBackground">
-
-    <!-- Suggestion Text -->
-    <TextView
-        android:id="@+id/suggestionText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#E0E0E0"
-        android:textSize="16sp"
-        android:ellipsize="end"
-        android:maxLines="1" />
-
-</LinearLayout>
+    android:padding="16dp"
+    android:textSize="16sp"
+    android:textColor="#E0E0E0"
+    android:background="?android:attr/selectableItemBackground"
+    android:ellipsize="end"
+    android:maxLines="1" />

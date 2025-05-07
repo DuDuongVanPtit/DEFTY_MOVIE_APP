@@ -10,12 +10,12 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-public interface MovieHotSearchService {
+public interface MovieApiService {
     @GET("api/v1/user/accessible/movie/hot-search")
-    Call<ApiResponse<List<MovieNameResponse>>> getBanners();
+    Call<ApiResponse<List<MovieNameResponse>>> getMovies();
 
-    @GET("api/v1/user/accessible/movie/movie-search") // Adjust the endpoint as per your API
-    Call<ApiResponse<List<Movie>>> searchMovies(
-            @Query("title") String title
+    @GET("api/v1/user/accessible/movie/movie-search")
+    Call<ApiResponse<List<MovieNameResponse>>> searchMovies(
+         @Query("title") String title
     );
 }
