@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="#111111">
 
-    <!-- Header with Back Button and Search Bar -->
     <LinearLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
@@ -15,16 +14,13 @@
         android:background="#191D1D"
         android:gravity="center_vertical">
 
-        <!-- Back Button -->
         <ImageView
             android:id="@+id/backButton"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_close_clear_cancel"
-            android:contentDescription="Back"
-            android:tint="#757171" />
+            android:src="@drawable/back" android:contentDescription="Back"
+            android:tint="#BFBBBB" />
 
-        <!-- Search Bar (EditText) -->
         <EditText
             android:id="@+id/searchEditText"
             android:layout_width="0dp"
@@ -32,9 +28,9 @@
             android:layout_weight="1"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:hint="Tìm kiếm..."
+            android:hint="Tìm kiếm phim..."
             android:textColor="#E0E0E0"
-            android:textColorHint="#565656"
+            android:textColorHint="#766E6E"
             android:textSize="16sp"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
@@ -42,41 +38,44 @@
             android:imeOptions="actionSearch"
             android:background="@drawable/search_bar_background"
             android:layout_gravity="center_vertical"
-            android:drawableStart="@android:drawable/ic_menu_search"
-            android:drawablePadding="8dp" />
-
+            android:drawableStart="@drawable/search_alt_svgrepo_com" android:drawablePadding="8dp" />
     </LinearLayout>
 
-    <!-- Hot Search Section (Visible by default) -->
     <LinearLayout
         android:id="@+id/hotSearchContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/headerLayout"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="visible">
 
-        <!-- Hot Search Header -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp"
             android:text="Tìm kiếm nổi bật"
             android:textColor="#AAAAAA"
             android:textSize="14sp" />
 
-        <!-- Hot Search Results RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/hotSearchRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:paddingHorizontal="16dp" />
-
     </LinearLayout>
 
-    <!-- Fragment Container for Search Suggestions -->
     <FrameLayout
         android:id="@+id/suggestionsFragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/headerLayout"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:id="@+id/searchResultFragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/headerLayout"

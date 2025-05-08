@@ -13,10 +13,12 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar; // Vẫn cần nếu hot search có loading riêng
+// import android.widget.ProgressBar; // ProgressBar is now inside fragments
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,7 +26,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.adapter.HotSearchMovieAdapter;
-import com.example.defty_movie_app.data.dto.Movie; // Cần cho onSuggestionClicked
 import com.example.defty_movie_app.data.model.request.MovieNameResponse;
 import com.example.defty_movie_app.viewmodel.MovieViewModel;
 
@@ -32,18 +33,26 @@ import java.util.ArrayList;
 
 public class SearchActivity extends AppCompatActivity {
     private static final String TAG = "SearchActivity";
+
+    private enum SearchState {
+        HOT_SEARCH,
+        SUGGESTIONS,
+        SEARCH_RESULTS
+    }
+    private SearchState currentSearchState = SearchState.HOT_SEARCH;
+
     private RecyclerView hotSearchRecyclerView;
     private HotSearchMovieAdapter hotSearchAdapter;
     private MovieViewModel movieViewModel;
-    private ProgressBar hotSearchLoadingProgressBar; // Đổi tên cho rõ ràng
 
     private EditText searchEditText;
-    private ImageView backButton; // Nút "X" của bạn
+    private ImageView backButton;
     private LinearLayout hotSearchContainer;
     private FrameLayout suggestionsFragmentContainer;
+    private FrameLayout searchResultFragmentContainer; // New container
 
     private SearchSuggestionsFragment suggestionsFragment;
-    private boolean isSuggestionsFragmentVisible = false;
+    private SearchResultFragment searchResultFragment;
 
 
     public static void start(Context context) {
@@ -58,26 +67,24 @@ public class SearchActivity extends AppCompatActivity {
 
         movieViewModel = new ViewModelProvider(this).get(MovieViewModel.class);
         initializeViews();
-        setupHotSearchRecyclerView(); // Đổi tên phương thức
+        setupHotSearchRecyclerView();
         setupListeners();
         setupObservers();
 
-        // Ban đầu hiển thị hot search
-        showHotSearch();
-        if (hotSearchAdapter.getItemCount() == 0) { // Chỉ fetch nếu chưa có data
+        // Initially show hot search
+        updateUiForState(SearchState.HOT_SEARCH);
+        if (hotSearchAdapter.getItemCount() == 0) {
             movieViewModel.fetchHotSearchMovies();
         }
     }
 
     private void initializeViews() {
         hotSearchRecyclerView = findViewById(R.id.hotSearchRecyclerView);
-        // Giả sử bạn có ProgressBar riêng cho hot search trong activity_search.xml
-        // hotSearchLoadingProgressBar = findViewById(R.id.hotSearchLoadingProgressBar);
-
         searchEditText = findViewById(R.id.searchEditText);
         backButton = findViewById(R.id.backButton);
         hotSearchContainer = findViewById(R.id.hotSearchContainer);
         suggestionsFragmentContainer = findViewById(R.id.suggestionsFragmentContainer);
+        searchResultFragmentContainer = findViewById(R.id.searchResultFragmentContainer); // Initialize new container
     }
 
     private void setupHotSearchRecyclerView() {
@@ -91,15 +98,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        backButton.setOnClickListener(v -> {
-            if (isSuggestionsFragmentVisible) {
-                searchEditText.setText(""); // Xóa text trong search bar
-                hideSuggestions(); // Sẽ tự động gọi showHotSearch
-                hideKeyboard();
-            } else {
-                finish(); // Thoát Activity nếu đang ở màn hình hot search
-            }
-        });
+        backButton.setOnClickListener(v -> handleBackButtonPress());
 
         searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -109,11 +108,14 @@ public class SearchActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String query = s.toString().trim();
                 if (!query.isEmpty()) {
-                    showSuggestions();
+                    if (currentSearchState != SearchState.SUGGESTIONS) {
+                        updateUiForState(SearchState.SUGGESTIONS);
+                    }
                     movieViewModel.fetchSuggestions(query);
                 } else {
-                    hideSuggestions();
-                    // Không cần fetchHotSearchMovies ở đây, nó đã được load ban đầu
+                    // If query is empty, go back to hot search
+                    movieViewModel.clearSuggestions();
+                    updateUiForState(SearchState.HOT_SEARCH);
                 }
             }
 
@@ -125,63 +127,93 @@ public class SearchActivity extends AppCompatActivity {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 String query = searchEditText.getText().toString().trim();
                 if (!query.isEmpty()) {
-                    // TODO: Xử lý khi người dùng nhấn nút search trên bàn phím
-                    // Ví dụ: Điều hướng đến một màn hình kết quả tìm kiếm đầy đủ
-                    Toast.makeText(SearchActivity.this, "Search for: " + query, Toast.LENGTH_SHORT).show();
-                    hideKeyboard();
+                    performFullSearch(query);
                 }
                 return true;
             }
             return false;
         });
-    }
 
-    private void showHotSearch() {
-        hotSearchContainer.setVisibility(View.VISIBLE);
-    }
-
-    private void hideHotSearch() {
-        hotSearchContainer.setVisibility(View.GONE);
-    }
-
-    private void showSuggestions() {
-        if (!isSuggestionsFragmentVisible) {
-            hideHotSearch();
-            suggestionsFragmentContainer.setVisibility(View.VISIBLE);
-            if (suggestionsFragment == null) {
-                suggestionsFragment = SearchSuggestionsFragment.newInstance();
+        searchEditText.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus && !searchEditText.getText().toString().trim().isEmpty() && currentSearchState != SearchState.SEARCH_RESULTS) {
+                updateUiForState(SearchState.SUGGESTIONS);
+                movieViewModel.fetchSuggestions(searchEditText.getText().toString().trim());
             }
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.suggestionsFragmentContainer, suggestionsFragment);
-            transaction.commit();
-            isSuggestionsFragmentVisible = true;
+        });
+    }
+
+    private void performFullSearch(String query) {
+        Log.d(TAG, "Performing full search for: " + query);
+        hideKeyboard();
+        movieViewModel.clearSuggestions(); // Clear any existing suggestions
+        updateUiForState(SearchState.SEARCH_RESULTS, query);
+        // ViewModel will be triggered by the fragment itself using this query
+    }
+
+
+    private void updateUiForState(SearchState newState) {
+        updateUiForState(newState, null);
+    }
+
+    private void updateUiForState(SearchState newState, @Nullable String query) {
+        currentSearchState = newState;
+
+        hotSearchContainer.setVisibility(View.GONE);
+        suggestionsFragmentContainer.setVisibility(View.GONE);
+        searchResultFragmentContainer.setVisibility(View.GONE);
+        removeFragment(suggestionsFragment);
+        suggestionsFragment = null;
+        // We don't remove searchResultFragment immediately to preserve its state if user clicks back then search again.
+        // It will be replaced if a new search is made.
+
+        switch (newState) {
+            case HOT_SEARCH:
+                hotSearchContainer.setVisibility(View.VISIBLE);
+                movieViewModel.clearSearchResults(); // Clear previous search results
+                removeFragment(searchResultFragment); // Remove search result fragment
+                searchResultFragment = null;
+                break;
+            case SUGGESTIONS:
+                suggestionsFragmentContainer.setVisibility(View.VISIBLE);
+                if (suggestionsFragment == null) {
+                    suggestionsFragment = SearchSuggestionsFragment.newInstance();
+                }
+                replaceFragment(R.id.suggestionsFragmentContainer, suggestionsFragment);
+                break;
+            case SEARCH_RESULTS:
+                searchResultFragmentContainer.setVisibility(View.VISIBLE);
+                if (query != null) {
+                    if (searchResultFragment != null && searchResultFragment.isAdded() && !searchResultFragment.isVisible()) {
+                        // If fragment exists but is hidden, just make it visible and update its query if needed
+                        // This case might be complex if query changes, simpler to replace or ensure fragment handles new query
+                        getSupportFragmentManager().beginTransaction().show(searchResultFragment).commit();
+                        searchResultFragment.performSearch(query); // Tell fragment to search new query
+                    } else {
+                        searchResultFragment = SearchResultFragment.newInstance(query);
+                        replaceFragment(R.id.searchResultFragmentContainer, searchResultFragment);
+                    }
+                }
+                break;
         }
     }
 
-    private void hideSuggestions() {
-        if (isSuggestionsFragmentVisible) {
-            suggestionsFragmentContainer.setVisibility(View.GONE);
-            // Không cần remove fragment ngay, chỉ cần ẩn container
-            // Nếu muốn remove:
-            // if (suggestionsFragment != null && suggestionsFragment.isAdded()) {
-            //     getSupportFragmentManager().beginTransaction().remove(suggestionsFragment).commit();
-            // }
-            // suggestionsFragment = null; // Reset để lần sau newInstance()
-            movieViewModel.clearSuggestions(); // Xóa dữ liệu suggestions cũ
-            showHotSearch();
-            isSuggestionsFragmentVisible = false;
+    private void replaceFragment(int containerId, Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(containerId, fragment);
+        transaction.commit();
+    }
+
+    private void removeFragment(Fragment fragment) {
+        if (fragment != null && fragment.isAdded()) {
+            getSupportFragmentManager().beginTransaction().remove(fragment).commitAllowingStateLoss();
         }
     }
 
 
     private void setupObservers() {
-        // Observer cho Hot Search
         movieViewModel.getHotSearchIsLoading().observe(this, isLoading -> {
-            // if (hotSearchLoadingProgressBar != null) {
-            //    hotSearchLoadingProgressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            // }
-            // Nếu bạn muốn có ProgressBar riêng cho Hot Search, hãy thêm nó vào layout activity_search.xml
-            // và findViewById trong initializeViews()
+            // Loading indicator for hot search is not explicitly defined in activity_search.xml
+            // If needed, add a ProgressBar to hotSearchContainer
             Log.d(TAG, "Hot Search Loading: " + isLoading);
         });
 
@@ -200,20 +232,15 @@ public class SearchActivity extends AppCompatActivity {
                 Toast.makeText(SearchActivity.this, errorMsg, Toast.LENGTH_LONG).show();
             }
         });
-
-        // Các observer cho suggestions (loading, data, error) đã được xử lý bên trong SearchSuggestionsFragment
-        // Tuy nhiên, SearchActivity vẫn có thể cần biết về suggestions data để làm gì đó khác nếu muốn.
     }
 
-    // Được gọi từ SearchSuggestionsFragment khi một suggestion được click
-    public void onSuggestionClicked(MovieNameResponse movieNameResponse) { // Tham số là MovieNameResponse
-        if (movieNameResponse != null && movieNameResponse.getName() != null) { // Dùng getName()
-            searchEditText.setText(movieNameResponse.getName());
-            searchEditText.setSelection(searchEditText.getText().length());
-            hideKeyboard();
-            // Quyết định xem có ẩn suggestions ngay hay không,
-            // vì setText sẽ kích hoạt TextWatcher, có thể fetch lại suggestions
-            hideSuggestions(); // Cân nhắc hành vi ở đây
+    // Called from SearchSuggestionsFragment when a suggestion is clicked
+    public void onSuggestionClicked(MovieNameResponse movieNameResponse) {
+        if (movieNameResponse != null && movieNameResponse.getName() != null) {
+            String movieTitle = movieNameResponse.getName();
+            searchEditText.setText(movieTitle);
+            searchEditText.setSelection(movieTitle.length()); // Move cursor to end
+            performFullSearch(movieTitle); // Directly perform search on suggestion click
         }
     }
 
@@ -227,22 +254,42 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        if (isSuggestionsFragmentVisible) {
-            // Nếu suggestions đang hiển thị, hành động back sẽ là xóa text và ẩn suggestions
-            searchEditText.setText("");
-            hideSuggestions();
-            hideKeyboard();
-        } else {
-            super.onBackPressed(); // Hành động back mặc định (thoát activity)
+    private void handleBackButtonPress() {
+        switch (currentSearchState) {
+            case SEARCH_RESULTS:
+                // If showing results, and search bar has text, go to suggestions.
+                // If search bar is empty (e.g., user cleared it), go to hot search.
+                String currentQuery = searchEditText.getText().toString().trim();
+                if (!currentQuery.isEmpty()) {
+                    updateUiForState(SearchState.SUGGESTIONS);
+                    movieViewModel.fetchSuggestions(currentQuery); // Re-fetch suggestions for current text
+                } else {
+                    updateUiForState(SearchState.HOT_SEARCH);
+                }
+                break;
+            case SUGGESTIONS:
+                // If showing suggestions, clear text and go to hot search
+                searchEditText.setText("");
+                movieViewModel.clearSuggestions();
+                updateUiForState(SearchState.HOT_SEARCH);
+                hideKeyboard();
+                break;
+            case HOT_SEARCH:
+            default:
+                finish(); // Default behavior: exit activity
+                break;
         }
     }
 
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        handleBackButtonPress();
+        // super.onBackPressed() is called conditionally within handleBackButtonPress or if it falls through
+    }
+
     public String getCurrentSearchQuery() {
-        if (searchEditText != null) {
-            return searchEditText.getText().toString().trim();
-        }
-        return "";
+        return searchEditText != null ? searchEditText.getText().toString().trim() : "";
     }
 }

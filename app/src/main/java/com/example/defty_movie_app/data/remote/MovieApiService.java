@@ -3,6 +3,7 @@ package com.example.defty_movie_app.data.remote;
 import com.example.defty_movie_app.data.dto.Movie;
 import com.example.defty_movie_app.data.model.request.MovieNameResponse;
 import com.example.defty_movie_app.data.model.response.ApiResponse;
+import com.example.defty_movie_app.data.model.response.MovieAppSearchResultResponse;
 
 import java.util.List;
 
@@ -17,5 +18,10 @@ public interface MovieApiService {
     @GET("api/v1/user/accessible/movie/movie-search")
     Call<ApiResponse<List<MovieNameResponse>>> searchMovies(
          @Query("title") String title
+    );
+
+    @GET("api/v1/user/accessible/movie/movie-search/app/result")
+    Call<ApiResponse<List<MovieAppSearchResultResponse>>> getMovieSearchResults(
+            @Query("title") String title
     );
 }

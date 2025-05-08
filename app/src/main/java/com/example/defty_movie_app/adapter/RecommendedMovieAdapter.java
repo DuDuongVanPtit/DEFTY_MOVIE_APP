@@ -69,17 +69,6 @@ public class RecommendedMovieAdapter extends RecyclerView.Adapter<RecommendedMov
                     .error(R.drawable.default_cover_image)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(imageMovie);
-//            Glide.with(itemView.getContext())
-//                    .load(movie.coverImage)
-//                    .placeholder(R.drawable.default_cover_image)
-//                    .into(imageMovie);
-
-//            itemView.setOnClickListener(v -> {
-//                // Xử lý click, ví dụ: mở Activity chi tiết phim
-//                Intent intent = new Intent(itemView.getContext(), MovieDetailActivity.class);
-//                intent.putExtra("movie_slug", movie.slug);
-//                itemView.getContext().startActivity(intent);
-//            });
         }
 
 

@@ -18,7 +18,7 @@
     <!-- Premium colors -->
     <color name="premiumBackground">#349B49</color>
     <color name="premiumText">#FFFFFF</color>
-
+    <color name="purple_500">#0C8A24</color>
     <!-- Normal colors -->
     <color name="normalBackground">#F3BE83</color>
     <color name="normalText">#000000</color>
