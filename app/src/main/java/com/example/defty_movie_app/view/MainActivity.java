@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     protected void attachBaseContext(Context newBase) {
         SharedPreferences prefs = newBase.getSharedPreferences("Settings", Context.MODE_PRIVATE);
-        String lang = prefs.getString("app_lang", "en");
+        String lang = prefs.getString("app_lang", "en"); // Default to English if no preference
         Context context = LocaleHelper.wrap(newBase, lang);
         super.attachBaseContext(context);
     }
@@ -32,9 +32,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setOnItemSelectedListener(this);
 
-        // Mặc định hiển thị fragment Home khi mở ứng dụng
         if (savedInstanceState == null) {
-            bottomNavigationView.setSelectedItemId(R.id.nav_home);
+            bottomNavigationView.setSelectedItemId(R.id.nav_home); // Default to Home
         }
     }
 
@@ -45,8 +44,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         if (itemId == R.id.nav_home) {
             selectedFragment = new HomeFragment();
-        } else if (itemId == R.id.nav_explore) {
+        } else if (itemId == R.id.nav_explore) { // Assuming nav_explore is your Library
             selectedFragment = new LibraryFragment();
+        } else if (itemId == R.id.nav_download) { // NEW: Handle Download Tab
+            selectedFragment = new DownloadFragment();
         } else if (itemId == R.id.nav_me) {
             selectedFragment = new ProfileFragment();
         }
@@ -55,13 +56,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             loadFragment(selectedFragment);
             return true;
         }
-
         return false;
     }
 
     private void loadFragment(Fragment fragment) {
+        // Check if the fragment is already added to prevent overlapping or errors
+        // if (getSupportFragmentManager().findFragmentById(R.id.contentLayout) == fragment) {
+        //     return;
+        // }
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.contentLayout, fragment);
+        transaction.replace(R.id.contentLayout, fragment); // Use contentLayout from your activity_main.xml
+        // transaction.addToBackStack(null); // Optional: if you want back navigation for fragments
         transaction.commit();
     }
 }

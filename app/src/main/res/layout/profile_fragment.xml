@@ -293,29 +293,6 @@
                 android:paddingStart="12dp" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/findMovie"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="15dp"
-            android:gravity="center_vertical"
-            android:paddingVertical="12dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_search"
-                app:tint="@android:color/white" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Find Movie"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:paddingStart="12dp" />
-        </LinearLayout>
 
     </LinearLayout>
 
