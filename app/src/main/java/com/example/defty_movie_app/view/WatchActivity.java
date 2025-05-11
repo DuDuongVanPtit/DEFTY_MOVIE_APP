@@ -74,9 +74,10 @@ public class WatchActivity extends AppCompatActivity {
         commentInputBox = findViewById(R.id.commentInputBox);
         textDescription1 = findViewById(R.id.textDescription1);
         btnToggleDescription = findViewById(R.id.btnToggleDescription);
-        recyclerView = findViewById(R.id.recyclerCastCrew);
 
-        //recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recyclerView = findViewById(R.id.recyclerCastCrew);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+
         // Khởi tạo RecyclerView và ProgressBar
         recyclerViewRecommended = findViewById(R.id.recyclerViewRecommended);
         progressBar = findViewById(R.id.progressBar);
@@ -86,10 +87,16 @@ public class WatchActivity extends AppCompatActivity {
         recyclerViewRecommended.setHasFixedSize(true);
         recyclerViewRecommended.addItemDecoration(new GridSpacingItemDecoration(3, 16));
         //recyclerViewRecommended.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-
         // Khởi tạo Adapter với danh sách rỗng
         adapter = new RecommendedMovieAdapter(new ArrayList<>());
         recyclerViewRecommended.setAdapter(adapter);
+
+        String slug = getIntent().getStringExtra("MOVIE_SLUG");
+        if (slug == null || slug.isEmpty()) {
+            slug = "nguoi-phan-xu-37af2me1"; // fallback nếu cần
+        }
+//        fetchEpisode(slug + 1);
+//        fetchMovieDetail(slug + 1);
 
         fetchEpisode("nguoi-phan-xu-37af2me1");
         fetchMovieDetail("nguoi-phan-xu-37af2me1");
@@ -183,7 +190,7 @@ public class WatchActivity extends AppCompatActivity {
         apiService.getMovieDetail(slug).enqueue(new Callback<MovieDetailResponse>() {
             @Override
             public void onResponse(Call<MovieDetailResponse> call, Response<MovieDetailResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null && response.body().data != null) {
                     MovieDetailResponse.Movie movie = response.body().data;
                     movieId = movie.id;
                     fetchRecommendedMovies(movieId);
@@ -214,6 +221,10 @@ public class WatchActivity extends AppCompatActivity {
 
                     CastCrewAdapter adapter = new CastCrewAdapter(castList);
                     recyclerView.setAdapter(adapter);
+                }
+                else {
+                    Log.e("WatchActivity", "Response thành công nhưng 'data' là null");
+                    Toast.makeText(WatchActivity.this, "Không lấy được chi tiết phim", Toast.LENGTH_SHORT).show();
                 }
             }
 

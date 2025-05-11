@@ -1,6 +1,7 @@
 package com.example.defty_movie_app.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable; // Import Drawable
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.data.dto.Movie;
+import com.example.defty_movie_app.view.WatchActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,6 +92,11 @@ public class MovieHomeAdapter extends RecyclerView.Adapter<MovieHomeAdapter.Movi
                     // Intent intent = new Intent(context, MovieDetailActivity.class);
                     // intent.putExtra("MOVIE_SLUG", clickedMovie.getSlug());
                     // context.startActivity(intent);
+                    String slug = clickedMovie.getSlug();
+
+                    Intent intent = new Intent(context, WatchActivity.class);
+                    intent.putExtra("MOVIE_SLUG", slug);
+                    context.startActivity(intent);
                 }
             });
         }

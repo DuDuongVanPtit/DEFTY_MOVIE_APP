@@ -31,5 +31,5 @@ public interface AuthApiService {
     Call<MovieDetailResponse> getMovieDetail(@Query("slug") String slug);
 
     @GET("api/v1/user/accessible/episode/video")
-    Call<EpisodeResponse> getEpisode(@Query("slugEpisode") String slug);
+    Call<EpisodeResponse> getEpisode(@Query("slug") String slug);
 }
