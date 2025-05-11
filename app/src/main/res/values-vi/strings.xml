@@ -2,7 +2,7 @@
     <string name="default_web_client_id">302765188541-f0gvbfljg0bafpos7i4666cu9bf5plba.apps.googleusercontent.com</string>
     <string name="app_name">DEFTY_MOVIE_APP</string>
     <string name="my_diamond">Kim cương của tôi</string>
-    <string name="my_vip_gift_cards">Thẻ quà tặng VIP của tôi</string>
+    <string name="my_vip_gift_cards">Thẻ quà tặng VIP</string>
     <string name="subscribe_to_vip">Đăng ký VIP</string>
     <string name="my_list">Danh sách của tôi</string>
     <string name="history">Lịch sử</string>
@@ -48,6 +48,15 @@
     <string name="pref_category_about_title">Thông tin</string>
     <string name="pref_display_mode_title">Chế độ hiển thị</string>
     <string name="pref_display_mode_dialog_title">Chọn chế độ hiển thị</string>
+    <string name="no_categories_found">Không có danh mục nào được tìm thấy</string>
+    <string name="no_movies_in_category">Không có phim nào trong danh mục này</string>
+    <string name="no_categories_available">Hiện không có danh mục nào</string>
+    <string name="movie_id_not_found">Không tìm thấy thông tin phim</string>
+    <string name="all_regions_label">Tất cả khu vực</string>
+    <string name="all_paid_categories_label">Tất cả các gói</string>
+    <string name="all_time_periods_label">Mọi thời điểm</string>
+    <string name="premium_label">Premium</string>
+    <string name="normal_label">Thường</string>
     <string-array name="pref_display_mode_entries">
         <item>Sáng</item>
         <item>Tối</item>
@@ -66,4 +75,37 @@
     <string name="logout">Đăng xuất</string>
     <string name="switch_account">Chuyển tài khoản</string>
     <string name="action_navigate_setting_detail">Hành động chuyển đến chi tiết cài đặt</string>
+    <string name="defty">DEFTY</string>
+    <string name="vip">VIP</string>
+    <string name="play_banner_content">Play banner content</string>
+    <string name="not_result">Không tìm thấy kết quả nào.</string>
+    <string name="filmDownload">Phim đã tải xuống</string>
+    <string name="not_found_film_download">Chưa có phim nào được tải xuống.</string>
+    <string name="delete_all_download">Xóa tất cả tải xuống</string>
+    <string name="search_history">Lịch sử tìm kiếm</string>
+    <string name="delete_history">Xóa lịch sử</string>
+    <string name="search_hot">Tìm kiếm nổi bật</string>
+    <string name="play_button">Play button</string>
+    <string name="more">Xem thêm</string>
+    <string name="episodes">Tập phim</string>
+    <string name="for_you">Dành cho bạn</string>
+    <string name="comments">Bình luận</string>
+    <string name="recommended_for_you">Gợi ý cho bạn</string>
+    <string name="trending">Thịnh hành</string>
+    <string name="latest">Mới nhất</string>
+    <string name="post_a_comment">Đăng bình luận</string>
+    <string name="send">Gửi</string>
+    <string name="cover_image_download">Ảnh bìa phim đã tải</string>
+    <string name="movie_thumbnail">Ảnh thu nhỏ phim</string>
+    <string name="play_movie">Phát phim</string>
+    <string name="todo">Cần làm</string>
+    <string name="coverImage">Ảnh bìa phim</string>
+    <string name="watch_now">Chiếu ngay</string>
+    <string name="log_in_with_password">Đăng nhập bằng mật khẩu</string>
+    <string name="login_with_google">Đăng nhập với Google</string>
+    <string name="movie_title">Tiêu đề phim</string>
+    <string name="additional_info">Thông tin bổ sung</string>
+    <string name="limited">Giới hạn</string>
+    <string name="exclusive_for_new_users_nfirst_month_only_23_000">Ưu đãi cho người dùng mới\nTháng đầu chỉ 23.000₫</string>
+
 </resources>

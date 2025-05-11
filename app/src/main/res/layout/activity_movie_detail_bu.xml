@@ -94,7 +94,7 @@
 
                     <TextView
                         android:id="@+id/btnToggleDescription"
-                        android:text="Xem thêm"
+                        android:text="@string/more"
                         android:textColor="#FF9800"
                         android:textSize="14sp"
                         android:layout_marginTop="4dp"
@@ -308,7 +308,7 @@
                     <TextView
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:text="Episodes"
+                        android:text="@string/episodes"
                         android:textColor="#00FF99"
                         android:gravity="center"
                         android:textStyle="bold"
@@ -319,7 +319,7 @@
                         android:layout_height="50dp"
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:text="For you"
+                        android:text="@string/for_you"
                         android:textColor="#AAA"
                         android:gravity="center"
                         android:textSize="16sp"/>
@@ -328,7 +328,7 @@
                         android:layout_height="50dp"
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:text="Comments"
+                        android:text="@string/comments"
                         android:textColor="#AAA"
                         android:gravity="center"
                         android:textSize="16sp"/>
@@ -792,7 +792,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Post a comment"
+            android:hint="@string/post_a_comment"
             android:background="#222"
             android:textColor="#FFF"
             android:textColorHint="#888"
@@ -803,7 +803,7 @@
             android:layout_width="47dp"
             android:layout_height="31dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Send"
+            android:contentDescription="@string/send"
             android:src="@drawable/ic_send"
             app:tint="#FFF" />
     </LinearLayout>

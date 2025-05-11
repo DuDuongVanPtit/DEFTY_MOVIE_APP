@@ -10,7 +10,7 @@
         android:id="@+id/downloadFragmentTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Phim đã tải xuống"
+        android:text="@string/filmDownload"
         android:textSize="20sp"
         android:textColor="#23B429"
         android:textStyle="bold"
@@ -32,7 +32,8 @@
         android:id="@+id/recyclerViewDownloads"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/tempDownloadButtonInDownloadFragment" android:layout_above="@+id/clearAllDownloadsButtonContainer"
+        android:layout_below="@id/tempDownloadButtonInDownloadFragment"
+        android:layout_above="@+id/clearAllDownloadsButtonContainer"
         android:padding="8dp"
         android:clipToPadding="false"
         android:visibility="gone"/>
@@ -41,7 +42,7 @@
         android:id="@+id/emptyDownloadsTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Chưa có phim nào được tải xuống."
+        android:text="@string/not_found_film_download"
         android:textColor="#AAAAAA"
         android:textSize="16sp"
         android:layout_centerInParent="true"
@@ -58,7 +59,7 @@
         android:id="@+id/clearAllDownloadsButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Xóa tất cả tải xuống"
+        android:text="@string/delete_all_download"
         android:backgroundTint="@android:color/holo_red_dark"
         android:textColor="@android:color/white"/>
     </LinearLayout>

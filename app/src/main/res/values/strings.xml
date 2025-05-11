@@ -1,4 +1,3 @@
-
 <resources>
     <string name="default_web_client_id">302765188541-f0gvbfljg0bafpos7i4666cu9bf5plba.apps.googleusercontent.com</string>
     <string name="app_name">DEFTY_MOVIE_APP</string>
@@ -47,8 +46,16 @@
     <string name="pref_category_appearance_title">Appearance</string>
     <string name="pref_category_account_title">Account</string>
     <string name="pref_category_about_title">About</string>
-
+    <string name="no_categories_found">No categories found</string>
+    <string name="no_movies_in_category">No movies in this category</string>
+    <string name="no_categories_available">No categories available at the moment</string>
+    <string name="movie_id_not_found">Movie information not found</string>
     <string name="pref_display_mode_title">Display Mode</string>
+    <string name="all_regions_label">All regions</string>
+    <string name="all_paid_categories_label">All packages</string>
+    <string name="all_time_periods_label">All time periods</string>
+    <string name="premium_label">Premium</string>
+    <string name="normal_label">Normal</string>
     <string name="pref_display_mode_dialog_title">Choose Display Mode</string>
     <string-array name="pref_display_mode_entries">
         <item>Light</item>
@@ -71,5 +78,40 @@
     <string name="logout">Logout</string>
     <string name="switch_account">Switch account</string>
     <string name="action_navigate_setting_detail">Action navigate setting detail</string>
+    <string name="defty">DEFTY</string>
+    <string name="vip">VIP</string>
+    <string name="play_banner_content">Play banner content</string>
+    <string name="not_result">No results found.</string>
+    <string name="filmDownload">Downloaded Movies</string>
+    <string name="not_found_film_download">No movies have been downloaded.</string>
+    <string name="delete_all_download">Delete all downloads</string>
+    <string name="search_history">Search History</string>
+    <string name="delete_history">Delete History</string>
+    <string name="search_hot">Hot Searches</string>
+    <string name="play_button">Play Button</string>
+    <string name="more">View More</string>
+    <string name="episodes">Episodes</string>
+    <string name="for_you">For You</string>
+    <string name="comments">Comments</string>
+    <string name="recommended_for_you">Recommended For You</string>
+    <string name="trending">Trending</string>
+    <string name="latest">Latest</string>
+    <string name="post_a_comment">Post a Comment</string>
+    <string name="send">Send</string>
+    <string name="cover_image_download">Downloaded Movie Cover</string>
+    <string name="movie_thumbnail">Movie Thumbnail</string>
+    <string name="play_movie">Play Movie</string>
+    <string name="todo">TODO</string>
+    <string name="coverImage">Movie Cover</string>
+    <string name="watch_now">Watch Now</string>
+    <string name="log_in_with_password">Log in with Password</string>
+    <string name="login_with_google">Login with Google</string>
+    <string name="movie_title">Movie Title</string>
+    <string name="additional_info">Additional Info</string>
+    <string name="limited">Limited</string>
+    <string name="exclusive_for_new_users_nfirst_month_only_23_000">
+    Exclusive for new users\nFirst month only 23,000₫
+</string>
+
 
 </resources>

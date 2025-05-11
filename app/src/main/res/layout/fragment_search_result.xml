@@ -18,7 +18,7 @@
         android:id="@+id/emptySearchResultText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Không tìm thấy kết quả nào cho tìm kiếm của bạn."
+        android:text="@string/not_result"
         android:textColor="#AAAAAA"
         android:textSize="16sp"
         android:layout_gravity="center"

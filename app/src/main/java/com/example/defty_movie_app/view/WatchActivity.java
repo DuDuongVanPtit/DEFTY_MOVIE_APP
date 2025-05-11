@@ -1,5 +1,7 @@
 package com.example.defty_movie_app.view;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -33,6 +35,7 @@ import com.example.defty_movie_app.data.remote.RecommenderServiceApi;
 import com.example.defty_movie_app.data.repository.AuthRepository;
 import com.example.defty_movie_app.data.repository.CallRecommender;
 import com.example.defty_movie_app.utils.GridSpacingItemDecoration;
+import com.example.defty_movie_app.utils.LocaleHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +61,13 @@ public class WatchActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private Integer movieId;
 
-
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        SharedPreferences prefs = newBase.getSharedPreferences("Settings", Context.MODE_PRIVATE);
+        String lang = prefs.getString("app_lang", "en");
+        Context context = LocaleHelper.wrap(newBase, lang);
+        super.attachBaseContext(context);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,8 +100,16 @@ public class WatchActivity extends AppCompatActivity {
         adapter = new RecommendedMovieAdapter(new ArrayList<>());
         recyclerViewRecommended.setAdapter(adapter);
 
-        fetchEpisode("nguoi-phan-xu-37af2me1");
-        fetchMovieDetail("nguoi-phan-xu-37af2me1");
+        String slug = getIntent().getStringExtra("MOVIE_SLUG_ID");
+        if (slug != null && !slug.isEmpty()) {
+            fetchEpisode(slug);
+            fetchMovieDetail(slug);
+        } else {
+            Toast.makeText(this, "Không tìm thấy thông tin phim", Toast.LENGTH_SHORT).show();
+        }
+
+//        fetchEpisode(slug);
+//        fetchMovieDetail(slug);
 
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override

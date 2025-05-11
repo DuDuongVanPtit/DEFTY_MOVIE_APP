@@ -15,11 +15,10 @@ import com.example.defty_movie_app.utils.LocaleHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnItemSelectedListener {
-
     @Override
     protected void attachBaseContext(Context newBase) {
         SharedPreferences prefs = newBase.getSharedPreferences("Settings", Context.MODE_PRIVATE);
-        String lang = prefs.getString("app_lang", "en"); // Default to English if no preference
+        String lang = prefs.getString("app_lang", "en");
         Context context = LocaleHelper.wrap(newBase, lang);
         super.attachBaseContext(context);
     }
@@ -44,9 +43,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         if (itemId == R.id.nav_home) {
             selectedFragment = new HomeFragment();
-        } else if (itemId == R.id.nav_explore) { // Assuming nav_explore is your Library
+        } else if (itemId == R.id.nav_explore) {
             selectedFragment = new LibraryFragment();
-        } else if (itemId == R.id.nav_download) { // NEW: Handle Download Tab
+        } else if (itemId == R.id.nav_download) {
             selectedFragment = new DownloadFragment();
         } else if (itemId == R.id.nav_me) {
             selectedFragment = new ProfileFragment();
@@ -60,13 +59,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     private void loadFragment(Fragment fragment) {
-        // Check if the fragment is already added to prevent overlapping or errors
-        // if (getSupportFragmentManager().findFragmentById(R.id.contentLayout) == fragment) {
-        //     return;
-        // }
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.contentLayout, fragment); // Use contentLayout from your activity_main.xml
-        // transaction.addToBackStack(null); // Optional: if you want back navigation for fragments
+        transaction.replace(R.id.contentLayout, fragment);
         transaction.commit();
     }
 }
