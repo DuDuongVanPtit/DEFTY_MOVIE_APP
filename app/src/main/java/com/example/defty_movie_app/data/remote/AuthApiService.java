@@ -1,11 +1,10 @@
 package com.example.defty_movie_app.data.remote;
 
+import com.example.defty_movie_app.data.model.request.LoginRequest;
 import com.example.defty_movie_app.data.model.request.SignUpRequest;
 import com.example.defty_movie_app.data.model.response.ApiResponse;
-import com.example.defty_movie_app.data.model.request.LoginRequest;
 import com.example.defty_movie_app.data.model.response.EpisodeResponse;
 import com.example.defty_movie_app.data.model.response.LoginResponse;
-//import com.example.defty_movie_app.data.model.request.RegisterRequest;
 import com.example.defty_movie_app.data.model.response.MovieDetailResponse;
 import com.example.defty_movie_app.data.model.response.SignUpResponse;
 import com.example.defty_movie_app.data.model.response.UserResponse;
@@ -25,11 +24,10 @@ public interface AuthApiService {
 
     @GET("api/v1/user/auth/check-account-token")
     Call<ApiResponse<UserResponse>> checkAccount(@Query("token") String token);
-//    Call<ApiResponse<UserResponse>> register(@Body RegisterRequest request);
 
-    @GET("api/v1/user/accessible/episode")
+    @GET("api/v1/user/accessible/episode/first")
     Call<MovieDetailResponse> getMovieDetail(@Query("slug") String slug);
 
-    @GET("api/v1/user/accessible/episode/video")
+    @GET("api/v1/user/accessible/episode/first/video")
     Call<EpisodeResponse> getEpisode(@Query("slug") String slug);
 }

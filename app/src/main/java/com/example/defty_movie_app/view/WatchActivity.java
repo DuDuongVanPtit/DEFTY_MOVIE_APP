@@ -250,7 +250,6 @@ public class WatchActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     EpisodeResponse.Episode episode = response.body().data;
                     episodeUrl = episode.getLink();
-
                 }
             }
 
