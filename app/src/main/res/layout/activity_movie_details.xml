@@ -20,14 +20,10 @@
             android:orientation="vertical">
 
             <!-- ==== TẤT CẢ NỘI DUNG TRƯỚC COMMENT ==== -->
-            <!-- Video player, Thông tin phim, Tabs, Episode, Exclusive Clips -->
-
-            <!-- ==== PHẦN COMMENT ==== -->
-
             <LinearLayout
+                android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_height="wrap_content">
 
                 <!-- Video Player -->
                 <FrameLayout
@@ -56,107 +52,108 @@
                         android:layout_width="60dp"
                         android:layout_height="60dp"
                         android:layout_gravity="center"
+                        android:src="@android:drawable/ic_media_play"
                         android:background="@android:color/transparent"
-                        android:contentDescription="Play button"
-                        android:src="@android:drawable/ic_media_play" />
+                        android:contentDescription="@string/play_button" />
                 </FrameLayout>
 
                 <!-- Thông tin phim -->
                 <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:padding="12dp">
 
                     <TextView
                         android:id="@+id/textTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
                         android:text=""
-                        android:textColor="#FFF"
                         android:textSize="22sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:textColor="#FFF"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
 
                     <TextView
                         android:id="@+id/textDescription"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
                         android:text=""
                         android:textColor="#AAA"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        android:layout_marginTop="4dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
 
                     <TextView
                         android:id="@+id/textDescription1"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
                         android:text=""
                         android:textColor="#CCC"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:layout_marginTop="8dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
 
                     <TextView
                         android:id="@+id/btnToggleDescription"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Xem thêm"
+                        android:text="@string/more"
                         android:textColor="#FF9800"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        android:layout_marginTop="4dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerCastCrew"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
                         android:layout_marginTop="12dp"
-                        android:clipToPadding="false"
-                        android:orientation="horizontal"
-                        android:overScrollMode="never"
                         android:paddingStart="12dp"
                         android:paddingEnd="12dp"
+                        android:clipToPadding="false"
+                        android:overScrollMode="never"
                         android:scrollbars="none"
-                        tools:listitem="@layout/item_cast_crew" />
+                        android:layout_gravity="center"
+                        android:orientation="horizontal"
+                        tools:listitem="@layout/item_cast_crew"/>
                 </LinearLayout>
+
 
 
                 <!-- Tabs -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="#111"
                     android:orientation="horizontal"
+                    android:background="#111"
                     android:paddingVertical="8dp">
 
                     <TextView
                         android:layout_width="0dp"
-                        android:layout_height="50dp"
                         android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="Episodes"
+                        android:text="@string/episodes"
                         android:textColor="#00FF99"
+                        android:gravity="center"
+                        android:textStyle="bold"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:layout_height="50dp"/>
 
                     <TextView
-                        android:layout_width="0dp"
                         android:layout_height="50dp"
+                        android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="For you"
+                        android:text="@string/for_you"
                         android:textColor="#AAA"
-                        android:textSize="16sp" />
+                        android:gravity="center"
+                        android:textSize="16sp"/>
 
                     <TextView
-                        android:layout_width="0dp"
                         android:layout_height="50dp"
+                        android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="Comments"
+                        android:text="@string/comments"
                         android:textColor="#AAA"
-                        android:textSize="16sp" />
+                        android:gravity="center"
+                        android:textSize="16sp"/>
 
                 </LinearLayout>
 
@@ -172,49 +169,26 @@
                         android:orientation="horizontal">
 
                         <!-- Mỗi nút là 1 tập phim -->
-                        <androidx.appcompat.widget.AppCompatButton
-                            style="@style/EpisodeButton"
-                            android:text="1" />
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            style="@style/EpisodeButton"
-                            android:text="2" />
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            style="@style/EpisodeButton"
-                            android:text="3" />
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            style="@style/EpisodeButton"
-                            android:text="4" />
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            style="@style/EpisodeButton"
-                            android:text="5" />
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            style="@style/EpisodeButton"
-                            android:text="6" />
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            style="@style/EpisodeButton"
-                            android:text="7" />
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            style="@style/EpisodeButton"
-                            android:text="8" />
+                        <androidx.appcompat.widget.AppCompatButton android:text="1" style="@style/EpisodeButton"/>
+                        <androidx.appcompat.widget.AppCompatButton android:text="2" style="@style/EpisodeButton"/>
+                        <androidx.appcompat.widget.AppCompatButton android:text="3" style="@style/EpisodeButton"/>
+                        <androidx.appcompat.widget.AppCompatButton android:text="4" style="@style/EpisodeButton"/>
+                        <androidx.appcompat.widget.AppCompatButton android:text="5" style="@style/EpisodeButton"/>
+                        <androidx.appcompat.widget.AppCompatButton android:text="6" style="@style/EpisodeButton"/>
+                        <androidx.appcompat.widget.AppCompatButton android:text="7" style="@style/EpisodeButton"/>
+                        <androidx.appcompat.widget.AppCompatButton android:text="8" style="@style/EpisodeButton"/>
                     </LinearLayout>
                 </HorizontalScrollView>
 
                 <!-- Exclusive Clips -->
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:paddingStart="12dp"
-                    android:text="Recommended For You"
+                    android:text="@string/recommended_for_you"
                     android:textColor="#FFF"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    android:paddingStart="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
 
 
                 <!-- ProgressBar hiển thị khi tải dữ liệu -->
@@ -230,18 +204,21 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="16dp"
-                    android:background="#000000"
+                    android:visibility="gone"
                     android:scrollbars="vertical"
-                    android:visibility="gone" />
+                    android:background="#DDDDDD" />
 
-                <!--                <androidx.recyclerview.widget.RecyclerView-->
-                <!--                    android:id="@+id/recyclerViewRecommended"-->
-                <!--                    android:layout_width="match_parent"-->
-                <!--                    android:layout_height="wrap_content"-->
-                <!--                    android:layout_marginTop="16dp"-->
-                <!--                    android:visibility="gone" />-->
+<!--                <androidx.recyclerview.widget.RecyclerView-->
+<!--                    android:id="@+id/recyclerViewRecommended"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginTop="16dp"-->
+<!--                    android:visibility="gone" />-->
 
             </LinearLayout>
+            <!-- Video player, Thông tin phim, Tabs, Episode, Exclusive Clips -->
+
+            <!-- ==== PHẦN COMMENT ==== -->
 
             <TextView
                 android:text="7 Comments"
@@ -264,7 +241,7 @@
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="40dp"
-                    android:text="Trending"
+                    android:text="@string/trending"
                     android:textSize="14sp"
                     android:textColor="#00FF99"
                     android:background="#222"/>
@@ -277,7 +254,7 @@
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="40dp"
-                    android:text="Latest"
+                    android:text="@string/latest"
                     android:textSize="14sp"
                     android:textColor="#AAA"
                     android:background="#111"/>
@@ -625,7 +602,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Post a comment"
+            android:hint="@string/post_a_comment"
             android:background="#222"
             android:textColor="#FFF"
             android:textColorHint="#888"
@@ -636,7 +613,7 @@
             android:layout_width="47dp"
             android:layout_height="31dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Send"
+            android:contentDescription="@string/send"
             android:src="@drawable/ic_send"
             app:tint="#FFF" />
     </LinearLayout>

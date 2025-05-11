@@ -20,7 +20,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/back"
-            android:contentDescription="Back"
+            android:contentDescription="@string/back"
             app:tint="#BFBBBB" />
 
         <EditText
@@ -30,7 +30,7 @@
             android:layout_weight="1"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:hint="Tìm kiếm phim..."
+            android:hint="@string/search"
             android:textColor="#E0E0E0"
             android:textColorHint="#766E6E"
             android:textSize="16sp"
@@ -62,7 +62,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Lịch sử tìm kiếm"
+                android:text="@string/search_history"
                 android:textColor="#AAAAAA"
                 android:textSize="14sp"
                 android:layout_alignParentStart="true"
@@ -73,7 +73,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_delete_history"
-                android:contentDescription="Xóa lịch sử"
+                android:contentDescription="@string/delete_history"
                 app:tint="#AAAAAA"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
@@ -87,7 +87,8 @@
             android:id="@+id/searchHistoryRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxHeight="130dp" android:overScrollMode="never" /> </LinearLayout>
+            android:maxHeight="130dp" android:overScrollMode="never" />
+    </LinearLayout>
 
 
     <LinearLayout
@@ -104,7 +105,7 @@
             android:paddingHorizontal="16dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
-            android:text="Tìm kiếm nổi bật"
+            android:text="@string/search_hot"
             android:textColor="#AAAAAA"
             android:textSize="14sp" />
 

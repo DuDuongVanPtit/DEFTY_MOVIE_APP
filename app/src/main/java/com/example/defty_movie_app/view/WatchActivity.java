@@ -1,5 +1,7 @@
 package com.example.defty_movie_app.view;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -33,6 +35,7 @@ import com.example.defty_movie_app.data.remote.RecommenderServiceApi;
 import com.example.defty_movie_app.data.repository.AuthRepository;
 import com.example.defty_movie_app.data.repository.CallRecommender;
 import com.example.defty_movie_app.utils.GridSpacingItemDecoration;
+import com.example.defty_movie_app.utils.LocaleHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +61,13 @@ public class WatchActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private Integer movieId;
 
-
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        SharedPreferences prefs = newBase.getSharedPreferences("Settings", Context.MODE_PRIVATE);
+        String lang = prefs.getString("app_lang", "en");
+        Context context = LocaleHelper.wrap(newBase, lang);
+        super.attachBaseContext(context);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,10 +83,9 @@ public class WatchActivity extends AppCompatActivity {
         commentInputBox = findViewById(R.id.commentInputBox);
         textDescription1 = findViewById(R.id.textDescription1);
         btnToggleDescription = findViewById(R.id.btnToggleDescription);
-
         recyclerView = findViewById(R.id.recyclerCastCrew);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
+        //recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         // Khởi tạo RecyclerView và ProgressBar
         recyclerViewRecommended = findViewById(R.id.recyclerViewRecommended);
         progressBar = findViewById(R.id.progressBar);
@@ -87,19 +95,21 @@ public class WatchActivity extends AppCompatActivity {
         recyclerViewRecommended.setHasFixedSize(true);
         recyclerViewRecommended.addItemDecoration(new GridSpacingItemDecoration(3, 16));
         //recyclerViewRecommended.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+
         // Khởi tạo Adapter với danh sách rỗng
         adapter = new RecommendedMovieAdapter(new ArrayList<>());
         recyclerViewRecommended.setAdapter(adapter);
 
-        String slug = getIntent().getStringExtra("MOVIE_SLUG");
-        if (slug == null || slug.isEmpty()) {
-            slug = "nguoi-phan-xu-37af2me1"; // fallback nếu cần
+        String slug = getIntent().getStringExtra("MOVIE_SLUG_ID");
+        if (slug != null && !slug.isEmpty()) {
+            fetchEpisode(slug);
+            fetchMovieDetail(slug);
+        } else {
+            Toast.makeText(this, "Không tìm thấy thông tin phim", Toast.LENGTH_SHORT).show();
         }
-//        fetchEpisode(slug + 1);
-//        fetchMovieDetail(slug + 1);
 
-        fetchEpisode("nguoi-phan-xu-37af2me1");
-        fetchMovieDetail("nguoi-phan-xu-37af2me1");
+//        fetchEpisode(slug);
+//        fetchMovieDetail(slug);
 
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -190,7 +200,7 @@ public class WatchActivity extends AppCompatActivity {
         apiService.getMovieDetail(slug).enqueue(new Callback<MovieDetailResponse>() {
             @Override
             public void onResponse(Call<MovieDetailResponse> call, Response<MovieDetailResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().data != null) {
+                if (response.isSuccessful() && response.body() != null) {
                     MovieDetailResponse.Movie movie = response.body().data;
                     movieId = movie.id;
                     fetchRecommendedMovies(movieId);
@@ -221,10 +231,6 @@ public class WatchActivity extends AppCompatActivity {
 
                     CastCrewAdapter adapter = new CastCrewAdapter(castList);
                     recyclerView.setAdapter(adapter);
-                }
-                else {
-                    Log.e("WatchActivity", "Response thành công nhưng 'data' là null");
-                    Toast.makeText(WatchActivity.this, "Không lấy được chi tiết phim", Toast.LENGTH_SHORT).show();
                 }
             }
 

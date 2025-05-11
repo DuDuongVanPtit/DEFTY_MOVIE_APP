@@ -88,7 +88,7 @@
 
                     <TextView
                         android:id="@+id/logoTextView"
-                        android:text="DEFTY"
+                        android:text="@string/defty"
                         android:textColor="#00FF00"
                         android:textSize="24sp"
                         android:textStyle="bold"
@@ -108,7 +108,7 @@
                         android:id="@+id/searchTextView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Search"
+                        android:text="@string/search"
                         android:textColor="#E0E0E0"
                         android:textSize="16sp" />
                     </LinearLayout>
@@ -118,7 +118,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="40dp"
                         android:minWidth="45dp"
-                        android:text="VIP"
+                        android:text="@string/vip"
                         android:textColor="#000000"
                         android:background="@drawable/vip_button_background"
                         app:backgroundTint="@null"
@@ -140,7 +140,9 @@
             app:tabSelectedTextColor="#FFFFFF"
             app:tabTextColor="#AAAAAA"
             app:tabMode="scrollable"
-            android:background="@drawable/category_background_default" app:layout_scrollFlags="noScroll" /> </com.google.android.material.appbar.AppBarLayout>
+            android:background="@drawable/category_background_default"
+            app:layout_scrollFlags="noScroll" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"

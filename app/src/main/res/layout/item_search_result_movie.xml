@@ -13,7 +13,7 @@
         android:layout_width="100dp"
         android:layout_height="150dp"
         android:scaleType="centerCrop"
-        android:contentDescription="Ảnh bìa phim"
+        android:contentDescription="@string/coverImage"
         tools:srcCompat="@tools:sample/avatars" />
 
     <LinearLayout
@@ -127,7 +127,7 @@
             android:layout_gravity="end" android:layout_marginTop="8dp"
             android:backgroundTint="#0AAD2A" android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:text="Chiếu ngay"
+            android:text="@string/watch_now"
             android:textColor="#FFFFFF"
             android:textSize="12sp"
             app:cornerRadius="5dp" /> </LinearLayout>

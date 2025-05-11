@@ -21,7 +21,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:text="@string/login"
         android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="@android:color/white"
@@ -48,7 +48,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Log in with Password"
+            android:text="@string/log_in_with_password"
             android:textColor="@android:color/white"
             android:textSize="14sp"
             android:layout_marginStart="12dp"/>
@@ -73,7 +73,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Continue with Google"
+            android:text="@string/login_with_google"
             android:textColor="@android:color/white"
             android:textSize="14sp"
             android:layout_marginStart="12dp"/>

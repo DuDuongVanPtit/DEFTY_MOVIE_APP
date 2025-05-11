@@ -2,6 +2,7 @@ package com.example.defty_movie_app.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -24,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 // Import cho FlexboxLayoutManager
+import com.example.defty_movie_app.utils.LocaleHelper;
 import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
@@ -74,6 +76,14 @@ public class SearchActivity extends AppCompatActivity implements SearchHistoryAd
     public static void start(Context context) {
         Intent intent = new Intent(context, SearchActivity.class);
         context.startActivity(intent);
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        SharedPreferences prefs = newBase.getSharedPreferences("Settings", Context.MODE_PRIVATE);
+        String lang = prefs.getString("app_lang", "en");
+        Context context = LocaleHelper.wrap(newBase, lang);
+        super.attachBaseContext(context);
     }
 
     @Override
