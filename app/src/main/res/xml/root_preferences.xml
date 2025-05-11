@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        app:title="@string/pref_category_appearance_title"
+        app:iconSpaceReserved="false">
+
+        <ListPreference
+            app:key="display_mode"
+            app:title="@string/pref_display_mode_title"
+            app:summary="%s"
+            app:dialogTitle="@string/pref_display_mode_dialog_title"
+            app:entries="@array/pref_display_mode_entries"
+            app:entryValues="@array/pref_display_mode_values"
+            app:defaultValue="system"
+            app:iconSpaceReserved="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="@string/pref_category_about_title"
+        app:iconSpaceReserved="false">
+
+        <Preference
+            app:key="app_version"
+            app:title="@string/pref_app_version_title"
+            app:summary="1.0.0"
+            app:selectable="false"
+            app:iconSpaceReserved="false"/>
+
+        <Preference
+            app:key="privacy_policy"
+            app:title="@string/pref_privacy_policy_title"
+            app:iconSpaceReserved="false"/>
+
+        <Preference
+            app:key="terms_of_service"
+            app:title="@string/pref_terms_of_service_title"
+            app:iconSpaceReserved="false"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

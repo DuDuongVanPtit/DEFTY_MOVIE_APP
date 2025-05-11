@@ -39,4 +39,37 @@
     <string name="top_10_shows_title">TOP 10 Shows</string>
     <string name="premium_content_title">Premium Content</string>
     <string name="banner_image_description">Banner Image</string>
+    <string name="feedback_message">Send Us Your Feedback</string>
+    <string name="context_feedback">Your feedback…</string>
+    <string name="error_empty_feedback">Error feedback…</string>
+    <string name="send_email_via">Send email via...</string>
+    <string name="error_no_email_app">No email app found on the device.</string>
+    <string name="pref_category_appearance_title">Appearance</string>
+    <string name="pref_category_account_title">Account</string>
+    <string name="pref_category_about_title">About</string>
+
+    <string name="pref_display_mode_title">Display Mode</string>
+    <string name="pref_display_mode_dialog_title">Choose Display Mode</string>
+    <string-array name="pref_display_mode_entries">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>System Default</item>
+    </string-array>
+    <string-array name="pref_display_mode_values">
+        <item>light</item>
+        <item>dark</item>
+        <item>system</item>
+    </string-array>
+
+    <string name="pref_logout_title">Log Out</string>
+    <string name="pref_logout_summary">Log out of your current account</string>
+
+    <string name="pref_app_version_title">App Version</string>
+    <string name="pref_privacy_policy_title">Privacy Policy</string>
+
+    <string name="pref_terms_of_service_title">Terms of Service</string>
+    <string name="logout">Logout</string>
+    <string name="switch_account">Switch account</string>
+    <string name="action_navigate_setting_detail">Action navigate setting detail</string>
+
 </resources>

@@ -20,8 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class LanguageActivity extends AppCompatActivity {
-
-    private LanguageViewModel viewModel;
     private String currentLanguageCode;
 
     @Override
@@ -35,10 +33,10 @@ public class LanguageActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.language_activity);
+        setContentView(R.layout.activity_language);
 
         currentLanguageCode = LocaleHelper.getLanguage(this);
-        viewModel = new ViewModelProvider(this).get(LanguageViewModel.class);
+        LanguageViewModel viewModel = new ViewModelProvider(this).get(LanguageViewModel.class);
 
         RecyclerView recyclerView = findViewById(R.id.language_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));

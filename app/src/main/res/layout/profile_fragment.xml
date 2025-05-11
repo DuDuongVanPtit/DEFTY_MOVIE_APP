@@ -175,6 +175,7 @@
 
         <!-- Menu Item: My List -->
         <LinearLayout
+            android:id="@+id/myList_item"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -199,6 +200,7 @@
 
         <!-- Menu Item: History -->
         <LinearLayout
+            android:id="@+id/history_item"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -248,6 +250,7 @@
 
         <!-- Menu Item: Settings -->
         <LinearLayout
+            android:id="@+id/setting_item"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -272,6 +275,7 @@
 
         <!-- Menu Item: Feedback -->
         <LinearLayout
+            android:id="@+id/feedback_item"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"

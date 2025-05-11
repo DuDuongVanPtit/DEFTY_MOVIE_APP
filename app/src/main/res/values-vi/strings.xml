@@ -34,4 +34,36 @@
         <item>Nữ</item>
         <item>Khác</item>
     </string-array>
+    <string name="limited_free_shows_title">Chương Trình Miễn Phí Giới Hạn</string>
+    <string name="top_10_shows_title">10 Chương Trình Hàng Đầu</string>
+    <string name="premium_content_title">Nội Dung Cao Cấp</string>
+    <string name="banner_image_description">Hình Ảnh Biểu Ngữ</string>
+    <string name="feedback_message">Gửi phản hồi cho chúng tôi</string>
+    <string name="context_feedback">Nội dung phản hồi của bạn…</string>
+    <string name="error_empty_feedback">Vui lòng nhập nội dung phản hồi.</string>
+    <string name="send_email_via">Gửi email qua…</string>
+    <string name="error_no_email_app">Không tìm thấy ứng dụng email trên thiết bị.</string>
+    <string name="pref_category_appearance_title">Giao diện</string>
+    <string name="pref_category_account_title">Tài khoản</string>
+    <string name="pref_category_about_title">Thông tin</string>
+    <string name="pref_display_mode_title">Chế độ hiển thị</string>
+    <string name="pref_display_mode_dialog_title">Chọn chế độ hiển thị</string>
+    <string-array name="pref_display_mode_entries">
+        <item>Sáng</item>
+        <item>Tối</item>
+        <item>Theo hệ thống</item>
+    </string-array>
+    <string-array name="pref_display_mode_values">
+        <item>light</item>
+        <item>dark</item>
+        <item>system</item>
+    </string-array>
+    <string name="pref_logout_title">Đăng xuất</string>
+    <string name="pref_logout_summary">Đăng xuất khỏi tài khoản hiện tại của bạn</string>
+    <string name="pref_app_version_title">Phiên bản ứng dụng</string>
+    <string name="pref_privacy_policy_title">Chính sách bảo mật</string>
+    <string name="pref_terms_of_service_title">Điều khoản dịch vụ</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="switch_account">Chuyển tài khoản</string>
+    <string name="action_navigate_setting_detail">Hành động chuyển đến chi tiết cài đặt</string>
 </resources>
