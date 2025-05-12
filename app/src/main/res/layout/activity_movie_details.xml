@@ -102,6 +102,17 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
 
+                    <ImageButton
+                        android:id="@+id/iconDownloadMovieButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_gravity="end"
+                        android:src="@drawable/ic_download"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="12dp"
+                        android:tint="#F2F4F3" />
+
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerCastCrew"
                         android:layout_width="match_parent"

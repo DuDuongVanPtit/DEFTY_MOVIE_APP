@@ -4,30 +4,27 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-// Đảm bảo import đúng package của DownloadedMovie
 import com.example.defty_movie_app.data.dto.DownloadedMovie;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashSet; // Giữ lại nếu bạn muốn đảm bảo thứ tự và tính duy nhất
 import java.util.List;
 
 public class DownloadStorageManager {
-
     private static final String PREFS_NAME = "DownloadedMoviesPrefs";
     private static final String DOWNLOADED_MOVIES_KEY = "downloaded_movies";
     private static final String TAG = "DownloadStorageManager";
-
     private SharedPreferences sharedPreferences;
     private Gson gson;
-
     public DownloadStorageManager(Context context) {
         sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         gson = new Gson();
     }
 
+    //TODO: Lấy thông tin phim dưới sharedPreferences
     public List<DownloadedMovie> getDownloadedMovies() {
         String jsonMovies = sharedPreferences.getString(DOWNLOADED_MOVIES_KEY, null);
         if (jsonMovies == null) {
@@ -39,63 +36,67 @@ public class DownloadStorageManager {
         return movies != null ? movies : new ArrayList<>();
     }
 
+    //TODO: Save thông tin phim dưới sharedPreferences
     public void addDownloadedMovie(DownloadedMovie movie) {
         if (movie == null) {
             Log.e(TAG, "Attempted to add a null movie.");
             return;
         }
         List<DownloadedMovie> movies = getDownloadedMovies();
-        LinkedHashSet<DownloadedMovie> movieSet = new LinkedHashSet<>();
-
-        // Kiểm tra xem phim đã tồn tại chưa (dựa trên equals/hashCode: id và slug)
-        // Nếu tồn tại, không thêm lại mà cập nhật thông tin (đặc biệt là downloadId và status)
         boolean found = false;
         for (int i = 0; i < movies.size(); i++) {
-            if (movies.get(i).equals(movie)) { // equals so sánh id và slug
-                // Cập nhật thông tin cho phim đã tồn tại
+            // So sánh dựa trên equals (id và slug)
+            if (movies.get(i).equals(movie)) {
+                // Nếu phim đã tồn tại, cập nhật thông tin của nó
+                // Điều này quan trọng để cập nhật downloadId, status, localFilePath
                 movies.set(i, movie);
                 found = true;
+                Log.d(TAG, "Updated existing movie: " + movie.getTitle());
                 break;
             }
         }
         if (!found) {
-            movies.add(0, movie); // Thêm phim mới lên đầu danh sách
+            movies.add(0, movie); // Thêm phim mới vào đầu danh sách
+            Log.d(TAG, "Added new movie: " + movie.getTitle());
         }
-
         saveDownloadedMovies(movies);
-        Log.d(TAG, (found ? "Updated" : "Added") + " movie: " + movie.getTitle() + ". Total: " + movies.size());
+        Log.d(TAG, "Total movies after add/update: " + movies.size());
     }
-
-    // Phương thức mới để cập nhật thông tin phim (ví dụ: sau khi tải xong)
     public void updateDownloadedMovie(DownloadedMovie movieToUpdate) {
-        if (movieToUpdate == null) return;
+        if (movieToUpdate == null) {
+            Log.e(TAG, "Attempted to update with a null movie.");
+            return;
+        }
         List<DownloadedMovie> movies = getDownloadedMovies();
         boolean updated = false;
         for (int i = 0; i < movies.size(); i++) {
-            // Tìm phim dựa trên downloadId hoặc id và slug
-            if (movies.get(i).getDownloadId() == movieToUpdate.getDownloadId() && movieToUpdate.getDownloadId() != -1) {
+            DownloadedMovie existingMovie = movies.get(i);
+            // Ưu tiên tìm bằng downloadId nếu có và hợp lệ
+            if (movieToUpdate.getDownloadId() != -1 && existingMovie.getDownloadId() == movieToUpdate.getDownloadId()) {
                 movies.set(i, movieToUpdate);
                 updated = true;
                 break;
-            } else if (movies.get(i).getId() == movieToUpdate.getId() && movies.get(i).getSlug().equals(movieToUpdate.getSlug())) {
-                // Fallback nếu downloadId không khớp nhưng id và slug khớp
+            }
+            // Nếu không khớp downloadId (hoặc downloadId không hợp lệ), thử khớp bằng id và slug
+            else if (existingMovie.getId() == movieToUpdate.getId() &&
+                    existingMovie.getSlug() != null &&
+                    existingMovie.getSlug().equals(movieToUpdate.getSlug())) {
                 movies.set(i, movieToUpdate);
                 updated = true;
                 break;
             }
         }
+
         if (updated) {
             saveDownloadedMovies(movies);
             Log.d(TAG, "Updated movie info for: " + movieToUpdate.getTitle());
         } else {
-            Log.w(TAG, "Could not find movie to update: " + movieToUpdate.getTitle());
-            // Optionally add it if not found, though ideally it should exist
+            // Nếu không tìm thấy để cập nhật, bạn có thể quyết định thêm mới ở đây nếu muốn
             // addDownloadedMovie(movieToUpdate);
+            Log.w(TAG, "Could not find movie to update (will not add as new): " + movieToUpdate.getTitle() + " with ID: " + movieToUpdate.getId() + " and Slug: " + movieToUpdate.getSlug());
         }
     }
 
-
-    // Phương thức mới để tìm phim bằng downloadId
     public DownloadedMovie findMovieByDownloadId(long downloadId) {
         if (downloadId == -1) return null;
         List<DownloadedMovie> movies = getDownloadedMovies();
@@ -104,14 +105,27 @@ public class DownloadStorageManager {
                 return movie;
             }
         }
+        Log.d(TAG, "Movie not found by downloadId: " + downloadId);
         return null;
     }
-
-
+    public DownloadedMovie findMovieByIdAndSlug(int movieId, String slug) {
+        if (slug == null) {
+            Log.w(TAG, "Attempted to find movie with null slug for ID: " + movieId);
+            return null;
+        }
+        List<DownloadedMovie> movies = getDownloadedMovies();
+        for (DownloadedMovie movie : movies) {
+            if (movie.getId() == movieId && slug.equals(movie.getSlug())) {
+                return movie;
+            }
+        }
+        Log.d(TAG, "Movie not found by ID: " + movieId + " and Slug: " + slug);
+        return null;
+    }
     public void removeDownloadedMovie(DownloadedMovie movieToRemove) {
         if (movieToRemove == null) return;
         List<DownloadedMovie> movies = getDownloadedMovies();
-        boolean removed = movies.remove(movieToRemove);
+        boolean removed = movies.remove(movieToRemove); // Dựa trên equals/hashCode của DownloadedMovie
         if(removed) {
             saveDownloadedMovies(movies);
             Log.d(TAG, "Removed movie: " + movieToRemove.getTitle() + ". Total: " + movies.size());
@@ -121,11 +135,11 @@ public class DownloadStorageManager {
     }
 
     public void removeDownloadedMovieById(int movieId, String slug) {
-        // Implementation không thay đổi
+        if (slug == null) return;
         List<DownloadedMovie> movies = getDownloadedMovies();
         DownloadedMovie movieToRemove = null;
         for (DownloadedMovie movie : movies) {
-            if (movie.getId() == movieId && movie.getSlug().equals(slug)) {
+            if (movie.getId() == movieId && slug.equals(movie.getSlug())) {
                 movieToRemove = movie;
                 break;
             }
@@ -146,9 +160,7 @@ public class DownloadStorageManager {
         editor.putString(DOWNLOADED_MOVIES_KEY, jsonMovies);
         editor.apply();
     }
-
     public void clearAllDownloads() {
-        // Implementation không thay đổi
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(DOWNLOADED_MOVIES_KEY);
         editor.apply();

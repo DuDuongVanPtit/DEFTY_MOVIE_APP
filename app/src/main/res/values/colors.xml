@@ -22,4 +22,6 @@
     <!-- Normal colors -->
     <color name="normalBackground">#F3BE83</color>
     <color name="normalText">#000000</color>
+    <color name="download_icon_completed_green">#4CAF50</color>
+    <color name="download_icon_default_tint">#F2F4F3</color>
 </resources>

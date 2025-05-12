@@ -1,5 +1,6 @@
 package com.example.defty_movie_app.view;
 
+import android.content.Intent; // <-- THÊM IMPORT NÀY
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.adapter.SearchResultAdapter;
 import com.example.defty_movie_app.data.model.response.MovieAppSearchResultResponse;
 import com.example.defty_movie_app.viewmodel.MovieViewModel;
+// import com.example.defty_movie_app.view.WatchActivity; // WatchActivity cùng package nên không cần import tường minh
 
 import java.util.ArrayList;
 
@@ -103,7 +105,7 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
                 searchResultAdapter.setMovies(movies);
                 emptyTextView.setVisibility(View.GONE);
                 searchResultRecyclerView.setVisibility(View.VISIBLE);
-            } else if (!movieViewModel.getSearchResultsIsLoading().getValue()){ // Only show empty if not loading
+            } else if (Boolean.FALSE.equals(movieViewModel.getSearchResultsIsLoading().getValue())){ // Only show empty if not loading
                 searchResultAdapter.setMovies(new ArrayList<>()); // Clear adapter
                 emptyTextView.setText("Không tìm thấy kết quả nào cho '" + currentQuery + "'.");
                 emptyTextView.setVisibility(View.VISIBLE);
@@ -124,28 +126,37 @@ public class SearchResultFragment extends Fragment implements SearchResultAdapte
 
     @Override
     public void onMovieClick(MovieAppSearchResultResponse movie) {
-        Toast.makeText(getContext(), "Clicked movie: " + movie.getTitle(), Toast.LENGTH_SHORT).show();
-        // TODO: Implement navigation to movie details screen
-        // Example: MovieDetailActivity.start(getContext(), movie.getSlug());
+        if (getContext() == null) {
+            Log.e(TAG, "Context is null, cannot start WatchActivity.");
+            return;
+        }
+        if (movie != null && movie.getSlug() != null) {
+            Toast.makeText(getContext(), "Đang mở phim: " + movie.getTitle(), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(getContext(), WatchActivity.class);
+            intent.putExtra("MOVIE_SLUG_ID", movie.getSlug()); // Sử dụng key "MOVIE_SLUG" như trong MovieHomeAdapter
+            getContext().startActivity(intent);
+        } else {
+            Log.e(TAG, "Movie data or slug is null. Cannot navigate to WatchActivity.");
+            Toast.makeText(getContext(), "Không thể mở phim, thiếu dữ liệu.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     public void onPlayNowClick(MovieAppSearchResultResponse movie) {
-        Toast.makeText(getContext(), "Play now: " + movie.getTitle(), Toast.LENGTH_SHORT).show();
-        // TODO: Implement play movie action
-    }
-
-    // Call this method from SearchActivity if the query changes while this fragment is visible
-    public void performSearch(String newQuery) {
-        if (newQuery != null && !newQuery.equals(currentQuery)) {
-            currentQuery = newQuery;
-            if (getArguments() != null) {
-                getArguments().putString(ARG_QUERY, newQuery);
-            }
-            Log.d(TAG, "New search initiated from activity for query: " + newQuery);
-            movieViewModel.clearSearchResults(); // Clear previous results
-            searchResultAdapter.setMovies(new ArrayList<>()); // Clear adapter immediately
-            movieViewModel.fetchSearchResults(newQuery);
+        // Tương tự, nếu nút "Play now" cũng cần điều hướng đến WatchActivity
+        if (getContext() == null) {
+            Log.e(TAG, "Context is null, cannot start WatchActivity from PlayNowClick.");
+            return;
+        }
+        if (movie != null && movie.getSlug() != null) {
+            Toast.makeText(getContext(), "Đang phát ngay: " + movie.getTitle(), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(getContext(), WatchActivity.class);
+            intent.putExtra("MOVIE_SLUG", movie.getSlug());
+            getContext().startActivity(intent);
+        } else {
+            Log.e(TAG, "Movie data or slug is null. Cannot play now.");
+            Toast.makeText(getContext(), "Không thể phát phim, thiếu dữ liệu.", Toast.LENGTH_SHORT).show();
         }
     }
+
 }

@@ -100,7 +100,6 @@ public class DownloadCompletionReceiver extends BroadcastReceiver {
         }
     }
 
-    // Helper method to get file path from DownloadManager (works for some cases)
     private String getPathFromUri(Context context, DownloadManager dm, long downloadId) {
         DownloadManager.Query query = new DownloadManager.Query();
         query.setFilterById(downloadId);
@@ -118,11 +117,6 @@ public class DownloadCompletionReceiver extends BroadcastReceiver {
                         }
                     }
                 }
-                // For API 24+ (Nougat) COLUMN_LOCAL_FILENAME is deprecated.
-                // If COLUMN_LOCAL_URI is a content URI, you might need more complex logic
-                // or rely on the content URI directly if your player supports it.
-                // For files in public directories, this might be tricky.
-                // Let's try to get the path from COLUMN_LOCAL_FILENAME if available (for older APIs)
                 int localFilenameIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
                 if (localFilenameIndex != -1) {
                     String path = cursor.getString(localFilenameIndex);
