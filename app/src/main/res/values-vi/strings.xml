@@ -39,6 +39,8 @@
     <string name="premium_content_title">Nội Dung Cao Cấp</string>
     <string name="banner_image_description">Hình Ảnh Biểu Ngữ</string>
     <string name="feedback_message">Gửi phản hồi cho chúng tôi</string>
+    <string name="feedback_sent_successfully">Gửi phản hồi thành công</string>
+    <string name="sending">Đang gửi…</string>
     <string name="context_feedback">Nội dung phản hồi của bạn…</string>
     <string name="error_empty_feedback">Vui lòng nhập nội dung phản hồi.</string>
     <string name="send_email_via">Gửi email qua…</string>
@@ -57,6 +59,11 @@
     <string name="all_time_periods_label">Mọi thời điểm</string>
     <string name="premium_label">Premium</string>
     <string name="normal_label">Thường</string>
+    <string name="logout_successful">Đăng xuất thành công!</string>
+    <string name="register_successful">Đăng ký thành công!</string>
+    <string name="login_successful">Đăng nhập thành công!</string>
+    <string name="please_enter_email_and_password">Vui lòng nhập email và mật khẩu</string>
+    <string name="login_failed">Đăng nhập thất bại</string>
     <string-array name="pref_display_mode_entries">
         <item>Sáng</item>
         <item>Tối</item>

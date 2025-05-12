@@ -3,7 +3,6 @@ package com.example.defty_movie_app.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.os.Build;
 
 import java.util.Locale;
 
@@ -19,12 +18,7 @@ public class LocaleHelper {
         SharedPreferences prefs = context.getSharedPreferences("Settings", Context.MODE_PRIVATE);
         prefs.edit().putString("app_lang", languageCode).apply();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return context.createConfigurationContext(config);
-        } else {
-            context.getResources().updateConfiguration(config, context.getResources().getDisplayMetrics());
-            return context;
-        }
+        return context.createConfigurationContext(config);
     }
 
     public static Context loadLocale(Context context) {
@@ -34,11 +28,7 @@ public class LocaleHelper {
     }
 
     public static String getLanguage(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return context.getResources().getConfiguration().getLocales().get(0).getLanguage();
-        } else {
-            return context.getResources().getConfiguration().locale.getLanguage();
-        }
+        return context.getResources().getConfiguration().getLocales().get(0).getLanguage();
     }
 
     public static Context wrap(Context context, String language) {

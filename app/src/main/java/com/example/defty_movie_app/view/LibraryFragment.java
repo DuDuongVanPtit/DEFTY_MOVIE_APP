@@ -166,8 +166,8 @@ public class LibraryFragment extends Fragment implements MovieAdapter.OnMovieCli
                 Chip selectedChip = group.findViewById(checkedIds.get(0));
                 selectedRegion = selectedChip != null ? selectedChip.getText().toString() : null;
                 applyFilters(currentCategory, selectedRegion, selectedPaidCategory, selectedReleaseDate);
-            } else { // Nếu không có chip nào được chọn (trường hợp singleSelection = false và bỏ chọn)
-                selectedRegion = null; // Hoặc giá trị mặc định "All Regions"
+            } else {
+                selectedRegion = null;
                 applyFilters(currentCategory, selectedRegion, selectedPaidCategory, selectedReleaseDate);
             }
         });
@@ -459,7 +459,7 @@ public class LibraryFragment extends Fragment implements MovieAdapter.OnMovieCli
 
         if (movieSlug != null && !movieSlug.isEmpty()) {
             intent.putExtra("MOVIE_SLUG_ID", movieSlug);
-            Toast.makeText(getContext(), "Mở phim: " + movie.getTitle(), Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getContext(), "Mở phim: " + movie.getTitle(), Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(getContext(), getString(R.string.movie_id_not_found), Toast.LENGTH_SHORT).show();
             return;
