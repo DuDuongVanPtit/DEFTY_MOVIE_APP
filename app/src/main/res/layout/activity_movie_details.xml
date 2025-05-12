@@ -27,35 +27,66 @@
 
                 <!-- Video Player -->
                 <FrameLayout
+                    android:id="@+id/video_player_container"
                     android:layout_width="match_parent"
                     android:layout_height="220dp"
-                    android:background="#333">
-
-                    <!-- Ảnh thumbnail -->
+                    android:background="#000000">
+                    <androidx.media3.ui.PlayerView
+                        android:id="@+id/player_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:use_controller="true"
+                        app:show_buffering="when_playing"
+                        app:hide_on_touch="true"
+                        app:controller_layout_id="@layout/custom_exo_controls" />
                     <ImageView
                         android:id="@+id/coverImage"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/sample_video_thumbnail" />
-
-                    <!-- VideoView -->
-                    <VideoView
-                        android:id="@+id/videoView"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:visibility="gone" />
-
-                    <!-- Nút Play -->
+                        android:src="@drawable/sample_video_thumbnail"
+                        android:visibility="visible" />
                     <ImageButton
                         android:id="@+id/btnPlay"
                         android:layout_width="60dp"
                         android:layout_height="60dp"
                         android:layout_gravity="center"
-                        android:src="@android:drawable/ic_media_play"
                         android:background="@android:color/transparent"
-                        android:contentDescription="@string/play_button" />
+                        android:contentDescription="Play button"
+                        android:src="@android:drawable/ic_media_play"
+                        android:visibility="visible" />
                 </FrameLayout>
+
+<!--                                <FrameLayout-->
+<!--                                    android:layout_width="match_parent"-->
+<!--                                    android:layout_height="220dp"-->
+<!--                                    android:background="#333">-->
+
+<!--                                    &lt;!&ndash; Ảnh thumbnail &ndash;&gt;-->
+<!--                                    <ImageView-->
+<!--                                        android:id="@+id/coverImage"-->
+<!--                                        android:layout_width="match_parent"-->
+<!--                                        android:layout_height="match_parent"-->
+<!--                                        android:scaleType="centerCrop"-->
+<!--                                        android:src="@drawable/sample_video_thumbnail" />-->
+
+<!--                                    &lt;!&ndash; VideoView &ndash;&gt;-->
+<!--                                    <VideoView-->
+<!--                                        android:id="@+id/videoView"-->
+<!--                                        android:layout_width="match_parent"-->
+<!--                                        android:layout_height="match_parent"-->
+<!--                                        android:visibility="gone" />-->
+
+<!--                                    &lt;!&ndash; Nút Play &ndash;&gt;-->
+<!--                                    <ImageButton-->
+<!--                                        android:id="@+id/btnPlay"-->
+<!--                                        android:layout_width="60dp"-->
+<!--                                        android:layout_height="60dp"-->
+<!--                                        android:layout_gravity="center"-->
+<!--                                        android:background="@android:color/transparent"-->
+<!--                                        android:contentDescription="Play button"-->
+<!--                                        android:src="@android:drawable/ic_media_play" />-->
+<!--                                </FrameLayout>-->
 
                 <!-- Thông tin phim -->
                 <LinearLayout
@@ -208,12 +239,12 @@
                     android:scrollbars="vertical"
                     android:background="#DDDDDD" />
 
-<!--                <androidx.recyclerview.widget.RecyclerView-->
-<!--                    android:id="@+id/recyclerViewRecommended"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginTop="16dp"-->
-<!--                    android:visibility="gone" />-->
+                <!--                <androidx.recyclerview.widget.RecyclerView-->
+                <!--                    android:id="@+id/recyclerViewRecommended"-->
+                <!--                    android:layout_width="match_parent"-->
+                <!--                    android:layout_height="wrap_content"-->
+                <!--                    android:layout_marginTop="16dp"-->
+                <!--                    android:visibility="gone" />-->
 
             </LinearLayout>
             <!-- Video player, Thông tin phim, Tabs, Episode, Exclusive Clips -->

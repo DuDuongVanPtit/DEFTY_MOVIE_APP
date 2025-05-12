@@ -54,13 +54,13 @@
         </receiver>
 
         <activity
-            android:name=".view.WatchActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:name=".view.WatchActivity" android:exported="true" android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize">
         </activity>
+
+        <activity
+            android:name=".view.FullscreenPlayerActivity" android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
 
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"

@@ -1,0 +1,95 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_gravity="bottom"
+    android:orientation="vertical"
+    android:background="#80000000"
+    tools:ignore="MissingClass">
+    <androidx.media3.ui.DefaultTimeBar
+        android:id="@id/exo_progress" android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:buffered_color="#80FFFFFF"
+        app:played_color="#FF00AEEF"
+        app:unplayed_color="#40FFFFFF"
+        tools:ignore="MissingClass" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp">
+        <TextView android:id="@id/exo_position" android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"/>
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="/"
+            android:textColor="@android:color/white"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"/>
+        <TextView android:id="@id/exo_duration" android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"/>
+        <View android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+        <ImageButton
+            android:id="@+id/btn_rewind_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_custom_rewind"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Rewind" />
+
+        <ImageButton
+            android:id="@+id/btn_play_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:src="@android:drawable/ic_media_play"
+            android:visibility="visible"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Play" />
+
+        <ImageButton
+            android:id="@+id/btn_pause_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:src="@android:drawable/ic_media_pause"
+            android:visibility="gone"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Pause" />
+
+        <ImageButton
+            android:id="@+id/btn_ffwd_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_custom_ffwd"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Fast Forward" />
+
+        <ImageButton
+            android:id="@+id/btn_settings_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_custom_setting"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Settings" />
+
+        <ImageButton
+            android:id="@+id/btn_fullscreen_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_custom_fullscreen"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Fullscreen" />
+
+    </LinearLayout>
+</LinearLayout>

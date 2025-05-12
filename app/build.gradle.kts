@@ -55,4 +55,9 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     implementation ("com.google.android.flexbox:flexbox:3.0.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
+
+    implementation ("androidx.media3:media3-exoplayer:1.3.1")
+    implementation ("androidx.media3:media3-ui:1.3.1")
+    implementation ("androidx.media3:media3-exoplayer-hls:1.3.1")
+    implementation ("androidx.media3:media3-exoplayer-dash:1.3.1")
 }
