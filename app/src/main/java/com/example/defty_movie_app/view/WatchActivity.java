@@ -1,10 +1,14 @@
 package com.example.defty_movie_app.view;
 
+import android.Manifest;
 import android.content.DialogInterface; // Import cho AlertDialog
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 // import android.content.res.Configuration; // Không dùng trực tiếp trong code này nữa
+import android.content.pm.PackageManager;
+import android.graphics.PorterDuff;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -28,6 +32,10 @@ import androidx.appcompat.app.AppCompatActivity;
 // import androidx.core.view.WindowCompat; // Không dùng trực tiếp
 // import androidx.core.view.WindowInsetsCompat; // Không dùng trực tiếp
 // import androidx.core.view.WindowInsetsControllerCompat; // Không dùng trực tiếp
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
@@ -43,6 +51,7 @@ import com.bumptech.glide.Glide;
 import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.adapter.CastCrewAdapter;
 import com.example.defty_movie_app.adapter.RecommendedMovieAdapter;
+import com.example.defty_movie_app.data.dto.DownloadedMovie;
 import com.example.defty_movie_app.data.model.adapter.CastCrew;
 import com.example.defty_movie_app.data.model.response.EpisodeResponse;
 import com.example.defty_movie_app.data.model.response.MovieDetailResponse;
@@ -52,6 +61,7 @@ import com.example.defty_movie_app.data.remote.RecommenderServiceApi;
 import com.example.defty_movie_app.data.repository.AuthRepository;
 import com.example.defty_movie_app.data.repository.CallRecommender;
 import com.example.defty_movie_app.utils.GridSpacingItemDecoration;
+import com.example.defty_movie_app.viewmodel.DownloadViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,6 +99,14 @@ public class WatchActivity extends AppCompatActivity {
     // --- ---
 
     private Integer movieId;
+
+    private ImageButton iconDownloadMovieButton;
+    private DownloadViewModel downloadViewModel;
+    private static final int REQUEST_CODE_DOWNLOAD_PERMISSION = 201;
+    private DownloadedMovie pendingMovieToDownload;
+    private String currentMovieSlug;
+    private String currentMovieTitle;
+    private String currentCoverImageUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,17 +146,37 @@ public class WatchActivity extends AppCompatActivity {
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 });
 
+        iconDownloadMovieButton = findViewById(R.id.iconDownloadMovieButton);
+        downloadViewModel = new ViewModelProvider(this).get(DownloadViewModel.class);
+
+
         String slug = getIntent().getStringExtra("MOVIE_SLUG_ID");
+        currentMovieSlug = slug;
         if (slug == null || slug.isEmpty()) {
             Log.e(TAG, "Movie slug is missing!");
             Toast.makeText(this, "Lỗi: Không tìm thấy thông tin phim.", Toast.LENGTH_LONG).show();
+            if (iconDownloadMovieButton != null) {
+                iconDownloadMovieButton.setEnabled(false);
+            }
             finish();
             return;
+        }
+
+        if (iconDownloadMovieButton != null) {
+            iconDownloadMovieButton.setOnClickListener(v -> handleDownloadClick());
         }
 
         fetchMovieDetail(slug);
         fetchEpisode(slug);
         setupListeners();
+
+        // Quan sát LiveData từ ViewModel để cập nhật trạng thái nút download
+        downloadViewModel.getDownloadedMoviesLiveData().observe(this, new Observer<List<DownloadedMovie>>() {
+            @Override
+            public void onChanged(List<DownloadedMovie> downloadedMovies) {
+                updateDownloadButtonState(); // Gọi hàm cập nhật khi danh sách thay đổi
+            }
+        });
     }
 
     private void findViews() {
@@ -460,6 +498,10 @@ public class WatchActivity extends AppCompatActivity {
             }
             updatePlayPauseButtons(player.isPlaying()); // Luôn cập nhật UI nút
         }
+
+        if (downloadViewModel != null) {
+            downloadViewModel.loadDownloadedMovies();
+        }
     }
     @OptIn(markerClass = UnstableApi.class)
     @Override
@@ -519,6 +561,8 @@ public class WatchActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && response.body().data != null) {
                     MovieDetailResponse.Movie movie = response.body().data;
                     movieId = movie.id;
+                    currentMovieTitle = movie.title;
+                    currentCoverImageUrl = movie.coverImage;
                     textTitle.setText(movie.title);
                     String rating = movie.rating != null ? "★ " + movie.rating : "N/A";
                     String year = movie.releaseDate != null && movie.releaseDate.length() >= 4 ? movie.releaseDate.substring(0, 4) : "N/A";
@@ -541,6 +585,12 @@ public class WatchActivity extends AppCompatActivity {
                     if (movieId != null) {
                         fetchRecommendedMovies(movieId);
                     }
+
+                    // Sau khi thông tin phim (movieId, slug) đã có, gọi loadDownloadedMovies để trigger updateDownloadButtonState
+                    if(downloadViewModel != null) {
+                        downloadViewModel.loadDownloadedMovies();
+                    }
+
                 } else {
                     Log.e(TAG, "fetchMovieDetail - Response error. Code: " + response.code());
                     Toast.makeText(WatchActivity.this, "Không lấy được chi tiết phim", Toast.LENGTH_SHORT).show();
@@ -614,4 +664,94 @@ public class WatchActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void updateDownloadButtonState() {
+        if (iconDownloadMovieButton == null || movieId == null || TextUtils.isEmpty(currentMovieSlug)) {
+            // Nếu chưa có đủ thông tin phim hiện tại, không làm gì cả hoặc reset về mặc định
+            if(iconDownloadMovieButton != null) {
+                iconDownloadMovieButton.setColorFilter(ContextCompat.getColor(this, R.color.download_icon_default_tint), PorterDuff.Mode.SRC_IN);
+                // Hoặc nếu bạn muốn dùng icon khác: iconDownloadMovieButton.setImageResource(R.drawable.ic_download);
+            }
+            return;
+        }
+
+        List<DownloadedMovie> allDownloads = downloadViewModel.getDownloadedMoviesLiveData().getValue();
+        DownloadedMovie currentMovieInList = null;
+        if (allDownloads != null) {
+            for (DownloadedMovie downloadedMovie : allDownloads) {
+                // So sánh cả movieId và slug để chắc chắn đúng là tập phim/phim đó
+                if (downloadedMovie.getId() == movieId && currentMovieSlug.equals(downloadedMovie.getSlug())) {
+                    currentMovieInList = downloadedMovie;
+                    break;
+                }
+            }
+        }
+
+        if (currentMovieInList != null && DownloadedMovie.STATUS_COMPLETED.equals(currentMovieInList.getDownloadStatus())) {
+            iconDownloadMovieButton.setColorFilter(ContextCompat.getColor(this, R.color.download_icon_completed_green), PorterDuff.Mode.SRC_IN);
+            // Tùy chọn: thay đổi icon nếu muốn, ví dụ:
+            // iconDownloadMovieButton.setImageResource(R.drawable.ic_download_done_custom); // Tạo icon này nếu muốn
+        } else {
+            iconDownloadMovieButton.setColorFilter(ContextCompat.getColor(this, R.color.download_icon_default_tint), PorterDuff.Mode.SRC_IN);
+            // Tùy chọn: đặt lại icon mặc định
+            // iconDownloadMovieButton.setImageResource(R.drawable.ic_download); // Icon tải xuống mặc định của bạn
+        }
+    }
+
+    private void handleDownloadClick() {
+        if (movieId == null || TextUtils.isEmpty(currentMovieTitle) ||
+                TextUtils.isEmpty(currentCoverImageUrl) || TextUtils.isEmpty(episodeUrl) ||
+                TextUtils.isEmpty(currentMovieSlug)) {
+            Toast.makeText(this, "Thông tin phim chưa sẵn sàng để tải. Vui lòng thử lại sau.", Toast.LENGTH_LONG).show();
+            Log.d("DownloadInfo", "Thông tin còn thiếu để tải: movieId=" + movieId + ", title=" + currentMovieTitle + ", cover=" + currentCoverImageUrl + ", episodeUrl=" + episodeUrl + ", slug=" + currentMovieSlug);
+            return;
+        }
+        DownloadedMovie movieToDownload = new DownloadedMovie(
+                movieId,
+                currentMovieTitle,
+                currentCoverImageUrl,
+                episodeUrl,
+                currentMovieSlug
+        );
+        pendingMovieToDownload = movieToDownload;
+        if (checkAndRequestStoragePermission()) {
+            boolean downloadWillActuallyStart = downloadViewModel.startDownload(pendingMovieToDownload); // ViewModel của bạn cần trả về boolean
+            if (downloadWillActuallyStart) {
+                Toast.makeText(this, "Đang chuẩn bị tải: " + pendingMovieToDownload.getTitle(), Toast.LENGTH_SHORT).show();
+            }
+            pendingMovieToDownload = null;
+        }
+    }
+    private boolean checkAndRequestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        REQUEST_CODE_DOWNLOAD_PERMISSION);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_DOWNLOAD_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Đã cấp quyền lưu trữ.", Toast.LENGTH_SHORT).show();
+                if (pendingMovieToDownload != null) {
+                    boolean downloadWillActuallyStart = downloadViewModel.startDownload(pendingMovieToDownload); // ViewModel của bạn cần trả về boolean
+                    if (downloadWillActuallyStart) {
+                        Toast.makeText(this, "Đang chuẩn bị tải: " + pendingMovieToDownload.getTitle(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Quyền lưu trữ bị từ chối. Không thể tải phim.", Toast.LENGTH_LONG).show();
+            }
+            pendingMovieToDownload = null;
+        }
+    }
+
 }
