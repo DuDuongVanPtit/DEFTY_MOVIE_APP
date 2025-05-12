@@ -20,6 +20,7 @@ public class MovieDetailResponse {
         public Director director;
         public List<Actor> actor;
         public List<Category> category;
+        public List<Episode> episode;
     }
 
     public static class Director {
@@ -80,7 +81,16 @@ public class MovieDetailResponse {
             this.slug = slug;
         }
     }
-
+    public static class Episode{
+        private Integer id;
+        private Integer number;
+        private String description;
+        private String thumbnail;
+        private String link;
+        private String slug;
+        private Integer movieId;
+        private Integer status;
+    }
     public static class Category {
         public String name;
         public String slug;
