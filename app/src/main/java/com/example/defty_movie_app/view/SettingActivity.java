@@ -1,12 +1,14 @@
 package com.example.defty_movie_app.view;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -48,6 +50,14 @@ public class SettingActivity extends AppCompatActivity {
             viewModel.handleSettingClick(item);
         });
         recyclerView.setAdapter(adapter);
+
+        AppCompatButton btnLogout = findViewById(R.id.btnLogout);
+        btnLogout.setOnClickListener(v -> {
+            viewModel.logout();
+            Toast.makeText(this, getString(R.string.logout_successful), Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        });
 
         viewModel.getSettingsListLiveData().observe(this, settingItems -> {
             adapter.submitList(settingItems);

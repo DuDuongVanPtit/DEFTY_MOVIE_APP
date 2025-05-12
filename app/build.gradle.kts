@@ -26,6 +26,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+    packaging {
+        resources {
+            excludes += listOf(
+                "/META-INF/NOTICE.md",
+                "/META-INF/LICENSE.md"
+            )
+        }
+    }
 }
 
 dependencies {
@@ -49,6 +57,8 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
+    implementation ("com.sun.mail:android-mail:1.6.7")
+    implementation ("com.sun.mail:android-activation:1.6.7")
     implementation ("androidx.preference:preference-ktx:1.2.1")
     implementation ("com.google.android.gms:play-services-auth:20.7.0")
     implementation ("com.google.firebase:firebase-auth:21.0.1")

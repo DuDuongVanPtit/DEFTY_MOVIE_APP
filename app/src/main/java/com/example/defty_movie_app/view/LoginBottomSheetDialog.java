@@ -1,5 +1,6 @@
 package com.example.defty_movie_app.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,15 +14,10 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.viewmodel.SelectedLoginViewModel;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-
-import android.content.Intent;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.tasks.Task;
-import androidx.annotation.Nullable;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class LoginBottomSheetDialog extends BottomSheetDialogFragment {
 
@@ -68,30 +64,5 @@ public class LoginBottomSheetDialog extends BottomSheetDialogFragment {
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            if (task.isSuccessful()) {
-                GoogleSignInAccount account = task.getResult();
-                if (account != null) {
-                    // Thành công -> xử lý đăng nhập ở đây
-                    String idToken = account.getIdToken();
-                    String email = account.getEmail();
-                    String fullName = account.getDisplayName();
-
-                    System.out.println("ID Token: " + idToken);
-                    System.out.println("Email: " + email);
-                    System.out.println("FullName: " + fullName);
-
-                    // TODO: Gửi idToken này về server backend để xác thực
-                }
-            } else {
-                System.out.println("Google Sign-In failed: " + task.getException());
-            }
-        }
-    }
 }
 

@@ -66,11 +66,11 @@ public class ProfileFragment extends Fragment {
             if (user != null) {
                 System.out.println("User data: " + user.getFullName());
                 loginText.setText(user.getFullName());
-                loginText.setClickable(true);
+                loginText.setClickable(false);
             } else {
                 System.out.println("No user data available");
                 loginText.setText(R.string.login_sign_up);
-                loginText.setClickable(false);
+                loginText.setClickable(true);
             }
         });
     }

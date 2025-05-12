@@ -40,8 +40,10 @@
     <string name="banner_image_description">Banner Image</string>
     <string name="feedback_message">Send Us Your Feedback</string>
     <string name="context_feedback">Your feedback…</string>
+    <string name="feedback_sent_successfully">Feedback sent successfully</string>
+    <string name="sending">Sending…</string>
     <string name="error_empty_feedback">Error feedback…</string>
-    <string name="send_email_via">Send email via...</string>
+    <string name="send_email_via">Send email via…</string>
     <string name="error_no_email_app">No email app found on the device.</string>
     <string name="pref_category_appearance_title">Appearance</string>
     <string name="pref_category_account_title">Account</string>
@@ -57,6 +59,11 @@
     <string name="premium_label">Premium</string>
     <string name="normal_label">Normal</string>
     <string name="pref_display_mode_dialog_title">Choose Display Mode</string>
+    <string name="logout_successful">Logout successful!</string>
+    <string name="register_successful">Register successful!</string>
+    <string name="login_successful">Login successful!</string>
+    <string name="please_enter_email_and_password">Please enter email and password</string>
+    <string name="login_failed">Login failed</string>
     <string-array name="pref_display_mode_entries">
         <item>Light</item>
         <item>Dark</item>

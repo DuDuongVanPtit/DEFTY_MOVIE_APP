@@ -119,7 +119,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                 public void onClick(View v) {
                     if (listener != null) {
                         listener.onMovieClick(movie);
-                        Toast.makeText(v.getContext(), "Choose Film!", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(v.getContext(), "Choose Film!", Toast.LENGTH_SHORT).show();
                     }
                 }
             });

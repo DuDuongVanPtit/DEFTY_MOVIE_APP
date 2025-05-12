@@ -1,9 +1,9 @@
 package com.example.defty_movie_app.viewmodel;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -11,7 +11,7 @@ import androidx.preference.PreferenceManager;
 
 import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.data.dto.SettingItem;
-import com.example.defty_movie_app.utils.LocaleHelper;
+import com.example.defty_movie_app.shared.UserManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,6 @@ public class SettingsViewModel extends AndroidViewModel {
     private final SharedPreferences sharedPreferences;
     private final Resources resources;
 
-    // LiveData để kích hoạt các sự kiện điều hướng hoặc dialog từ Activity/Fragment
     private final MutableLiveData<SettingItem> openListPreferenceDialogEvent = new MutableLiveData<>();
     private final MutableLiveData<String> performActionEvent = new MutableLiveData<>();
 
@@ -53,7 +52,9 @@ public class SettingsViewModel extends AndroidViewModel {
     public void onActionPerformed() {
         performActionEvent.setValue(null);
     }
-
+    public void logout() {
+        UserManager.logout(getApplication());
+    }
     private void loadSettings() {
         List<SettingItem> items = new ArrayList<>();
 
@@ -65,8 +66,8 @@ public class SettingsViewModel extends AndroidViewModel {
         );
         items.add(new SettingItem(
                 "display_mode",
-                resources.getString(R.string.pref_display_mode_title), // Cần tạo string này
-                null, // Summary chung có thể không cần nếu currentValue hiển thị đủ
+                resources.getString(R.string.pref_display_mode_title),
+                null,
                 displayModeSummary,
                 true,
                 SettingItem.SettingItemType.LIST_PREFERENCE

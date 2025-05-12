@@ -363,9 +363,6 @@ public class SearchActivity extends AppCompatActivity implements SearchHistoryAd
                 finish(); // Finish activity if at the initial state
                 return; // Return to avoid calling super.onBackPressed() again if finish() is called
         }
-        // Do not call super.onBackPressed() here if we handled the back press,
-        // unless the default behavior is desired for some states not explicitly finishing.
-        // In this setup, handleBackButtonPress either transitions state or finishes.
     }
 
 

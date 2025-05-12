@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -69,6 +70,7 @@ public class SignUpBottomSheetDialog extends BottomSheetDialogFragment {
 
             if (validateInputs(email, username, password, fullName)) {
                 authViewModel.signUpUser(email, username, password, fullName);
+                Toast.makeText(requireContext(), getString(R.string.register_successful), Toast.LENGTH_SHORT).show();
             }
         });
 

@@ -16,33 +16,24 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-        // Xử lý mục Chế độ hiển thị
         ListPreference displayModePreference = findPreference("display_mode");
         if (displayModePreference != null) {
             displayModePreference.setOnPreferenceChangeListener((preference, newValue) -> {
                 // TODO: Thêm logic để thay đổi theme ứng dụng dựa trên newValue (light, dark, system)
-                // Ví dụ: AppCompatDelegate.setDefaultNightMode(...)
-                // if (getActivity() != null) {
-                //     getActivity().recreate(); // Cần recreate Activity để áp dụng theme mới
-                // }
                 Toast.makeText(getContext(), "Chế độ hiển thị đã đổi thành: " + newValue, Toast.LENGTH_SHORT).show();
-                return true; // Trả về true để cập nhật summary và lưu giá trị
-            });
-        }
-
-        // Xử lý mục Đăng xuất
-        Preference logoutPreference = findPreference("logout");
-        if (logoutPreference != null) {
-            logoutPreference.setOnPreferenceClickListener(preference -> {
-                // TODO: Thêm logic đăng xuất ở đây
-                // Ví dụ: gọi phương thức signOut từ ViewModel của bạn, sau đó có thể điều hướng người dùng
-                Toast.makeText(getContext(), "Đã nhấn Đăng xuất!", Toast.LENGTH_SHORT).show();
-                // Ví dụ: ((YourSettingsActivity) getActivity()).performLogout();
                 return true;
             });
         }
 
-        // Đặt giá trị cho Phiên bản ứng dụng
+        Preference logoutPreference = findPreference("logout");
+        if (logoutPreference != null) {
+            logoutPreference.setOnPreferenceClickListener(preference -> {
+                // TODO: Thêm logic đăng xuất ở đây
+                Toast.makeText(getContext(), "Đã nhấn Đăng xuất!", Toast.LENGTH_SHORT).show();
+                return true;
+            });
+        }
+
         Preference appVersionPreference = findPreference("app_version");
         if (appVersionPreference != null) {
             try {
@@ -59,12 +50,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         }
 
-        // Xử lý mục Chính sách bảo mật
         Preference privacyPolicyPreference = findPreference("privacy_policy");
         if (privacyPolicyPreference != null) {
             privacyPolicyPreference.setOnPreferenceClickListener(preference -> {
                 // TODO: Thay thế bằng URL chính sách bảo mật của bạn
-                String url = "https://your-privacy-policy-url.com"; // Ví dụ URL
+                String url = "https://your-privacy-policy-url.com";
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 try {
                     startActivity(intent);
@@ -75,12 +65,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             });
         }
 
-        // Xử lý mục Điều khoản dịch vụ
         Preference termsOfServicePreference = findPreference("terms_of_service");
         if (termsOfServicePreference != null) {
             termsOfServicePreference.setOnPreferenceClickListener(preference -> {
                 // TODO: Thay thế bằng URL điều khoản dịch vụ của bạn
-                String url = "https://your-terms-of-service-url.com"; // Ví dụ URL
+                String url = "https://your-terms-of-service-url.com";
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 try {
                     startActivity(intent);
