@@ -1,7 +1,10 @@
 package com.example.defty_movie_app.view;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -24,10 +29,23 @@ import java.io.File;
 public class ProfileFragment extends Fragment {
     private AuthViewModel authViewModel;
     private TextView loginText;
-    private LinearLayout login;
     private ImageView avatar;
+    private ActivityResultLauncher<Intent> personalActivityLauncher;
 
     public ProfileFragment() {
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
+
+        personalActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    Log.d(TAG, "Returned from PersonalActivity, result code: " + result.getResultCode());
+                }
+        );
     }
 
     @Nullable
@@ -37,10 +55,9 @@ public class ProfileFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.profile_fragment, container, false);
 
-        login = view.findViewById(R.id.header);
+        LinearLayout login = view.findViewById(R.id.header);
         loginText = view.findViewById(R.id.login_text);
         avatar = view.findViewById(R.id.avatar);
-        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
 
         String fullName = UserManager.getFullName(requireContext());
 
@@ -55,9 +72,12 @@ public class ProfileFragment extends Fragment {
         }
 
         login.setOnClickListener(v -> {
-            if (!fullName.isEmpty()) {
+            if (getContext() == null || !isAdded()) return;
+            String currentFullName = UserManager.getFullName(requireContext());
+
+            if (!currentFullName.isEmpty()) {
                 Intent intent = new Intent(getContext(), PersonalActivity.class);
-                startActivity(intent);
+                personalActivityLauncher.launch(intent);
             } else {
                 LoginBottomSheetDialog loginDialog = new LoginBottomSheetDialog();
                 loginDialog.show(requireActivity().getSupportFragmentManager(), "LoginBottomSheetDialog");
