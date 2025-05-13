@@ -337,7 +337,6 @@ public class HomeFragment extends Fragment implements
                 String selectedCategory = tab != null && tab.getText() != null ? tab.getText().toString() : "";
                 if (getContext() != null && !selectedCategory.isEmpty()) {
                     // Optionally refetch data on reselection
-                    Toast.makeText(getContext(), "Reselected: " + selectedCategory, Toast.LENGTH_SHORT).show();
                     if ("Tất cả".equals(selectedCategory)) {
                         libraryViewModel.fetchShowons(0, 10, null, null, 1);
                     } else {

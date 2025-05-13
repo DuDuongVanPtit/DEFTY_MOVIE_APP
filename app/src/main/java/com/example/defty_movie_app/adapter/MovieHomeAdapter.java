@@ -93,9 +93,9 @@ public class MovieHomeAdapter extends RecyclerView.Adapter<MovieHomeAdapter.Movi
         private final TextView titleTextView;
         // Keep infoTextView if needed for future use or hide it as shown below
         private final TextView infoTextView;
+        private final TextView premiumTextView;
         // Declare the listener field in the ViewHolder
         private final OnMovieClickListener listener;
-
 
         // Constructor receives itemView and the listener
         public MovieViewHolder(@NonNull View itemView, @NonNull OnMovieClickListener listener) {
@@ -104,6 +104,7 @@ public class MovieHomeAdapter extends RecyclerView.Adapter<MovieHomeAdapter.Movi
             posterImageView = itemView.findViewById(R.id.posterImageView);
             titleTextView = itemView.findViewById(R.id.titleTextView);
             infoTextView = itemView.findViewById(R.id.infoTextView); // Ensure this ID exists
+            premiumTextView = itemView.findViewById(R.id.qualityTagTextView); // Ensure this ID exists
 
             // Initialize the listener
             this.listener = listener;
@@ -146,6 +147,8 @@ public class MovieHomeAdapter extends RecyclerView.Adapter<MovieHomeAdapter.Movi
             infoTextView.setText(""); // Set to empty if not needed
             // Or hide the TextView completely if it's not used in your layout:
             // infoTextView.setVisibility(View.GONE);
+
+            premiumTextView.setText(movie.isPremium() == 1 ? "Premium" : (movie.isPremium() == 3 ? "Normal" : ""));
 
             // Load poster image using Glide
             // Define a placeholder drawable (ensure you have R.drawable.ic_movie_placeholder)

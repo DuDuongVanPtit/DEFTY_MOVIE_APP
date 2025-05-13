@@ -31,14 +31,16 @@
         android:textColor="#FFFFFF"
         android:textSize="10sp"
         android:visibility="gone" />
+
     <TextView
-        android:id="@+id/qualityTagTextView" android:layout_width="wrap_content"
+        android:id="@+id/qualityTagTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_margin="4dp"
+        android:layout_margin="0dp"
+        android:background="@drawable/quality_tag_background"
         android:paddingHorizontal="6dp"
         android:paddingVertical="2dp"
-        android:background="@drawable/quality_tag_background"
         android:text="4K"
         android:textColor="#FFFFFF"
         android:textSize="10sp" />
