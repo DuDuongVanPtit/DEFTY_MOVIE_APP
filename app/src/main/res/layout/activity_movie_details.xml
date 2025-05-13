@@ -1,29 +1,34 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:background="#000">
+    android:background="#000"
+    android:fitsSystemWindows="true">
 
-    <!-- Nội dung chính cuộn được -->
-    <ScrollView
-        android:id="@+id/scrollContent"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/commentInputBox"
-        android:fillViewport="true">
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:background="?attr/colorSurface"
+        android:fitsSystemWindows="true">
 
-        <LinearLayout
-            android:id="@+id/pageContainer"
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+            app:contentScrim="?attr/colorPrimary"
+            app:statusBarScrim="?attr/colorPrimaryVariant"
+            android:fitsSystemWindows="true">
 
-                <!-- Video Player -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_collapseMode="parallax" app:layout_collapseParallaxMultiplier="0.7">
+
                 <FrameLayout
                     android:id="@+id/video_player_container"
                     android:layout_width="match_parent"
@@ -42,7 +47,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/sample_video_thumbnail"
+                        tools:src="@drawable/sample_video_thumbnail"
                         android:visibility="visible" />
                     <ImageButton
                         android:id="@+id/btnPlay"
@@ -55,22 +60,20 @@
                         android:visibility="visible" />
                 </FrameLayout>
 
-                <!-- Thông tin phim -->
                 <LinearLayout
+                    android:id="@+id/movie_info_container"
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:id="@+id/textTitle"
-                        android:text=""
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="#FFF"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-
+                    android:padding="12dp"
+                    android:background="#000"> <TextView
+                    android:id="@+id/textTitle"
+                    android:text=""
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFF"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
                     <TextView
                         android:id="@+id/textDescription"
                         android:text=""
@@ -79,27 +82,23 @@
                         android:layout_marginTop="4dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
-
                     <TextView
                         android:id="@+id/textDescription1"
                         android:text=""
                         android:textColor="#CCC"
                         android:textSize="14sp"
-                        android:maxLines="1"
-                        android:ellipsize="end"
+                        android:maxLines="3" android:ellipsize="end"
                         android:layout_marginTop="8dp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"/>
-
                     <TextView
                         android:id="@+id/btnToggleDescription"
-                        android:text="@string/more"
+                        android:text="@string/view_more"
                         android:textColor="#FF9800"
                         android:textSize="14sp"
                         android:layout_marginTop="4dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
-
                     <ImageButton
                         android:id="@+id/iconDownloadMovieButton"
                         android:layout_width="wrap_content"
@@ -110,135 +109,126 @@
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:padding="12dp"
                         app:tint="#F2F4F3" />
-
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerCastCrew"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:clipToPadding="false"
-                        android:overScrollMode="never"
-                        android:scrollbars="none"
-                        android:layout_gravity="center"
                         android:orientation="horizontal"
                         tools:listitem="@layout/item_cast_crew"/>
                 </LinearLayout>
-
-                <!-- Tabs -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:background="#111"
-                    android:paddingVertical="8dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:text="@string/episodes"
-                        android:textColor="#00FF99"
-                        android:gravity="center"
-                        android:textStyle="bold"
-                        android:textSize="16sp"
-                        android:layout_height="50dp"/>
-
-                    <TextView
-                        android:layout_height="50dp"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:text="@string/for_you"
-                        android:textColor="#AAA"
-                        android:gravity="center"
-                        android:textSize="16sp"/>
-
-                    <TextView
-                        android:layout_height="50dp"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:text="@string/comments"
-                        android:textColor="#AAA"
-                        android:gravity="center"
-                        android:textSize="16sp"/>
-
-                </LinearLayout>
-
-                <!-- Danh sách tập phim -->
-                <HorizontalScrollView
-                    android:id="@+id/episode_range_scroll_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:scrollbars="none"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:clipToPadding="false">
-
-                    <LinearLayout
-                        android:id="@+id/episode_range_container"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                    </LinearLayout>
-                </HorizontalScrollView>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerViewEpisodes"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:orientation="horizontal"
-                    android:paddingStart="6dp"
-                    android:paddingEnd="12dp"
-                    android:clipToPadding="false"
-                    android:layout_marginTop="8dp"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-                <!-- Exclusive Clips -->
-                <TextView
-                    android:text="@string/recommended_for_you"
-                    android:textColor="#FFF"
-                    android:textSize="18sp"
-                    android:paddingStart="12dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-                <!-- ProgressBar hiển thị khi tải dữ liệu -->
-                <ProgressBar
-                    android:id="@+id/progressBar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:visibility="visible" />
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerViewRecommended"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="16dp"
-                    android:visibility="gone"
-                    android:scrollbars="vertical"
-                    android:background="#000000" />
-
             </LinearLayout>
 
-            <!-- ==== PHẦN COMMENT ==== -->
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#111"
+            app:tabTextColor="#AAA"
+            app:tabSelectedTextColor="#00FF99"
+            app:tabIndicatorColor="#00FF99"
+            app:tabMode="fixed"
+            app:tabGravity="fill">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/episodes" />  <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/for_you" />   <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/comments" />  </com.google.android.material.tabs.TabLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:id="@+id/pageContainer_scrollable_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="8dp"> <TextView
+            android:id="@+id/anchor_episodes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:layout_marginStart="12dp"
+            android:layout_marginBottom="4dp"/>
+            <HorizontalScrollView
+                android:id="@+id/episode_range_scroll_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="12dp"
+                android:clipToPadding="false">
+                <LinearLayout
+                    android:id="@+id/episode_range_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"/>
+            </HorizontalScrollView>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewEpisodes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:nestedScrollingEnabled="false"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:clipToPadding="false"
+                android:layout_marginTop="8dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
             <TextView
-                android:text="7 Comments"
+                android:id="@+id/anchor_for_you"
+                android:text="@string/recommended_for_you"
                 android:textColor="#FFF"
                 android:textSize="18sp"
                 android:paddingStart="12dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewRecommended"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="8dp"
+                android:visibility="gone"
+                android:nestedScrollingEnabled="false"
+                android:scrollbars="vertical"
+                android:background="#000000" />
 
-            <!-- Tabs Trending | Latest -->
+            <TextView
+                android:id="@+id/anchor_comments"
+                android:text="Comments"
+                android:textColor="#FFF"
+                android:textSize="18sp"
+                android:paddingStart="12dp"
+                android:layout_marginTop="24dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="8dp">
-
                 <Button
                     android:layout_weight="1"
                     android:layout_width="0dp"
@@ -247,11 +237,9 @@
                     android:textSize="14sp"
                     android:textColor="#00FF99"
                     android:background="#222"/>
-
                 <Space
                     android:layout_width="8dp"
                     android:layout_height="match_parent" />
-
                 <Button
                     android:layout_weight="1"
                     android:layout_width="0dp"
@@ -267,159 +255,27 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="12dp">
-                <!-- Comment 1 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/default_avt"
-                        android:scaleType="centerCrop"
-                        android:layout_marginEnd="8dp"
-                        android:background="#444" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="User702e5413b"
-                            android:textColor="#CCC"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Episode ni sampai berapa? Sbb tak nampak kalau tak sign up"
-                            android:textColor="#FFF"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="5 months ago   Reply"
-                            android:textColor="#888"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/default_avt"
-                        android:scaleType="centerCrop"
-                        android:layout_marginEnd="8dp"
-                        android:background="#444" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="User702e5413b"
-                            android:textColor="#CCC"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Episode ni sampai berapa? Sbb tak nampak kalau tak sign up"
-                            android:textColor="#FFF"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="5 months ago   Reply"
-                            android:textColor="#888"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-                <!-- Reply -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginStart="24dp"
-                    android:layout_marginBottom="12dp">
-
-                    <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:src="@drawable/default_avt"
-                        android:scaleType="centerCrop"
-                        android:layout_marginEnd="8dp"
-                        android:background="#444" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Soya_Panass🔥🔥"
-                            android:textColor="#FF44AA"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="ada je."
-                            android:textColor="#FFF"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="5 months ago   Reply"
-                            android:textColor="#888"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
-    <!-- Ô nhập comment: CỐ ĐỊNH Ở CUỐI MÀN HÌNH -->
+    </androidx.core.widget.NestedScrollView>
+
     <LinearLayout
         android:id="@+id/commentInputBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:orientation="horizontal"
         android:visibility="gone"
         android:padding="12dp"
         android:background="#111"
-        android:gravity="center_vertical">
-
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/default_avt"
-            android:scaleType="centerCrop"
-            android:layout_marginEnd="8dp"
-            android:background="#444" />
-
+        android:gravity="center_vertical"
+        app:layout_dodgeInsetEdges="bottom"
+        android:layout_gravity="bottom" > <ImageView
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        tools:src="@drawable/default_avt"
+        android:scaleType="centerCrop"
+        android:layout_marginEnd="8dp"
+        android:background="#444" />
         <EditText
             android:id="@+id/commentInput"
             android:layout_width="0dp"
@@ -430,7 +286,6 @@
             android:textColor="#FFF"
             android:textColorHint="#888"
             android:padding="8dp" />
-
         <ImageButton
             android:id="@+id/sendButton"
             android:layout_width="47dp"
@@ -440,4 +295,4 @@
             android:src="@drawable/ic_send"
             app:tint="#FFF" />
     </LinearLayout>
-</RelativeLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
