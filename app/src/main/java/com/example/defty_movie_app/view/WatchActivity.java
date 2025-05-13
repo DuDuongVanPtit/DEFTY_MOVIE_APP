@@ -846,12 +846,27 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
             }
         }
 
-        if (currentMovieInList != null && DownloadedMovie.STATUS_COMPLETED.equals(currentMovieInList.getDownloadStatus())) {
-            iconDownloadMovieButton.setColorFilter(ContextCompat.getColor(this, R.color.download_icon_completed_green), PorterDuff.Mode.SRC_IN);
-            // Or: iconDownloadMovieButton.setImageResource(R.drawable.ic_download_done);
-        } else {
+        if (currentMovieInList != null) {
+            String status = currentMovieInList.getDownloadStatus();
+            Log.d(TAG, "updateDownloadButtonState for episode " + episodeId + " ("+ currentPlayingEpisodeSlug +"): Status = " + status);
+
+            iconDownloadMovieButton.setImageResource(R.drawable.ic_download); // Luôn dùng icon download gốc
+
+            if (DownloadedMovie.STATUS_COMPLETED.equals(status)) {
+                iconDownloadMovieButton.setColorFilter(ContextCompat.getColor(this, R.color.download_icon_completed_green), PorterDuff.Mode.SRC_IN);
+            } else if (DownloadedMovie.STATUS_DOWNLOADING.equals(status) || DownloadedMovie.STATUS_PENDING.equals(status)) {
+                // Khi đang tải hoặc chờ tải, đổi sang màu xanh dương
+                iconDownloadMovieButton.setColorFilter(ContextCompat.getColor(this, R.color.download_icon_downloading_blue), PorterDuff.Mode.SRC_IN);
+            } else if (DownloadedMovie.STATUS_FAILED.equals(status)) {
+                iconDownloadMovieButton.setColorFilter(ContextCompat.getColor(this, R.color.download_icon_failed_red), PorterDuff.Mode.SRC_IN);
+            }
+            else { // Các trường hợp khác hoặc trạng thái không xác định (coi như mặc định)
+                iconDownloadMovieButton.setColorFilter(ContextCompat.getColor(this, R.color.download_icon_default_tint), PorterDuff.Mode.SRC_IN);
+            }
+        } else { // Không có trong danh sách tải xuống
+            Log.d(TAG, "updateDownloadButtonState for episode " + episodeId + " ("+ currentPlayingEpisodeSlug +"): Not in download list.");
+            iconDownloadMovieButton.setImageResource(R.drawable.ic_download);
             iconDownloadMovieButton.setColorFilter(ContextCompat.getColor(this, R.color.download_icon_default_tint), PorterDuff.Mode.SRC_IN);
-            // Or: iconDownloadMovieButton.setImageResource(R.drawable.ic_download_default);
         }
     }
 
