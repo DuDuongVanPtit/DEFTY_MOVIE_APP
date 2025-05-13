@@ -90,6 +90,7 @@ public class MovieDetailResponse {
         private String slug;
         private Integer movieId;
         private Integer status;
+        private String processedLink;
 
         public Integer getId() {
             return id;
@@ -154,6 +155,13 @@ public class MovieDetailResponse {
         public void setStatus(Integer status) {
             this.status = status;
         }
+        public String getProcessedLink() {
+            return processedLink;
+        }
+        public void setProcessedLink(String processedLink) {
+            this.processedLink = processedLink;
+        }
+
     }
     public static class Category {
         public String name;

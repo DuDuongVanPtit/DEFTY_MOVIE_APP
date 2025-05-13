@@ -161,7 +161,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     private Integer episodeId;
     private Integer episodeNumber;
     private BroadcastReceiver downloadStatusReceiver;
-
+    private String processedLink;
     private int tabLayoutHeight = 0; // Biến lưu chiều cao của TabLayout để tính offset
 
     @Override
@@ -1007,6 +1007,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                     episodeUrl = episode.getLink(); // episodeUrl is crucial for download too
                     episodeId=episode.getId();
                     episodeNumber=episode.getNumber();
+                    processedLink=episode.getProcessedLink();
                     if (episode.getSlug() != null) { // Model EpisodeResponse.Episode cần có getSlug()
                         currentPlayingEpisodeSlug = episode.getSlug();
                         Log.d(TAG, "Initial playing episode slug: " + currentPlayingEpisodeSlug);
@@ -1117,12 +1118,12 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
 
     private void handleDownloadClick() {
         if (movieId == null || TextUtils.isEmpty(currentMovieTitle) ||
-                TextUtils.isEmpty(currentCoverImageUrl) || TextUtils.isEmpty(episodeUrl) || // episodeUrl is important!
+                TextUtils.isEmpty(currentCoverImageUrl) || TextUtils.isEmpty(processedLink) || // processedLink is important!
                 TextUtils.isEmpty(currentMovieSlug)) {
             Toast.makeText(this, "Thông tin phim chưa sẵn sàng để tải. Vui lòng thử lại sau.", Toast.LENGTH_LONG).show();
             Log.d("DownloadInfo", "Thông tin còn thiếu để tải: movieId=" + movieId +
                     ", title=" + currentMovieTitle + ", cover=" + currentCoverImageUrl +
-                    ", episodeUrl=" + episodeUrl + ", slug=" + currentMovieSlug);
+                    ", processedLink=" + processedLink + ", slug=" + currentMovieSlug);
             return;
         }
 
@@ -1130,7 +1131,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                 episodeId,
                 currentMovieTitle,
                 currentCoverImageUrl,
-                episodeUrl, // Use the fetched episodeUrl
+                processedLink,
                 currentPlayingEpisodeSlug,
                 episodeNumber
         );
@@ -1189,6 +1190,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         Toast.makeText(this, "Chuyển sang: " + episode.getDescription(), Toast.LENGTH_SHORT).show();
         if (episode.getLink() != null && !episode.getLink().isEmpty()) {
             episodeUrl = episode.getLink();
+            processedLink=episode.getProcessedLink();
             currentPlayingEpisodeSlug = episode.getSlug();
             episodeId=episode.getId();
             playVideo();

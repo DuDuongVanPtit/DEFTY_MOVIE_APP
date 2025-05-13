@@ -9,6 +9,7 @@ public class EpisodeResponse {
         private Integer number;
         private String description;
         private String link;
+        private String processedLink;
         private String slug;
 
         public Integer getNumber() {
@@ -49,6 +50,14 @@ public class EpisodeResponse {
 
         public void setId(Integer id) {
             this.id = id;
+        }
+
+        public String getProcessedLink() {
+            return processedLink;
+        }
+
+        public void setProcessedLink(String processedLink) {
+            this.processedLink = processedLink;
         }
     }
 }
