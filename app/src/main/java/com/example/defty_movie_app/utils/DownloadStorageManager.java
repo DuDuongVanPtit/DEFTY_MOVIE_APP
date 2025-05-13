@@ -56,6 +56,7 @@ public class DownloadStorageManager {
             }
         }
         if (!found) {
+            movie.setTitle(movie.getTitle()+"-Tập "+movie.getNumber());
             movies.add(0, movie); // Thêm phim mới vào đầu danh sách
             Log.d(TAG, "Added new movie: " + movie.getTitle());
         }
@@ -134,25 +135,6 @@ public class DownloadStorageManager {
         }
     }
 
-    public void removeDownloadedMovieById(int movieId, String slug) {
-        if (slug == null) return;
-        List<DownloadedMovie> movies = getDownloadedMovies();
-        DownloadedMovie movieToRemove = null;
-        for (DownloadedMovie movie : movies) {
-            if (movie.getId() == movieId && slug.equals(movie.getSlug())) {
-                movieToRemove = movie;
-                break;
-            }
-        }
-        if (movieToRemove != null) {
-            movies.remove(movieToRemove);
-            saveDownloadedMovies(movies);
-            Log.d(TAG, "Removed movie by ID: " + movieId + ", Slug: " + slug + ". Total: " + movies.size());
-        } else {
-            Log.d(TAG, "Movie not found for removal by ID: " + movieId + ", Slug: " + slug);
-        }
-    }
-
 
     private void saveDownloadedMovies(List<DownloadedMovie> movies) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -160,10 +142,5 @@ public class DownloadStorageManager {
         editor.putString(DOWNLOADED_MOVIES_KEY, jsonMovies);
         editor.apply();
     }
-    public void clearAllDownloads() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.remove(DOWNLOADED_MOVIES_KEY);
-        editor.apply();
-        Log.d(TAG, "Cleared all downloaded movies.");
-    }
+
 }

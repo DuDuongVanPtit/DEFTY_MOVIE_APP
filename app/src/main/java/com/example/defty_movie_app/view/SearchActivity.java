@@ -42,8 +42,9 @@ import com.example.defty_movie_app.viewmodel.MovieViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchActivity extends AppCompatActivity implements SearchHistoryAdapter.OnHistoryItemClickListener {
+public class SearchActivity extends AppCompatActivity implements SearchHistoryAdapter.OnHistoryItemClickListener, HotSearchMovieAdapter.OnHotMovieClickListener {
     private static final String TAG = "SearchActivity";
+
 
     private enum SearchState {
         HISTORY_AND_HOT_SEARCH,
@@ -125,7 +126,7 @@ public class SearchActivity extends AppCompatActivity implements SearchHistoryAd
             Log.e(TAG, "hotSearchRecyclerView is null");
             return;
         }
-        hotSearchAdapter = new HotSearchMovieAdapter(this);
+        hotSearchAdapter = new HotSearchMovieAdapter(this, this);
         hotSearchRecyclerView.setAdapter(hotSearchAdapter);
         hotSearchRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
@@ -365,7 +366,23 @@ public class SearchActivity extends AppCompatActivity implements SearchHistoryAd
         }
     }
 
+    @Override
+    public void onHotMovieClick(MovieNameResponse movie) {
+        if (movie != null && movie.getSlug() != null && !movie.getSlug().isEmpty()) {
+            // Add to search history when a hot search item is clicked
+            searchHistoryManager.addSearchQuery(movie.getName());
+            loadAndDisplaySearchHistory(); // Update history display immediately
 
+            Intent intent = new Intent(this, WatchActivity.class);
+            intent.putExtra("MOVIE_SLUG_ID", movie.getSlug());
+            startActivity(intent);
+            // Optionally, you might want to finish SearchActivity or change its state
+            // For now, it stays open.
+        } else {
+            Toast.makeText(this, getString(R.string.movie_id_not_found), Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Hot movie clicked but slug is null or empty. Movie name: " + (movie != null ? movie.getName() : "null movie object"));
+        }
+    }
     @Override
     public void onBackPressed() {
         // Let handleBackButtonPress decide if super.onBackPressed() is needed (by calling finish())
