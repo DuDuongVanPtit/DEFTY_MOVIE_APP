@@ -41,9 +41,14 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
+import androidx.media3.common.TrackGroup;
+import androidx.media3.common.TrackSelectionOverride;
+import androidx.media3.common.Tracks;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
+import androidx.media3.exoplayer.trackselection.MappingTrackSelector;
 import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -76,6 +81,21 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import androidx.media3.common.C;
+import androidx.media3.common.Format;
+import androidx.media3.common.MediaItem;
+import androidx.media3.common.PlaybackParameters;
+import androidx.media3.common.Player;
+import androidx.media3.common.TrackGroup;
+import androidx.media3.common.TrackSelectionOverride;
+import androidx.media3.common.Tracks;
+import androidx.media3.common.util.UnstableApi;
+import androidx.media3.common.util.Util;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.source.TrackGroupArray; // Quan trọng: Import đúng TrackGroupArray
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
+import androidx.media3.exoplayer.trackselection.MappingTrackSelector;
+import androidx.media3.ui.PlayerView;
 
 public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.OnEpisodeClickListener {
 
@@ -232,48 +252,86 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     }
     // Đặt hàm này trong class WatchActivity.java
 
+    @OptIn(markerClass = UnstableApi.class)
     private void setupFullscreenLauncher() {
         fullscreenLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                result -> { // Đây là lambda callback xử lý kết quả trả về
+                result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         long lastPosition = result.getData().getLongExtra(FullscreenPlayerActivity.RESULT_LAST_POSITION, 0);
-                        Log.d(TAG, "Returned from fullscreen at position: " + lastPosition);
+                        // --- BEGIN: Nhận và áp dụng cài đặt từ Fullscreen ---
+                        float lastSpeed = result.getData().getFloatExtra(FullscreenPlayerActivity.RESULT_PLAYBACK_SPEED, 1.0f);
+                        boolean qualityIsAuto = result.getData().getBooleanExtra(FullscreenPlayerActivity.RESULT_QUALITY_IS_AUTO, true);
+                        int qualityRendererIndex = -1, qualityGroupIndex = -1, qualityTrackIndex = -1;
 
-                        startPositionToResume = lastPosition; // Luôn cập nhật vị trí để resume
+                        if (!qualityIsAuto) {
+                            qualityRendererIndex = result.getData().getIntExtra(FullscreenPlayerActivity.RESULT_QUALITY_RENDERER_INDEX, -1);
+                            qualityGroupIndex = result.getData().getIntExtra(FullscreenPlayerActivity.RESULT_QUALITY_GROUP_INDEX_IN_RENDERER_TRACK_GROUPS, -1);
+                            qualityTrackIndex = result.getData().getIntExtra(FullscreenPlayerActivity.RESULT_QUALITY_TRACK_INDEX_IN_GROUP, -1);
+                        }
+                        Log.d(TAG, "Returned from fullscreen. Pos: " + lastPosition + ", Speed: " + lastSpeed +
+                                ", QualityAuto: " + qualityIsAuto + ", R:" + qualityRendererIndex +
+                                ", G:" + qualityGroupIndex + ", T:" + qualityTrackIndex);
 
-                        if (player == null) { // Nếu player đã bị release (ví dụ do onStop)
-                            Log.d(TAG, "Player was null after fullscreen, re-initializing.");
-                            initializePlayer(); // Hàm này sẽ tạo player, set media, prepare, seek và play
-                        } else { // Player vẫn còn tồn tại
-                            Log.d(TAG, "Player exists after fullscreen, seeking and playing.");
+                        startPositionToResume = lastPosition;
+
+                        // Áp dụng cài đặt cho player của WatchActivity
+                        if (player == null) {
+                            initializePlayer(); // Sẽ dùng startPositionToResume
+                        }
+
+                        if (player != null) {
+                            player.setPlaybackParameters(new PlaybackParameters(lastSpeed));
+
+                            if (player.getTrackSelector() instanceof DefaultTrackSelector) {
+                                DefaultTrackSelector trackSelector = (DefaultTrackSelector) player.getTrackSelector();
+                                DefaultTrackSelector.Parameters.Builder paramsBuilder = trackSelector.getParameters().buildUpon();
+                                MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+
+                                if (mappedTrackInfo != null && qualityRendererIndex != -1) { // Cần rendererIndex để áp dụng
+                                    androidx.media3.exoplayer.source.TrackGroupArray rendererTrackGroups = mappedTrackInfo.getTrackGroups(qualityRendererIndex);
+                                    if (qualityIsAuto) {
+                                        paramsBuilder.clearSelectionOverrides(qualityRendererIndex);
+                                    } else if (qualityGroupIndex != -1 && qualityTrackIndex != -1 && rendererTrackGroups != null) {
+                                        DefaultTrackSelector.SelectionOverride override =
+                                                new DefaultTrackSelector.SelectionOverride(qualityGroupIndex, qualityTrackIndex);
+                                        paramsBuilder.setSelectionOverride(qualityRendererIndex, rendererTrackGroups, override);
+                                    }
+                                    trackSelector.setParameters(paramsBuilder.build());
+                                } else if (qualityIsAuto && mappedTrackInfo != null) {
+                                    // Nếu là Auto, cố gắng clear cho tất cả video renderers nếu không có specific index
+                                    // hoặc tìm video renderer index đầu tiên
+                                    for(int i=0; i < mappedTrackInfo.getRendererCount(); i++){
+                                        if(mappedTrackInfo.getRendererType(i) == C.TRACK_TYPE_VIDEO){
+                                            paramsBuilder.clearSelectionOverrides(i);
+                                            break;
+                                        }
+                                    }
+                                    trackSelector.setParameters(paramsBuilder.build());
+                                }
+                            }
+                            // Logic resume player
                             if (player.getPlaybackState() == Player.STATE_IDLE) {
-                                // Nếu player đang IDLE, có thể nó cần prepare lại trước khi seek và play
                                 if (episodeUrl != null && !episodeUrl.isEmpty()) {
                                     MediaItem mediaItem = MediaItem.fromUri(Uri.parse(episodeUrl));
-                                    player.setMediaItem(mediaItem); // Đảm bảo media item đúng
+                                    player.setMediaItem(mediaItem);
                                     player.prepare();
                                 }
                             }
-                            player.seekTo(lastPosition);
-                            player.play(); // Tiếp tục phát
+                            player.seekTo(startPositionToResume); // startPositionToResume đã được cập nhật
+                            player.play();
                         }
+                        // --- END: Nhận và áp dụng cài đặt ---
                         if (playerView != null) {
-                            playerView.setVisibility(View.VISIBLE); // Đảm bảo PlayerView hiển thị
+                            playerView.setVisibility(View.VISIBLE);
                         }
-
                     } else {
-                        Log.d(TAG, "Returned from fullscreen without RESULT_OK or data. Current player state: " +
-                                (player != null ? player.getPlaybackState() : "null"));
-                        // Nếu người dùng chỉ back ra mà không có kết quả rõ ràng, vẫn thử resume nếu player còn
+                        // ... (xử lý khác của bạn) ...
                         if (player != null) {
                             player.play();
                         }
                     }
-                    // Đảm bảo màn hình quay lại Portrait sau khi thoát fullscreen (nếu WatchActivity luôn là Portrait)
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                    // Hoặc nếu bạn muốn nó tuân theo cài đặt của hệ thống:
-                    // setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                 });
     }
     // Đặt hàm này trong class WatchActivity.java
@@ -523,18 +581,58 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         else Log.w(TAG,"Settings button (btn_settings_custom) not found!");
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void openFullscreenActivity() {
         if (player != null && episodeUrl != null && !episodeUrl.isEmpty()) {
             long currentPosition = player.getCurrentPosition();
-            player.pause();
+            float currentSpeed = player.getPlaybackParameters().speed; // Lấy tốc độ hiện tại
+
+            player.pause(); // Pause trước khi chuyển Activity
+
             Intent intent = new Intent(this, FullscreenPlayerActivity.class);
             intent.putExtra(FullscreenPlayerActivity.EXTRA_VIDEO_URL, episodeUrl);
             intent.putExtra(FullscreenPlayerActivity.EXTRA_START_POSITION, currentPosition);
-            Log.d(TAG, "Launching fullscreen from position: " + currentPosition);
+            intent.putExtra(FullscreenPlayerActivity.EXTRA_PLAYBACK_SPEED, currentSpeed); // Gửi tốc độ
+
+            // --- BEGIN: Gửi cài đặt chất lượng hiện tại ---
+            if (player.getTrackSelector() instanceof DefaultTrackSelector) {
+                DefaultTrackSelector trackSelector = (DefaultTrackSelector) player.getTrackSelector();
+                DefaultTrackSelector.Parameters currentParams = trackSelector.getParameters();
+                MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+                boolean isAuto = true;
+                int rendererIndex = -1, groupIndex = -1, trackIndex = -1;
+
+                if (mappedTrackInfo != null) {
+                    for (int i = 0; i < mappedTrackInfo.getRendererCount(); i++) {
+                        if (mappedTrackInfo.getRendererType(i) == C.TRACK_TYPE_VIDEO) {
+                            rendererIndex = i;
+                            androidx.media3.exoplayer.source.TrackGroupArray rendererTrackGroups = mappedTrackInfo.getTrackGroups(rendererIndex);
+                            if (currentParams.hasSelectionOverride(rendererIndex, rendererTrackGroups)) {
+                                DefaultTrackSelector.SelectionOverride override = currentParams.getSelectionOverride(rendererIndex, rendererTrackGroups);
+                                if (override != null && override.tracks.length > 0) {
+                                    isAuto = false;
+                                    groupIndex = override.groupIndex; // Đây là groupIndex trong rendererTrackGroups
+                                    trackIndex = override.tracks[0];  // Đây là trackIndex trong group đó
+                                }
+                            }
+                            break; // Tìm thấy video renderer
+                        }
+                    }
+                }
+                intent.putExtra(FullscreenPlayerActivity.EXTRA_QUALITY_IS_AUTO, isAuto);
+                if (!isAuto) {
+                    intent.putExtra(FullscreenPlayerActivity.EXTRA_QUALITY_RENDERER_INDEX, rendererIndex);
+                    intent.putExtra(FullscreenPlayerActivity.EXTRA_QUALITY_GROUP_INDEX_IN_RENDERER_TRACK_GROUPS, groupIndex);
+                    intent.putExtra(FullscreenPlayerActivity.EXTRA_QUALITY_TRACK_INDEX_IN_GROUP, trackIndex);
+                }
+                Log.d(TAG, "To Fullscreen - QualityAuto: " + isAuto + ", R: " + rendererIndex + ", G: " + groupIndex + ", T: " + trackIndex);
+            }
+            // --- END: Gửi cài đặt chất lượng ---
+
+            Log.d(TAG, "Launching fullscreen. Pos: " + currentPosition + ", Speed: " + currentSpeed);
             fullscreenLauncher.launch(intent);
         } else {
-            Log.w(TAG, "Cannot open fullscreen: Player or URL not ready.");
-            Toast.makeText(this, "Trình phát chưa sẵn sàng.", Toast.LENGTH_SHORT).show();
+            // ... (xử lý lỗi của bạn) ...
         }
     }
 
@@ -556,6 +654,24 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
             Toast.makeText(this, "Trình phát chưa sẵn sàng.", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        final CharSequence[] settingsOptions = {"Chọn tốc độ phát", "Chọn chất lượng video"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogCustom);
+        builder.setTitle("Cài đặt Video");
+        builder.setItems(settingsOptions, (dialog, which) -> {
+            if (which == 0) {
+                showSpeedSelectionDialog();
+            } else if (which == 1) {
+                showQualitySelectionDialog();
+            }
+        });
+        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
+    }
+    private void showSpeedSelectionDialog() {
+        if (player == null) return; // Đã kiểm tra ở handleSettings nhưng thêm cho an toàn
+
         final CharSequence[] speedOptions = {"0.5x", "0.75x", "Bình thường (1x)", "1.25x", "1.5x", "2x"};
         final float[] speedValues = {0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f};
         float currentSpeed = player.getPlaybackParameters().speed;
@@ -566,18 +682,147 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                 break;
             }
         }
-        if (currentSpeedIndex == -1) currentSpeedIndex = 2; // Default to 1x
+        if (currentSpeedIndex == -1) currentSpeedIndex = 2; // Mặc định là 1x
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogCustom);
         builder.setTitle("Chọn tốc độ phát");
         builder.setSingleChoiceItems(speedOptions, currentSpeedIndex, (dialog, which) -> {
-            if (player != null) player.setPlaybackParameters(new PlaybackParameters(speedValues[which]));
+            if (player != null) {
+                player.setPlaybackParameters(new PlaybackParameters(speedValues[which]));
+            }
             dialog.dismiss();
             Toast.makeText(WatchActivity.this, "Tốc độ: " + speedOptions[which], Toast.LENGTH_SHORT).show();
         });
         builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
         builder.create().show();
     }
+    @OptIn(markerClass = UnstableApi.class)
+    private void showQualitySelectionDialog() {
+        if (player == null || !(player.getTrackSelector() instanceof DefaultTrackSelector)) {
+            Toast.makeText(this, "Không thể thay đổi chất lượng (player hoặc trackSelector không hợp lệ).", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        DefaultTrackSelector trackSelector = (DefaultTrackSelector) player.getTrackSelector();
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+
+        if (mappedTrackInfo == null) {
+            Toast.makeText(this, "Thông tin track không có sẵn.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int videoRendererIndex = -1;
+        for (int i = 0; i < mappedTrackInfo.getRendererCount(); i++) {
+            if (mappedTrackInfo.getRendererType(i) == C.TRACK_TYPE_VIDEO) {
+                videoRendererIndex = i;
+                break;
+            }
+        }
+
+        if (videoRendererIndex == -1) {
+            Toast.makeText(this, "Không tìm thấy track video.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        TrackGroupArray rendererTrackGroups = mappedTrackInfo.getTrackGroups(videoRendererIndex);
+        if (rendererTrackGroups.isEmpty()) {
+            Toast.makeText(this, "Không có lựa chọn chất lượng video (TrackGroupArray rỗng).", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Tìm TrackGroup video chính (thường là cái đầu tiên có nhiều hơn 1 format)
+        // và index của nó trong rendererTrackGroups
+        androidx.media3.common.TrackGroup targetVideoTrackGroup = null; // common.TrackGroup
+        int targetVideoTrackGroupIndexInRenderer = -1;
+
+        for (int i = 0; i < rendererTrackGroups.length; i++) {
+            androidx.media3.common.TrackGroup currentGroup = rendererTrackGroups.get(i); // Đây là common.TrackGroup
+            if (currentGroup.length > 0) { // Kiểm tra có format nào không
+                // Giả sử chúng ta lấy TrackGroup đầu tiên có format.
+                // Bạn có thể thêm logic phức tạp hơn để chọn TrackGroup nếu cần.
+                targetVideoTrackGroup = currentGroup;
+                targetVideoTrackGroupIndexInRenderer = i; // Lưu index của TrackGroup này trong TrackGroupArray
+                break;
+            }
+        }
+
+        if (targetVideoTrackGroup == null) {
+            Toast.makeText(this, "Không tìm thấy TrackGroup video phù hợp.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<String> qualityLabels = new ArrayList<>();
+        List<Integer> trackIndicesWithinTargetGroup = new ArrayList<>(); // Index của format TRONG targetVideoTrackGroup
+
+        qualityLabels.add("Tự động");
+        trackIndicesWithinTargetGroup.add(-1); // Giá trị đặc biệt cho Auto
+
+        for (int i = 0; i < targetVideoTrackGroup.length; i++) {
+            Format format = targetVideoTrackGroup.getFormat(i);
+            String label = format.height + "p";
+            if (format.bitrate != Format.NO_VALUE) {
+                label += " (~" + (format.bitrate / 1000) + "kbps)";
+            }
+            qualityLabels.add(label);
+            trackIndicesWithinTargetGroup.add(i);
+        }
+
+        if (qualityLabels.size() <= 1 && qualityLabels.get(0).equals("Tự động")) {
+            Toast.makeText(this, "Chỉ có một chất lượng video khả dụng.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int currentSelectedDialogIndex = 0; // Mặc định là "Tự động"
+        DefaultTrackSelector.Parameters currentParams = trackSelector.getParameters();
+
+        if (currentParams.hasSelectionOverride(videoRendererIndex, rendererTrackGroups)) {
+            // Lấy override kiểu exoplayer
+            DefaultTrackSelector.SelectionOverride exoplayerOverride = currentParams.getSelectionOverride(videoRendererIndex, rendererTrackGroups);
+            if (exoplayerOverride != null && exoplayerOverride.groupIndex == targetVideoTrackGroupIndexInRenderer && exoplayerOverride.tracks.length > 0) {
+                int selectedTrackIndexInGroup = exoplayerOverride.tracks[0];
+                for (int i = 1; i < trackIndicesWithinTargetGroup.size(); i++) { // Bắt đầu từ 1 để bỏ qua "Tự động"
+                    if (trackIndicesWithinTargetGroup.get(i) == selectedTrackIndexInGroup) {
+                        currentSelectedDialogIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogCustom);
+        builder.setTitle("Chọn chất lượng video");
+        final int finalVideoRendererIndex = videoRendererIndex;
+        final TrackGroupArray finalRendererTrackGroups = rendererTrackGroups; // exoplayer.source.TrackGroupArray
+        final int finalTargetVideoTrackGroupIndexInRenderer = targetVideoTrackGroupIndexInRenderer;
+
+
+        builder.setSingleChoiceItems(qualityLabels.toArray(new CharSequence[0]), currentSelectedDialogIndex,
+                (dialog, which) -> {
+                    DefaultTrackSelector.Parameters.Builder parametersBuilder = trackSelector.getParameters().buildUpon();
+                    int selectedTrackIndexInGroupFromDialog = trackIndicesWithinTargetGroup.get(which);
+
+                    if (selectedTrackIndexInGroupFromDialog == -1) { // "Tự động"
+                        parametersBuilder.clearSelectionOverrides(finalVideoRendererIndex);
+                    } else {
+                        // Tạo DefaultTrackSelector.SelectionOverride (exoplayer type)
+                        DefaultTrackSelector.SelectionOverride newExoPlayerOverride =
+                                new DefaultTrackSelector.SelectionOverride(finalTargetVideoTrackGroupIndexInRenderer, selectedTrackIndexInGroupFromDialog);
+
+                        parametersBuilder.setSelectionOverride(finalVideoRendererIndex,
+                                finalRendererTrackGroups, // TrackGroupArray của renderer
+                                newExoPlayerOverride);    // DefaultTrackSelector.SelectionOverride
+                    }
+                    trackSelector.setParameters(parametersBuilder.build());
+                    dialog.dismiss();
+                    Toast.makeText(WatchActivity.this, "Chất lượng: " + qualityLabels.get(which), Toast.LENGTH_SHORT).show();
+                });
+
+        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
+    }
+
+
+
     // --- ExoPlayer Lifecycle Management ---
     @OptIn(markerClass = UnstableApi.class)
     @Override
