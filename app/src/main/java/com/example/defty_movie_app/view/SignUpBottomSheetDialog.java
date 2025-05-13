@@ -44,15 +44,22 @@ public class SignUpBottomSheetDialog extends BottomSheetDialogFragment {
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
         authViewModel.isSignUpSuccess().observe(getViewLifecycleOwner(), success -> {
-            if (success) {
-                showSnackbar("Registration successful!");
+            if (success != null && success) {
+                showSnackBar("Registration successful!");
                 dismiss();
+                Toast.makeText(requireContext(), getString(R.string.register_successful), Toast.LENGTH_SHORT).show();
                 LoginWithPasswordBottomSheetDialog loginDialog = new LoginWithPasswordBottomSheetDialog();
                 loginDialog.show(getParentFragmentManager(), "LoginBottomSheet");
             }
         });
 
-        authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> showSnackbar(message));
+        authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Snackbar.make(view, error, Snackbar.LENGTH_SHORT).show();
+            }
+        });
+
+        authViewModel.getErrorMessage().observe(getViewLifecycleOwner(), this::showSnackBar);
 
         btnBack.setOnClickListener(v -> {
             dismiss();
@@ -70,7 +77,6 @@ public class SignUpBottomSheetDialog extends BottomSheetDialogFragment {
 
             if (validateInputs(email, username, password, fullName)) {
                 authViewModel.signUpUser(email, username, password, fullName);
-                Toast.makeText(requireContext(), getString(R.string.register_successful), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -85,29 +91,25 @@ public class SignUpBottomSheetDialog extends BottomSheetDialogFragment {
 
     private boolean validateInputs(String email, String username, String password, String fullName) {
         if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            showSnackbar("Please enter a valid email");
+            showSnackBar("Please enter a valid email");
             return false;
         }
-
         if (username.isEmpty() || username.length() < 3) {
-            showSnackbar("Username must be at least 3 characters");
+            showSnackBar("Username must be at least 3 characters");
             return false;
         }
-
         if (password.isEmpty() || password.length() < 8) {
-            showSnackbar("Password must be at least 6 characters");
+            showSnackBar("Password must be at least 8 characters");
             return false;
         }
-
         if (fullName.isEmpty()) {
-            showSnackbar("Please enter your full name");
+            showSnackBar("Please enter your full name");
             return false;
         }
-
         return true;
     }
 
-    private void showSnackbar(String message) {
+    private void showSnackBar(String message) {
         Snackbar.make(requireView(), message, Snackbar.LENGTH_SHORT).show();
     }
 }

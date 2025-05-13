@@ -60,14 +60,14 @@ public class AuthViewModel extends ViewModel {
         call.enqueue(new Callback<ApiResponse<LoginResponse>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<LoginResponse>> call, @NonNull Response<ApiResponse<LoginResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null && response.body().getStatus() == 200) {
                     LoginResponse loginResponse = response.body().getData();
                     String token = loginResponse.getToken();
                     tokenLiveData.setValue(token);
                     loginSuccess.setValue(true);
                 } else {
                     loginSuccess.setValue(false);
-                    errorMessage.setValue("Login Failed");
+                    errorMessage.setValue("Username or password is wrong");
                 }
             }
 
@@ -84,10 +84,11 @@ public class AuthViewModel extends ViewModel {
         apiService.signUp(signUpRequest).enqueue(new Callback<ApiResponse<SignUpResponse>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<SignUpResponse>> call, @NonNull Response<ApiResponse<SignUpResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null && response.body().getStatus() != 400) {
                     signUpSuccess.setValue(true);
                 } else {
-                    errorMessage.setValue("Sign Up Failed. Please try again.");
+                    assert response.body() != null;
+                    errorMessage.setValue(response.body().getMessage());
                 }
             }
 

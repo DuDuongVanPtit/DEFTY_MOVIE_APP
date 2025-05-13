@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="#121212">
 
-    <!-- Banner VIP -->
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -32,7 +31,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="#928C8C"
-                android:padding="5dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_avatar" />
         </androidx.cardview.widget.CardView>

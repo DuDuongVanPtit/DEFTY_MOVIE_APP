@@ -29,7 +29,7 @@
     <string name="download">Tải xuống</string>
     <string name="profile">Hồ sơ</string>
     <string-array name="gender_array">
-        <item>Chọn giới tính</item>
+        <item>--Chọn giới tính--</item>
         <item>Nam</item>
         <item>Nữ</item>
         <item>Khác</item>
@@ -63,7 +63,8 @@
     <string name="register_successful">Đăng ký thành công!</string>
     <string name="login_successful">Đăng nhập thành công!</string>
     <string name="please_enter_email_and_password">Vui lòng nhập email và mật khẩu</string>
-    <string name="login_failed">Đăng nhập thất bại</string>
+    <string name="login_failed">Tên người dùng hoặc mật khẩu không đúng</string>
+    <string name="register_failed">Đăng ký thất bại</string>
     <string-array name="pref_display_mode_entries">
         <item>Sáng</item>
         <item>Tối</item>
@@ -114,5 +115,10 @@
     <string name="additional_info">Thông tin bổ sung</string>
     <string name="limited">Giới hạn</string>
     <string name="exclusive_for_new_users_nfirst_month_only_23_000">Ưu đãi cho người dùng mới\nTháng đầu chỉ 23.000₫</string>
-
+    <string name="save">Lưu</string>
+    <string name="personal_data">Thông tin cá nhân</string>
+    <string name="profile_image">Ảnh đại diện</string>
+    <string name="name_label">Họ và tên</string>
+    <string name="date_of_birth">Ngày sinh</string>
+    <string name="enter_name">Nhập họ và tên</string>
 </resources>

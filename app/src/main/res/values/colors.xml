@@ -26,4 +26,6 @@
     <color name="download_icon_default_tint">#F2F4F3</color>
     <color name="active_range_button_background">#FF9800</color> <color name="active_range_button_text">#FFFFFF</color>
     <color name="inactive_range_button_background">#555555</color> <color name="inactive_range_button_text">#CCCCCC</color>
+     <color name="download_icon_downloading_blue">#2196F3</color>
+    <color name="download_icon_failed_red">#F44336</color>
 </resources>

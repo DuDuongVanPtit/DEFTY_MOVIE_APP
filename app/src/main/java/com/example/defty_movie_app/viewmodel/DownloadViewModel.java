@@ -114,9 +114,6 @@ public class DownloadViewModel extends AndroidViewModel {
             if (fileToDelete.exists()) {
                 if (fileToDelete.delete()) {
                     Log.d(TAG, "File vật lý đã xóa: " + movie.getLocalFilePath());
-                } else {
-                    Log.e(TAG, "Lỗi xóa file vật lý: " + movie.getLocalFilePath());
-                    Toast.makeText(appContext, "Lỗi xóa file trên máy.", Toast.LENGTH_SHORT).show();
                 }
             }
         }

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar_personal"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#1E1E1E"
+        android:elevation="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:id="@+id/back_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/back"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@android:color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/personal_toolbar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/personal_data"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/back_button"
+                app:layout_constraintEnd_toStartOf="@id/personal_toolbar_save_button"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"/>
+
+
+            <TextView
+                android:id="@+id/personal_toolbar_save_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/save"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <View
+        android:id="@+id/divider_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#424242"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_personal"/>
+
+    <TextView
+        android:id="@+id/textViewProfileImageLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/profile_image"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:paddingStart="16dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider_toolbar"
+        app:layout_constraintEnd_toStartOf="@+id/imageViewProfile"/>
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/imageViewProfile"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="16dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/profile_image"
+        android:src="@drawable/ic_avatar"
+        android:background="#928C8C"
+        app:shapeAppearanceOverlay="@style/RoundedImage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/textViewProfileImageLabel"
+        app:layout_constraintBottom_toBottomOf="@id/textViewProfileImageLabel" />
+
+
+    <View
+        android:id="@+id/divider_profile"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#424242"
+        android:layout_marginStart="16dp"
+        app:layout_constraintTop_toBottomOf="@id/textViewProfileImageLabel"/>
+
+    <TextView
+        android:id="@+id/textViewNameLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/name_label"
+        android:textColor="#A0A0A0"
+        android:textSize="13sp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider_profile" />
+
+    <EditText
+        android:id="@+id/textViewNameValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints=""
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp"
+        android:paddingTop="4dp"
+        android:background="@android:color/transparent"
+        android:hint="@string/enter_name"
+        android:inputType="textPersonName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewNameLabel" />
+
+
+    <View
+        android:id="@+id/divider_name"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#424242"
+        android:layout_marginStart="16dp"
+        app:layout_constraintTop_toBottomOf="@id/textViewNameValue"/>
+
+    <TextView
+        android:id="@+id/textViewGenderLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/gender"
+        android:textColor="#A0A0A0"
+        android:textSize="13sp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider_name" />
+
+    <Spinner
+        android:id="@+id/spinnerGender"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:layout_marginTop="4dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@drawable/spinner_background"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintTop_toBottomOf="@id/textViewGenderLabel"
+        android:popupBackground="@android:color/black" />
+
+    <View
+        android:id="@+id/divider_gender"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#424242"
+        android:layout_marginStart="16dp"
+        app:layout_constraintTop_toBottomOf="@id/spinnerGender"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:id="@+id/textViewDobLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/date_of_birth"
+        android:textColor="#A0A0A0"
+        android:textSize="13sp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider_gender" />
+
+    <TextView
+        android:id="@+id/textViewDobValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp"
+        android:paddingTop="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewDobLabel"/>
+
+    <View
+        android:id="@+id/divider_dob"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#424242"
+        android:layout_marginStart="16dp"
+        app:layout_constraintTop_toBottomOf="@id/textViewDobValue"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
