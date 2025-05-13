@@ -25,8 +25,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.adapter.DownloadedMovieAdapter;
 import com.example.defty_movie_app.data.dto.DownloadedMovie;
-// Removed DownloadServiceHelper import
-// Removed DownloadStorageManager import (ViewModel will handle it)
 import com.example.defty_movie_app.viewmodel.DownloadViewModel; // Import your ViewModel
 
 // Removed JSON imports

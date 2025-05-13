@@ -3,13 +3,15 @@ package com.example.defty_movie_app.data.dto;
 import java.util.Objects;
 
 public class DownloadedMovie {
-    private int id;
+    private Integer id;
+
     private String title;
     private String thumbnail;
     private String videoUrl;
     private String localFilePath; // Sẽ được cập nhật khi tải xong
     private long downloadDate;
     private String slug;
+    private Integer number;
 
     // Trường mới
     private long downloadId; // ID từ DownloadManager
@@ -26,7 +28,7 @@ public class DownloadedMovie {
     }
 
     // Constructor có thể được điều chỉnh để bao gồm các trường mới nếu cần khi khởi tạo
-    public DownloadedMovie(int id, String title, String thumbnail, String videoUrl, String slug) {
+    public DownloadedMovie(Integer id, String title, String thumbnail, String videoUrl, String slug,Integer number) {
         this.id = id;
         this.title = title;
         this.thumbnail = thumbnail;
@@ -36,16 +38,25 @@ public class DownloadedMovie {
         this.downloadStatus = STATUS_PENDING; // Trạng thái ban đầu
         this.downloadId = -1; // Chưa có ID tải xuống
         this.localFilePath = null; // Chưa có đường dẫn file cục bộ
+        this.number=number;
     }
 
 
     // Getters and Setters
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getNumber() {
+        return number;
+    }
+
+    public void setNumber(Integer number) {
+        this.number = number;
     }
 
     public String getTitle() {

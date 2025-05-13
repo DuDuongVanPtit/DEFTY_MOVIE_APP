@@ -1,9 +1,11 @@
 package com.example.defty_movie_app.view;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -38,6 +40,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
@@ -63,6 +66,7 @@ import com.example.defty_movie_app.data.remote.AuthApiService;
 import com.example.defty_movie_app.data.remote.RecommenderServiceApi;
 import com.example.defty_movie_app.data.repository.AuthRepository;
 import com.example.defty_movie_app.data.repository.CallRecommender;
+import com.example.defty_movie_app.utils.DownloadCompletionReceiver;
 import com.example.defty_movie_app.utils.GridSpacingItemDecoration;
 import com.example.defty_movie_app.utils.LocaleHelper;
 import com.example.defty_movie_app.viewmodel.DownloadViewModel;
@@ -134,6 +138,9 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     private DownloadedMovie pendingMovieToDownload;
     private String currentMovieTitle;
     private String currentCoverImageUrl;
+    private Integer episodeId;
+    private Integer episodeNumber;
+    private BroadcastReceiver downloadStatusReceiver;
 
     private int tabLayoutHeight = 0; // Biến lưu chiều cao của TabLayout để tính offset
 
@@ -178,6 +185,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         }
 
         initializeDownloadFeature();
+        setupDownloadStatusReceiver();
         fetchMovieDetail(currentMovieSlug);
         fetchEpisode(currentMovieSlug);
         setupOtherListeners(); // Đổi tên từ setupListeners để phân biệt
@@ -335,25 +343,35 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     }
 
     private void initializeDownloadFeature() {
-        // Khởi tạo ViewModel
         downloadViewModel = new ViewModelProvider(this).get(DownloadViewModel.class);
-
-        // Theo dõi LiveData từ ViewModel
         downloadViewModel.getDownloadedMoviesLiveData().observe(this, new Observer<List<DownloadedMovie>>() {
             @Override
             public void onChanged(List<DownloadedMovie> downloadedMovies) {
-                // Khi danh sách phim đã tải thay đổi (ví dụ: tải xong, xóa phim),
-                // cập nhật lại trạng thái của nút download.
-                Log.d(TAG, "Downloaded movies list changed, updating button state.");
+                Log.d(TAG, "Downloaded movies list changed in LiveData, updating button state.");
+                // Gọi updateDownloadButtonState() ở đây là đúng vì LiveData đã thay đổi
+                // Nó sẽ được trigger bởi loadDownloadedMovies() từ broadcast receiver
                 updateDownloadButtonState();
             }
         });
+        // Không cần gọi loadDownloadedMovies() ở đây nữa nếu onResume đã gọi
+    }
 
-        // Có thể gọi loadDownloadedMovies lần đầu ở đây nếu bạn muốn cập nhật trạng thái nút download ngay khi Activity tạo
-        // Tuy nhiên, bạn đang gọi nó trong fetchMovieDetail sau khi có movieId và currentMovieSlug,
-        // và cả trong onResume, điều này cũng hợp lý.
-        // Nếu gọi ở đây, đảm bảo currentMovieSlug và movieId có thể null ban đầu.
-        // downloadViewModel.loadDownloadedMovies();
+    private void setupDownloadStatusReceiver() {
+        downloadStatusReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(TAG, "Received ACTION_DOWNLOAD_STATUS_CHANGED broadcast");
+                // long downloadId = intent.getLongExtra(DownloadCompletionReceiver.EXTRA_DOWNLOAD_ID, -1);
+                // Log.d(TAG, "Download ID from broadcast: " + downloadId);
+
+                // Yêu cầu ViewModel tải lại danh sách từ SharedPreferences
+                // Điều này sẽ kích hoạt LiveData observer và cập nhật UI
+                if (downloadViewModel != null) {
+                    Log.d(TAG, "Telling DownloadViewModel to reload movies.");
+                    downloadViewModel.loadDownloadedMovies();
+                }
+            }
+        };
     }
 
     private void setupOtherListeners() { // Đổi tên hàm
@@ -583,6 +601,9 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     @Override
     protected void onStart() {
         super.onStart();
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                downloadStatusReceiver,
+                new IntentFilter(DownloadCompletionReceiver.ACTION_DOWNLOAD_STATUS_CHANGED));
         if (Util.SDK_INT >= 24 && player == null) {
             if(episodeUrl != null && !episodeUrl.isEmpty()){
                 initializePlayer();
@@ -629,6 +650,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         if (Util.SDK_INT >= 24) {
             releasePlayer();
         }
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(downloadStatusReceiver);
     }
 
     @Override
@@ -738,6 +760,8 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                 if (response.isSuccessful() && response.body() != null && response.body().data != null) {
                     EpisodeResponse.Episode episode = response.body().data;
                     episodeUrl = episode.getLink(); // episodeUrl is crucial for download too
+                    episodeId=episode.getId();
+                    episodeNumber=episode.getNumber();
                     if (episode.getSlug() != null) { // Model EpisodeResponse.Episode cần có getSlug()
                         currentPlayingEpisodeSlug = episode.getSlug();
                         Log.d(TAG, "Initial playing episode slug: " + currentPlayingEpisodeSlug);
@@ -803,7 +827,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
 
     // --- DOWNLOAD: Methods ---
     private void updateDownloadButtonState() {
-        if (iconDownloadMovieButton == null || movieId == null || TextUtils.isEmpty(currentMovieSlug)) {
+        if (iconDownloadMovieButton == null || episodeId == null || TextUtils.isEmpty(currentPlayingEpisodeSlug)) {
             if (iconDownloadMovieButton != null) {
                 iconDownloadMovieButton.setColorFilter(ContextCompat.getColor(this, R.color.download_icon_default_tint), PorterDuff.Mode.SRC_IN);
                 // Or: iconDownloadMovieButton.setImageResource(R.drawable.ic_download_default);
@@ -815,7 +839,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         DownloadedMovie currentMovieInList = null;
         if (allDownloads != null) {
             for (DownloadedMovie downloadedMovie : allDownloads) {
-                if (downloadedMovie.getId() == movieId && currentMovieSlug.equals(downloadedMovie.getSlug())) {
+                if (downloadedMovie.getId() == episodeId && currentPlayingEpisodeSlug.equals(downloadedMovie.getSlug())) {
                     currentMovieInList = downloadedMovie;
                     break;
                 }
@@ -843,11 +867,12 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         }
 
         DownloadedMovie movieToDownload = new DownloadedMovie(
-                movieId,
+                episodeId,
                 currentMovieTitle,
                 currentCoverImageUrl,
                 episodeUrl, // Use the fetched episodeUrl
-                currentMovieSlug
+                currentPlayingEpisodeSlug,
+                episodeNumber
         );
         pendingMovieToDownload = movieToDownload;
 
@@ -905,8 +930,11 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         if (episode.getLink() != null && !episode.getLink().isEmpty()) {
             episodeUrl = episode.getLink();
             currentPlayingEpisodeSlug = episode.getSlug();
+            episodeId=episode.getId();
             playVideo();
             episodeAdapter.setCurrentPlayingEpisode(currentPlayingEpisodeSlug);
+            episodeNumber=episode.getNumber();
+            updateDownloadButtonState();
             // Tìm xem tập này thuộc về range nào và có thể cập nhật lại currentRangeStart nếu cần
             // (Phần này có thể không cần thiết nếu người dùng chỉ click trong range hiện tại)
             // updateRangeButtonHighlight(); // Đảm bảo nút range vẫn đúng
