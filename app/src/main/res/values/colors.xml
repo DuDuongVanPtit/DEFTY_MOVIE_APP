@@ -24,4 +24,6 @@
     <color name="normalText">#000000</color>
     <color name="download_icon_completed_green">#4CAF50</color>
     <color name="download_icon_default_tint">#F2F4F3</color>
+    <color name="active_range_button_background">#FF9800</color> <color name="active_range_button_text">#FFFFFF</color>
+    <color name="inactive_range_button_background">#555555</color> <color name="inactive_range_button_text">#CCCCCC</color>
 </resources>

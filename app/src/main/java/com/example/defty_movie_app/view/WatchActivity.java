@@ -14,8 +14,10 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -62,10 +64,12 @@ import com.example.defty_movie_app.viewmodel.DownloadViewModel; // --- DOWNLOAD 
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 
 public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.OnEpisodeClickListener{
 
@@ -102,11 +106,19 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     private String currentMovieSlug;
     private String currentMovieTitle;
     private String currentCoverImageUrl;
+
     // --- DOWNLOAD: End Variables ---
 
     private RecyclerView recyclerViewEpisodes; // Thêm RecyclerView cho tập phim
     private EpisodeAdapter episodeAdapter;     // Thêm Adapter cho tập phim
     private String currentPlayingEpisodeSlug;  // Lưu slug của tập đang phát
+
+    private List<MovieDetailResponse.Episode> allEpisodesList = new ArrayList<>();
+    private int currentRangeStart = 0; // Chỉ số bắt đầu của nhóm hiện tại
+    private final int EPISODES_PER_RANGE = 10; // Ví dụ: 50 tập mỗi nhóm
+    private LinearLayout episodeRangeContainer;
+
+
     @Override
     protected void attachBaseContext(Context newBase) {
         SharedPreferences prefs = newBase.getSharedPreferences("Settings", Context.MODE_PRIVATE);
@@ -199,6 +211,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         // --- DOWNLOAD: End find download button ---
 
         recyclerViewEpisodes = findViewById(R.id.recyclerViewEpisodes);
+        episodeRangeContainer = findViewById(R.id.episode_range_container);
     }
 
     private void setupRecyclerViews() {
@@ -550,6 +563,10 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                         // Nếu currentPlayingEpisodeSlug chưa được set (lần đầu load),
                         // và fetchEpisode đã chạy và có slug của tập đầu tiên,
                         // thì set nó ở đây. Hoặc set nó ngay sau khi fetchEpisode thành công.
+                        allEpisodesList.clear();
+                        allEpisodesList.addAll(movie.episode);
+                        setupEpisodeRangeButtons(); // Hàm mới để tạo các nút chọn nhóm
+                        displayEpisodesForRange(currentRangeStart); // Hiển thị nhóm đầu tiên (0 - 49)
                         if (currentPlayingEpisodeSlug != null) {
                             episodeAdapter.setCurrentPlayingEpisode(currentPlayingEpisodeSlug);
                         } else if (!movie.episode.isEmpty()){
@@ -767,14 +784,120 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     public void onEpisodeClick(MovieDetailResponse.Episode episode) {
         Toast.makeText(this, "Chuyển sang: " + episode.getDescription(), Toast.LENGTH_SHORT).show();
         if (episode.getLink() != null && !episode.getLink().isEmpty()) {
-            episodeUrl = episode.getLink(); // Cập nhật URL
-            currentPlayingEpisodeSlug = episode.getSlug(); // Cập nhật slug tập đang phát
-            playVideo(); // Phát video mới
-
-            // Cập nhật trạng thái highlight trong adapter
+            episodeUrl = episode.getLink();
+            currentPlayingEpisodeSlug = episode.getSlug();
+            playVideo();
             episodeAdapter.setCurrentPlayingEpisode(currentPlayingEpisodeSlug);
+            // Tìm xem tập này thuộc về range nào và có thể cập nhật lại currentRangeStart nếu cần
+            // (Phần này có thể không cần thiết nếu người dùng chỉ click trong range hiện tại)
+            // updateRangeButtonHighlight(); // Đảm bảo nút range vẫn đúng
         } else {
             Toast.makeText(this, "Link tập phim không hợp lệ", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void setupEpisodeRangeButtons() {
+        if (episodeRangeContainer == null) {
+            Log.e(TAG, "episodeRangeContainer is null in setupEpisodeRangeButtons. Ensure it's initialized in findViews().");
+            return;
+        }
+        episodeRangeContainer.removeAllViews(); // Xóa các nút cũ (nếu có)
+
+        if (allEpisodesList.isEmpty()) return;
+
+        int totalEpisodes = allEpisodesList.size();
+        for (int i = 0; i < totalEpisodes; i += EPISODES_PER_RANGE) {
+            final int rangeStartForButton = i; // Biến final để dùng trong lambda
+            int rangeEnd = Math.min(i + EPISODES_PER_RANGE - 1, totalEpisodes - 1);
+
+            Button rangeButton = new Button(this);
+            rangeButton.setText(String.format(Locale.getDefault(), "%d-%d", rangeStartForButton + 1, rangeEnd + 1));
+            rangeButton.setTag(rangeStartForButton);
+
+            // --- ĐIỀU CHỈNH KÍCH THƯỚC VÀ PADDING ---
+            // Giảm kích thước chữ
+            rangeButton.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 12); // Thử với 13sp hoặc 12sp
+
+            // Đặt padding nhỏ hơn
+            int horizontalPaddingDp = 5; // dp (ví dụ: giảm từ 12 xuống 10)
+            int verticalPaddingDp = 2;   // dp (ví dụ: giảm từ 6 xuống 4)
+            float density = getResources().getDisplayMetrics().density;
+            int horizontalPaddingPx = (int) (horizontalPaddingDp * density);
+            int verticalPaddingPx = (int) (verticalPaddingDp * density);
+            rangeButton.setPadding(horizontalPaddingPx, verticalPaddingPx, horizontalPaddingPx, verticalPaddingPx);
+
+            // Để button có thể nhỏ hơn nữa, chúng ta có thể thử đặt minHeight/minWidth
+            // Tuy nhiên, việc này có thể bị ảnh hưởng bởi style mặc định của Button.
+            // Đối với Button chuẩn, bạn có thể thử đặt style không có minHeight/minWidth,
+            // hoặc dùng MaterialButton sẽ dễ kiểm soát kích thước tối thiểu hơn.
+            // Tạm thời, padding và textSize sẽ có tác động lớn nhất.
+            // Nếu bạn muốn button thực sự nhỏ, có thể cần set minHeight cho nó.
+            // rangeButton.setMinimumHeight((int)(30 * density)); // Ví dụ: Chiều cao tối thiểu 30dp
+
+
+            rangeButton.setAllCaps(false);
+
+            // Thiết lập LayoutParams và margin cho nút (giữ nguyên)
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            int marginInDp = 6; // Có thể giảm margin một chút nếu muốn các nút gần nhau hơn
+            int marginInPx = (int) (marginInDp * density);
+            params.setMargins(0, 0, marginInPx, 0);
+            rangeButton.setLayoutParams(params);
+
+            // Áp dụng background selector và text color selector (giữ nguyên)
+            rangeButton.setBackgroundResource(R.drawable.range_button_background_selector);
+            rangeButton.setTextColor(ContextCompat.getColorStateList(this, R.color.range_button_text_color_selector));
+            // --- KẾT THÚC ĐIỀU CHỈNH ---
+
+            rangeButton.setOnClickListener(v -> {
+                currentRangeStart = rangeStartForButton;
+                displayEpisodesForRange(rangeStartForButton);
+            });
+            episodeRangeContainer.addView(rangeButton);
+        }
+        updateRangeButtonHighlight(); // Highlight nút đầu tiên sau khi tạo xong tất cả các nút
+    }
+
+    private void displayEpisodesForRange(int rangeStart) {
+        if (allEpisodesList.isEmpty() || episodeAdapter == null) {
+            Log.w(TAG, "Cannot display episodes: list or adapter is null/empty.");
+            return;
+        }
+
+        int end = Math.min(rangeStart + EPISODES_PER_RANGE, allEpisodesList.size());
+        List<MovieDetailResponse.Episode> episodesToShow = new ArrayList<>();
+        if (rangeStart < end) { // Đảm bảo subList không lỗi nếu rangeStart = end
+            episodesToShow.addAll(allEpisodesList.subList(rangeStart, end));
+        }
+
+        episodeAdapter.updateEpisodes(episodesToShow);
+
+        if (currentPlayingEpisodeSlug != null) {
+            episodeAdapter.setCurrentPlayingEpisode(currentPlayingEpisodeSlug);
+        }
+        updateRangeButtonHighlight(); // Cập nhật highlight cho các nút chọn nhóm
+    }
+    private void updateRangeButtonHighlight() {
+        if (episodeRangeContainer == null) {
+            Log.e(TAG, "episodeRangeContainer is null in updateRangeButtonHighlight.");
+            return;
+        }
+        for (int i = 0; i < episodeRangeContainer.getChildCount(); i++) {
+            View child = episodeRangeContainer.getChildAt(i);
+            if (child instanceof Button) {
+                Button button = (Button) child;
+                Object tag = button.getTag();
+
+                if (tag instanceof Integer) {
+                    int buttonRangeStart = (Integer) tag;
+                    // --- THAY ĐỔI CHÍNH Ở ĐÂY ---
+                    button.setSelected(buttonRangeStart == currentRangeStart);
+                    // --- KẾT THÚC THAY ĐỔI ---
+                }
+            }
         }
     }
 }

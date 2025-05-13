@@ -18,8 +18,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
-            <!-- ==== TẤT CẢ NỘI DUNG TRƯỚC COMMENT ==== -->
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
@@ -56,37 +54,6 @@
                         android:src="@android:drawable/ic_media_play"
                         android:visibility="visible" />
                 </FrameLayout>
-
-<!--                                <FrameLayout-->
-<!--                                    android:layout_width="match_parent"-->
-<!--                                    android:layout_height="220dp"-->
-<!--                                    android:background="#333">-->
-
-<!--                                    &lt;!&ndash; Ảnh thumbnail &ndash;&gt;-->
-<!--                                    <ImageView-->
-<!--                                        android:id="@+id/coverImage"-->
-<!--                                        android:layout_width="match_parent"-->
-<!--                                        android:layout_height="match_parent"-->
-<!--                                        android:scaleType="centerCrop"-->
-<!--                                        android:src="@drawable/sample_video_thumbnail" />-->
-
-<!--                                    &lt;!&ndash; VideoView &ndash;&gt;-->
-<!--                                    <VideoView-->
-<!--                                        android:id="@+id/videoView"-->
-<!--                                        android:layout_width="match_parent"-->
-<!--                                        android:layout_height="match_parent"-->
-<!--                                        android:visibility="gone" />-->
-
-<!--                                    &lt;!&ndash; Nút Play &ndash;&gt;-->
-<!--                                    <ImageButton-->
-<!--                                        android:id="@+id/btnPlay"-->
-<!--                                        android:layout_width="60dp"-->
-<!--                                        android:layout_height="60dp"-->
-<!--                                        android:layout_gravity="center"-->
-<!--                                        android:background="@android:color/transparent"-->
-<!--                                        android:contentDescription="Play button"-->
-<!--                                        android:src="@android:drawable/ic_media_play" />-->
-<!--                                </FrameLayout>-->
 
                 <!-- Thông tin phim -->
                 <LinearLayout
@@ -142,7 +109,7 @@
                         android:src="@drawable/ic_download"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:padding="12dp"
-                        android:tint="#F2F4F3" />
+                        app:tint="#F2F4F3" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerCastCrew"
@@ -158,8 +125,6 @@
                         android:orientation="horizontal"
                         tools:listitem="@layout/item_cast_crew"/>
                 </LinearLayout>
-
-
 
                 <!-- Tabs -->
                 <LinearLayout
@@ -201,28 +166,33 @@
 
                 <!-- Danh sách tập phim -->
                 <HorizontalScrollView
+                    android:id="@+id/episode_range_scroll_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="12dp">
+                    android:scrollbars="none"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:clipToPadding="false">
 
                     <LinearLayout
+                        android:id="@+id/episode_range_container"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
-
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/recyclerViewEpisodes"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp"
-                            android:clipToPadding="false"
-                            android:layout_marginTop="8dp"
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
                     </LinearLayout>
                 </HorizontalScrollView>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerViewEpisodes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="horizontal"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="12dp"
+                    android:clipToPadding="false"
+                    android:layout_marginTop="8dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
                 <!-- Exclusive Clips -->
                 <TextView
@@ -233,8 +203,6 @@
                     android:layout_marginTop="8dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
-
-
                 <!-- ProgressBar hiển thị khi tải dữ liệu -->
                 <ProgressBar
                     android:id="@+id/progressBar"
@@ -242,7 +210,6 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:visibility="visible" />
-
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerViewRecommended"
                     android:layout_width="match_parent"
@@ -250,20 +217,11 @@
                     android:layout_marginTop="16dp"
                     android:visibility="gone"
                     android:scrollbars="vertical"
-                    android:background="#DDDDDD" />
-
-                <!--                <androidx.recyclerview.widget.RecyclerView-->
-                <!--                    android:id="@+id/recyclerViewRecommended"-->
-                <!--                    android:layout_width="match_parent"-->
-                <!--                    android:layout_height="wrap_content"-->
-                <!--                    android:layout_marginTop="16dp"-->
-                <!--                    android:visibility="gone" />-->
+                    android:background="#000000" />
 
             </LinearLayout>
-            <!-- Video player, Thông tin phim, Tabs, Episode, Exclusive Clips -->
 
             <!-- ==== PHẦN COMMENT ==== -->
-
             <TextView
                 android:text="7 Comments"
                 android:textColor="#FFF"
@@ -303,17 +261,12 @@
                     android:textColor="#AAA"
                     android:background="#111"/>
             </LinearLayout>
-            <!-- ... như bạn đã làm ... -->
-
-            <!-- Danh sách comment -->
             <LinearLayout
                 android:id="@+id/commentList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="12dp">
-
-                <!-- Comment 1, 2, 3, Reply -->
                 <!-- Comment 1 -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -357,6 +310,7 @@
                             android:textSize="12sp" />
                     </LinearLayout>
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -399,179 +353,6 @@
                             android:textSize="12sp" />
                     </LinearLayout>
                 </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/default_avt"
-                        android:scaleType="centerCrop"
-                        android:layout_marginEnd="8dp"
-                        android:background="#444" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="User702e5413b"
-                            android:textColor="#CCC"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Episode ni sampai berapa? Sbb tak nampak kalau tak sign up"
-                            android:textColor="#FFF"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="5 months ago   Reply"
-                            android:textColor="#888"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/default_avt"
-                        android:scaleType="centerCrop"
-                        android:layout_marginEnd="8dp"
-                        android:background="#444" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="User702e5413b"
-                            android:textColor="#CCC"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Episode ni sampai berapa? Sbb tak nampak kalau tak sign up"
-                            android:textColor="#FFF"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="5 months ago   Reply"
-                            android:textColor="#888"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Comment 2 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/default_avt"
-                        android:scaleType="centerCrop"
-                        android:layout_marginEnd="8dp"
-                        android:background="#444" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="User7ed481b23"
-                            android:textColor="#CCC"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="sekarang 18. Ada trailer 19 tak tau la ada 19 ke tak..."
-                            android:textColor="#FFF"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="1 months ago   Reply"
-                            android:textColor="#888"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Comment 3 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/default_avt"
-                        android:scaleType="centerCrop"
-                        android:layout_marginEnd="8dp"
-                        android:background="#444" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="User7eca8437b"
-                            android:textColor="#CCC"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="sab melayu tak ada la ehhh"
-                            android:textColor="#FFF"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="5 months ago   Reply"
-                            android:textColor="#888"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
                 <!-- Reply -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -616,8 +397,6 @@
                             android:textSize="12sp" />
                     </LinearLayout>
                 </LinearLayout>
-                <!-- ... phần comment với avatar ... -->
-
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
