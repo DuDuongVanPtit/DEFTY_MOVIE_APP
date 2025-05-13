@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -13,13 +14,18 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.bumptech.glide.Glide;
 import com.example.defty_movie_app.R;
+import com.example.defty_movie_app.shared.UserManager;
 import com.example.defty_movie_app.viewmodel.AuthViewModel;
 
-public class ProfileFragment extends Fragment {
+import java.io.File;
 
+public class ProfileFragment extends Fragment {
     private AuthViewModel authViewModel;
     private TextView loginText;
+    private LinearLayout login;
+    private ImageView avatar;
 
     public ProfileFragment() {
     }
@@ -31,12 +37,31 @@ public class ProfileFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.profile_fragment, container, false);
 
+        login = view.findViewById(R.id.header);
         loginText = view.findViewById(R.id.login_text);
+        avatar = view.findViewById(R.id.avatar);
         authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
 
-        loginText.setOnClickListener(v -> {
-            LoginBottomSheetDialog loginDialog = new LoginBottomSheetDialog();
-            loginDialog.show(requireActivity().getSupportFragmentManager(), "LoginBottomSheetDialog");
+        String fullName = UserManager.getFullName(requireContext());
+
+        if (!fullName.isEmpty()) {
+            loginText.setText(fullName);
+            loadAvatarFromInternalStorage();
+            loginText.setClickable(false);
+        } else {
+            loginText.setText(R.string.login_sign_up);
+            avatar.setImageResource(R.drawable.ic_avatar);
+            loginText.setClickable(true);
+        }
+
+        login.setOnClickListener(v -> {
+            if (!fullName.isEmpty()) {
+                Intent intent = new Intent(getContext(), PersonalActivity.class);
+                startActivity(intent);
+            } else {
+                LoginBottomSheetDialog loginDialog = new LoginBottomSheetDialog();
+                loginDialog.show(requireActivity().getSupportFragmentManager(), "LoginBottomSheetDialog");
+            }
         });
 
         observeUserData();
@@ -66,12 +91,48 @@ public class ProfileFragment extends Fragment {
             if (user != null) {
                 System.out.println("User data: " + user.getFullName());
                 loginText.setText(user.getFullName());
-                loginText.setClickable(false);
+                loadAvatarFromInternalStorage();
             } else {
                 System.out.println("No user data available");
                 loginText.setText(R.string.login_sign_up);
                 loginText.setClickable(true);
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateProfileDisplay();
+    }
+    private void updateProfileDisplay() {
+        if (getContext() == null || !isAdded()) {
+            return;
+        }
+        String fullName = UserManager.getFullName(requireContext());
+        if (loginText != null) {
+            if (!fullName.isEmpty()) {
+                loginText.setText(fullName);
+                loginText.setClickable(false);
+            } else {
+                loginText.setText(R.string.login_sign_up);
+                loginText.setClickable(true);
+            }
+        }
+        loadAvatarFromInternalStorage();
+    }
+    private void loadAvatarFromInternalStorage() {
+        String profileImagePath = UserManager.getProfileImagePath(requireContext());
+        System.out.println("Loading avatar from: " + profileImagePath);
+        if (profileImagePath != null && !profileImagePath.isEmpty()) {
+            Glide.with(this)
+                    .load(new File(profileImagePath))
+                    .placeholder(R.drawable.ic_avatar)
+                    .error(R.drawable.ic_avatar)
+                    .circleCrop()
+                    .into(avatar);
+        } else {
+            avatar.setImageResource(R.drawable.ic_avatar);
+        }
     }
 }

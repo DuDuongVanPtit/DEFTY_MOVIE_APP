@@ -45,6 +45,9 @@
         <activity
             android:name=".view.SettingActivity"
             android:exported="false" />
+        <activity
+            android:name=".view.PersonalActivity"
+            android:exported="false" />
         <receiver
             android:name=".utils.DownloadCompletionReceiver"
             android:exported="true">

@@ -7,14 +7,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.defty_movie_app.R;
-import com.example.defty_movie_app.data.dto.Movie; // Đảm bảo model Movie của bạn ở đây
+import com.example.defty_movie_app.data.dto.Movie;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +70,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         }
 
         public void bind(Context context, final Movie movie, final OnMovieClickListener listener) {
-            // Set title for the movie
             if (movie.getTitle() != null) {
                 titleView.setText(movie.getTitle());
             } else {
@@ -119,7 +117,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                 public void onClick(View v) {
                     if (listener != null) {
                         listener.onMovieClick(movie);
-//                        Toast.makeText(v.getContext(), "Choose Film!", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
