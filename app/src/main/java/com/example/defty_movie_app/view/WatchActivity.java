@@ -1,25 +1,30 @@
 package com.example.defty_movie_app.view;
 
-import android.Manifest; // --- DOWNLOAD ---
-import android.content.Context; // --- DOWNLOAD ---
+import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences; // --- DOWNLOAD ---
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager; // --- DOWNLOAD ---
-import android.graphics.PorterDuff; // --- DOWNLOAD ---
+import android.content.pm.PackageManager;
+import android.graphics.PorterDuff;
 import android.net.Uri;
-import android.os.Build; // --- DOWNLOAD ---
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler; // Thêm import
+import android.os.Looper;  // Thêm import
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver; // Thêm import
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.ScrollView;
+//import android.widget.ScrollView;
+import androidx.core.widget.NestedScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,10 +34,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat; // --- DOWNLOAD ---
-import androidx.core.content.ContextCompat; // --- DOWNLOAD ---
-import androidx.lifecycle.Observer; // --- DOWNLOAD ---
-import androidx.lifecycle.ViewModelProvider; // --- DOWNLOAD ---
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
@@ -49,7 +54,7 @@ import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.adapter.CastCrewAdapter;
 import com.example.defty_movie_app.adapter.EpisodeAdapter;
 import com.example.defty_movie_app.adapter.RecommendedMovieAdapter;
-import com.example.defty_movie_app.data.dto.DownloadedMovie; // --- DOWNLOAD ---
+import com.example.defty_movie_app.data.dto.DownloadedMovie;
 import com.example.defty_movie_app.data.model.adapter.CastCrew;
 import com.example.defty_movie_app.data.model.response.EpisodeResponse;
 import com.example.defty_movie_app.data.model.response.MovieDetailResponse;
@@ -59,8 +64,9 @@ import com.example.defty_movie_app.data.remote.RecommenderServiceApi;
 import com.example.defty_movie_app.data.repository.AuthRepository;
 import com.example.defty_movie_app.data.repository.CallRecommender;
 import com.example.defty_movie_app.utils.GridSpacingItemDecoration;
-import com.example.defty_movie_app.utils.LocaleHelper; // --- DOWNLOAD --- (assuming LocaleHelper is used)
-import com.example.defty_movie_app.viewmodel.DownloadViewModel; // --- DOWNLOAD ---
+import com.example.defty_movie_app.utils.LocaleHelper;
+import com.example.defty_movie_app.viewmodel.DownloadViewModel;
+import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,121 +77,110 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.OnEpisodeClickListener{
+public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.OnEpisodeClickListener {
 
     private static final String TAG = "WatchActivity";
 
+    // UI Elements
     private TextView textTitle, textDescription, textDescription1, btnToggleDescription;
     private ImageView coverImage;
-    private ImageButton btnPlay; // Nút play ban đầu, sẽ bị ẩn đi
-    private ScrollView scrollContent;
-    private View commentList;
-    private View commentInputBox;
+    private ImageButton btnPlay;
+//    private ScrollView scrollContent;
+    private androidx.core.widget.NestedScrollView scrollContent;
     private RecyclerView recyclerViewCastCrew;
     private ProgressBar progressBarRecommended;
     private RecyclerView recyclerViewRecommended;
     private RecommendedMovieAdapter recommendedAdapter;
-
     private PlayerView playerView;
+    private ImageButton btnPlayCustom, btnPauseCustom;
+
+    // Player
     private ExoPlayer player;
     private String episodeUrl;
     private ActivityResultLauncher<Intent> fullscreenLauncher;
     private long startPositionToResume = 0;
-
-    private ImageButton btnPlayCustom;
-    private ImageButton btnPauseCustom;
     private Player.Listener playerListener;
 
+    // Episode List & Ranges
+    private RecyclerView recyclerViewEpisodes;
+    private EpisodeAdapter episodeAdapter;
+    private String currentPlayingEpisodeSlug;
+    private List<MovieDetailResponse.Episode> allEpisodesList = new ArrayList<>();
+    private int currentRangeStart = 0;
+    private final int EPISODES_PER_RANGE = 10;
+    private LinearLayout episodeRangeContainer;
+
+    // Tabs & Anchors for ScrollSpy
+    private TabLayout tabLayout;
+    private TextView anchorEpisodes, anchorForYou, anchorComments; // Các View làm điểm neo
+    private boolean isTabClickScrolling = false; // Cờ tránh vòng lặp scroll/tab select
+    private boolean isUserScrolling = true; // Cờ kiểm soát việc scroll do người dùng hay do code
+    private Handler scrollSyncHandler = new Handler(Looper.getMainLooper());
+    private int tabScrollOffset = 0; // Offset để cuộn (ví dụ: chiều cao của TabLayout)
+
+
+    // Comments (giữ lại nếu layout XML có, logic chưa xử lý)
+    private View commentList; // Giả sử là LinearLayout tĩnh
+    private View commentInputBox;
+
+    // Data
     private Integer movieId;
+    private String currentMovieSlug;
 
     // --- DOWNLOAD: Variables ---
     private ImageButton iconDownloadMovieButton;
     private DownloadViewModel downloadViewModel;
     private static final int REQUEST_CODE_DOWNLOAD_PERMISSION = 201;
     private DownloadedMovie pendingMovieToDownload;
-    private String currentMovieSlug;
     private String currentMovieTitle;
     private String currentCoverImageUrl;
 
-    // --- DOWNLOAD: End Variables ---
-
-    private RecyclerView recyclerViewEpisodes; // Thêm RecyclerView cho tập phim
-    private EpisodeAdapter episodeAdapter;     // Thêm Adapter cho tập phim
-    private String currentPlayingEpisodeSlug;  // Lưu slug của tập đang phát
-
-    private List<MovieDetailResponse.Episode> allEpisodesList = new ArrayList<>();
-    private int currentRangeStart = 0; // Chỉ số bắt đầu của nhóm hiện tại
-    private final int EPISODES_PER_RANGE = 10; // Ví dụ: 50 tập mỗi nhóm
-    private LinearLayout episodeRangeContainer;
-
+    private int tabLayoutHeight = 0; // Biến lưu chiều cao của TabLayout để tính offset
 
     @Override
     protected void attachBaseContext(Context newBase) {
         SharedPreferences prefs = newBase.getSharedPreferences("Settings", Context.MODE_PRIVATE);
-        String lang = prefs.getString("app_lang", "en"); // Default to English
+        String lang = prefs.getString("app_lang", "en");
         Context context = LocaleHelper.wrap(newBase, lang);
         super.attachBaseContext(context);
     }
-    // --- DOWNLOAD: End Localization ---
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_details); // Make sure this layout has iconDownloadMovieButton
+        setContentView(R.layout.activity_movie_details);
+
         findViews();
+
+        if (tabLayout != null) {
+            tabLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    tabLayoutHeight = tabLayout.getHeight();
+                    // Gỡ bỏ listener sau khi lấy được chiều cao để tránh gọi lại nhiều lần
+                    tabLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }
+            });
+        }
+
         setupRecyclerViews();
+        setupFullscreenLauncher();
+        setupTabsAndScrollListener();
 
-        fullscreenLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        long lastPosition = result.getData().getLongExtra(FullscreenPlayerActivity.RESULT_LAST_POSITION, 0);
-                        Log.d(TAG, "Returned from fullscreen at position: " + lastPosition);
-                        startPositionToResume = lastPosition;
-                        if (player == null) {
-                            Log.d(TAG, "Player was null, re-initializing.");
-                            initializePlayer();
-                        } else {
-                            Log.d(TAG, "Player exists, seeking and playing.");
-                            player.seekTo(lastPosition);
-                            player.play();
-                        }
-                        playerView.setVisibility(View.VISIBLE);
-                    } else {
-                        Log.d(TAG, "Returned from fullscreen without RESULT_OK or data, current player state: " + (player != null ? player.getPlaybackState() : "null"));
-                        if (player != null) {
-                            player.play();
-                        }
-                    }
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                });
+        currentMovieSlug = getIntent().getStringExtra("MOVIE_SLUG_ID");
 
-        String slug = getIntent().getStringExtra("MOVIE_SLUG_ID");
-        currentMovieSlug = slug; // --- DOWNLOAD: Store slug ---
-
-        if (slug == null || slug.isEmpty()) {
-            Log.e(TAG, "Movie slug is missing!");
-            Toast.makeText(this, "Lỗi: Không tìm thấy thông tin phim.", Toast.LENGTH_LONG).show();
-            if (iconDownloadMovieButton != null) { // --- DOWNLOAD ---
-                iconDownloadMovieButton.setEnabled(false); // --- DOWNLOAD ---
-            } // --- DOWNLOAD ---
+        if (currentMovieSlug == null || currentMovieSlug.isEmpty()) {
+            Log.e(TAG, "MOVIE_SLUG_ID is missing!");
+            Toast.makeText(this, "Movie not found", Toast.LENGTH_LONG).show();
+            if (iconDownloadMovieButton != null) iconDownloadMovieButton.setEnabled(false);
             finish();
             return;
         }
 
-        // --- DOWNLOAD: Initialize DownloadViewModel and observe LiveData ---
-        downloadViewModel = new ViewModelProvider(this).get(DownloadViewModel.class);
-        downloadViewModel.getDownloadedMoviesLiveData().observe(this, new Observer<List<DownloadedMovie>>() {
-            @Override
-            public void onChanged(List<DownloadedMovie> downloadedMovies) {
-                updateDownloadButtonState();
-            }
-        });
-        // --- DOWNLOAD: End Initialization ---
-
-        fetchMovieDetail(slug); // This will also trigger loadDownloadedMovies once movieId is available
-        fetchEpisode(slug);     // This will set episodeUrl, important for download
-        setupListeners();
+        initializeDownloadFeature();
+        fetchMovieDetail(currentMovieSlug);
+        fetchEpisode(currentMovieSlug);
+        setupOtherListeners(); // Đổi tên từ setupListeners để phân biệt
     }
 
     private void findViews() {
@@ -200,18 +195,20 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         recyclerViewRecommended = findViewById(R.id.recyclerViewRecommended);
         progressBarRecommended = findViewById(R.id.progressBar);
         scrollContent = findViewById(R.id.scrollContent);
-        commentList = findViewById(R.id.commentList); // Assuming these exist in your layout
-        commentInputBox = findViewById(R.id.commentInputBox); // Assuming these exist
-
-        // --- DOWNLOAD: Find download button ---
-        iconDownloadMovieButton = findViewById(R.id.iconDownloadMovieButton); // Make sure this ID exists in R.layout.activity_movie_details
-        if (iconDownloadMovieButton == null) {
-            Log.e(TAG, "iconDownloadMovieButton not found in layout. Download functionality will be affected.");
-        }
-        // --- DOWNLOAD: End find download button ---
 
         recyclerViewEpisodes = findViewById(R.id.recyclerViewEpisodes);
         episodeRangeContainer = findViewById(R.id.episode_range_container);
+
+        // Tabs & Anchors
+        tabLayout = findViewById(R.id.tabLayout);
+        scrollContent = findViewById(R.id.scrollContent);
+        anchorEpisodes = findViewById(R.id.anchor_episodes);
+        anchorForYou = findViewById(R.id.anchor_for_you);
+        anchorComments = findViewById(R.id.anchor_comments);
+
+        commentList = findViewById(R.id.commentList);
+        commentInputBox = findViewById(R.id.commentInputBox);
+        iconDownloadMovieButton = findViewById(R.id.iconDownloadMovieButton);
     }
 
     private void setupRecyclerViews() {
@@ -233,72 +230,53 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         episodeAdapter = new EpisodeAdapter(this, this);
         recyclerViewEpisodes.setAdapter(episodeAdapter);
     }
+    // Đặt hàm này trong class WatchActivity.java
 
-    private void setupListeners() {
-        btnPlay.setOnClickListener(v -> playVideo());
-        btnToggleDescription.setOnClickListener(new View.OnClickListener() {
-            boolean expanded = false;
-            @Override
-            public void onClick(View v) {
-                if (expanded) {
-                    textDescription1.setMaxLines(1);
-                    textDescription1.setEllipsize(TextUtils.TruncateAt.END);
-                    btnToggleDescription.setText(getString(R.string.view_more)); // Use string resource
-                } else {
-                    textDescription1.setMaxLines(Integer.MAX_VALUE);
-                    textDescription1.setEllipsize(null);
-                    btnToggleDescription.setText(getString(R.string.hide)); // Use string resource
-                }
-                expanded = !expanded;
-            }
-        });
+    private void setupFullscreenLauncher() {
+        fullscreenLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> { // Đây là lambda callback xử lý kết quả trả về
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        long lastPosition = result.getData().getLongExtra(FullscreenPlayerActivity.RESULT_LAST_POSITION, 0);
+                        Log.d(TAG, "Returned from fullscreen at position: " + lastPosition);
 
-        // --- DOWNLOAD: Set listener for download button ---
-        if (iconDownloadMovieButton != null) {
-            iconDownloadMovieButton.setOnClickListener(v -> handleDownloadClick());
-        }
-        // --- DOWNLOAD: End set listener ---
+                        startPositionToResume = lastPosition; // Luôn cập nhật vị trí để resume
 
-        // Optional: Scroll listener for comment box (if needed from original snippet)
-        if (scrollContent != null && commentList != null && commentInputBox != null) {
-            scrollContent.getViewTreeObserver().addOnScrollChangedListener(() -> {
-                if (commentList == null || scrollContent == null || commentInputBox == null) return;
-                float commentListY = commentList.getY() - scrollContent.getScrollY();
-                int scrollHeight = scrollContent.getHeight();
-                if (commentListY >= 0 && commentListY <= scrollHeight) {
-                    commentInputBox.setVisibility(View.VISIBLE);
-                } else {
-                    commentInputBox.setVisibility(View.GONE);
-                }
-            });
-        }
+                        if (player == null) { // Nếu player đã bị release (ví dụ do onStop)
+                            Log.d(TAG, "Player was null after fullscreen, re-initializing.");
+                            initializePlayer(); // Hàm này sẽ tạo player, set media, prepare, seek và play
+                        } else { // Player vẫn còn tồn tại
+                            Log.d(TAG, "Player exists after fullscreen, seeking and playing.");
+                            if (player.getPlaybackState() == Player.STATE_IDLE) {
+                                // Nếu player đang IDLE, có thể nó cần prepare lại trước khi seek và play
+                                if (episodeUrl != null && !episodeUrl.isEmpty()) {
+                                    MediaItem mediaItem = MediaItem.fromUri(Uri.parse(episodeUrl));
+                                    player.setMediaItem(mediaItem); // Đảm bảo media item đúng
+                                    player.prepare();
+                                }
+                            }
+                            player.seekTo(lastPosition);
+                            player.play(); // Tiếp tục phát
+                        }
+                        if (playerView != null) {
+                            playerView.setVisibility(View.VISIBLE); // Đảm bảo PlayerView hiển thị
+                        }
+
+                    } else {
+                        Log.d(TAG, "Returned from fullscreen without RESULT_OK or data. Current player state: " +
+                                (player != null ? player.getPlaybackState() : "null"));
+                        // Nếu người dùng chỉ back ra mà không có kết quả rõ ràng, vẫn thử resume nếu player còn
+                        if (player != null) {
+                            player.play();
+                        }
+                    }
+                    // Đảm bảo màn hình quay lại Portrait sau khi thoát fullscreen (nếu WatchActivity luôn là Portrait)
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                    // Hoặc nếu bạn muốn nó tuân theo cài đặt của hệ thống:
+                    // setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                });
     }
-
-    private void playVideo() {
-        if (episodeUrl != null && !episodeUrl.isEmpty()) {
-            initializePlayer();
-            if (player != null) {
-                try {
-                    MediaItem mediaItem = MediaItem.fromUri(Uri.parse(episodeUrl));
-                    player.setMediaItem(mediaItem);
-                    player.prepare();
-                    player.play();
-                    btnPlay.setVisibility(View.GONE);
-                    coverImage.setVisibility(View.GONE);
-                    playerView.setVisibility(View.VISIBLE);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error setting media item or playing video", e);
-                    Toast.makeText(this, "Lỗi khi phát video.", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                Log.e(TAG, "Player is null after initialization attempt.");
-                Toast.makeText(this, "Không thể khởi tạo trình phát.", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Log.w(TAG, "Episode URL is not available yet.");
-            Toast.makeText(this, "Đang tải dữ liệu video...", Toast.LENGTH_SHORT).show();
-        }
-    }
+    // Đặt hàm này trong class WatchActivity.java
 
     @OptIn(markerClass = UnstableApi.class)
     private void initializePlayer() {
@@ -356,6 +334,148 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         }
     }
 
+    private void initializeDownloadFeature() {
+        // Khởi tạo ViewModel
+        downloadViewModel = new ViewModelProvider(this).get(DownloadViewModel.class);
+
+        // Theo dõi LiveData từ ViewModel
+        downloadViewModel.getDownloadedMoviesLiveData().observe(this, new Observer<List<DownloadedMovie>>() {
+            @Override
+            public void onChanged(List<DownloadedMovie> downloadedMovies) {
+                // Khi danh sách phim đã tải thay đổi (ví dụ: tải xong, xóa phim),
+                // cập nhật lại trạng thái của nút download.
+                Log.d(TAG, "Downloaded movies list changed, updating button state.");
+                updateDownloadButtonState();
+            }
+        });
+
+        // Có thể gọi loadDownloadedMovies lần đầu ở đây nếu bạn muốn cập nhật trạng thái nút download ngay khi Activity tạo
+        // Tuy nhiên, bạn đang gọi nó trong fetchMovieDetail sau khi có movieId và currentMovieSlug,
+        // và cả trong onResume, điều này cũng hợp lý.
+        // Nếu gọi ở đây, đảm bảo currentMovieSlug và movieId có thể null ban đầu.
+        // downloadViewModel.loadDownloadedMovies();
+    }
+
+    private void setupOtherListeners() { // Đổi tên hàm
+        btnPlay.setOnClickListener(v -> playVideo());
+        btnToggleDescription.setOnClickListener(new View.OnClickListener() {
+            boolean expanded = false;
+            @Override
+            public void onClick(View v) {
+                if (expanded) {
+                    textDescription1.setMaxLines(1);
+                    textDescription1.setEllipsize(TextUtils.TruncateAt.END);
+                    btnToggleDescription.setText(getString(R.string.view_more)); // Use string resource
+                } else {
+                    textDescription1.setMaxLines(Integer.MAX_VALUE);
+                    textDescription1.setEllipsize(null);
+                    btnToggleDescription.setText(getString(R.string.hide)); // Use string resource
+                }
+                expanded = !expanded;
+            }
+        });
+
+        // --- DOWNLOAD: Set listener for download button ---
+        if (iconDownloadMovieButton != null) {
+            iconDownloadMovieButton.setOnClickListener(v -> handleDownloadClick());
+        }
+        // --- DOWNLOAD: End set listener ---
+
+        // Optional: Scroll listener for comment box (if needed from original snippet)
+        if (scrollContent != null && commentList != null && commentInputBox != null) {
+            scrollContent.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                if (commentList == null || scrollContent == null || commentInputBox == null) return;
+                float commentListY = commentList.getY() - scrollContent.getScrollY();
+                int scrollHeight = scrollContent.getHeight();
+                if (commentListY >= 0 && commentListY <= scrollHeight) {
+                    commentInputBox.setVisibility(View.VISIBLE);
+                } else {
+                    commentInputBox.setVisibility(View.GONE);
+                }
+            });
+        }
+    }
+
+    private void setupTabsAndScrollListener() {
+        if (tabLayout == null || scrollContent == null || anchorEpisodes == null || anchorForYou == null || anchorComments == null) {
+            Log.e(TAG, "setupTabsAndScrollListener: One or more required views for ScrollSpy are null.");
+            return;
+        }
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if (isTabClickScrolling) { // Nếu đang cuộn do code (từ scroll listener) thì không làm gì
+                    return;
+                }
+
+                View targetView = null;
+                switch (tab.getPosition()) {
+                    case 0: targetView = anchorEpisodes; break;
+                    case 1: targetView = anchorForYou; break;
+                    case 2: targetView = anchorComments; break;
+                }
+
+                if (targetView != null) {
+                    final View finalTargetView = targetView;
+                    // Dùng post để đảm bảo getTop() trả về giá trị đúng
+                    finalTargetView.post(() -> {
+                        // Vị trí của anchor view là tương đối với cha của nó (LinearLayout trong ScrollView)
+                        int targetY = finalTargetView.getTop();
+
+                        // Thêm một chút padding từ trên xuống để tiêu đề không bị dính sát
+                        int paddingTop = (int) (16 * getResources().getDisplayMetrics().density); // 16dp
+
+                        isTabClickScrolling = true;
+                        scrollContent.smoothScrollTo(0, targetY - paddingTop);
+
+                        scrollSyncHandler.removeCallbacksAndMessages(null);
+                        scrollSyncHandler.postDelayed(() -> isTabClickScrolling = false, 350); // Tăng nhẹ delay
+                    });
+                }
+            }
+            @Override public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override public void onTabReselected(TabLayout.Tab tab) { onTabSelected(tab); }
+        });
+
+        scrollContent.getViewTreeObserver().addOnScrollChangedListener(() -> {
+            if (isTabClickScrolling || tabLayout == null || anchorEpisodes == null || anchorForYou == null || anchorComments == null) {
+                return;
+            }
+            // isUserScrolling = true; // Không cần thiết nếu chỉ dựa vào isTabClickScrolling
+
+            int scrollY = scrollContent.getScrollY();
+            // activeThreshold là điểm mà khi một section chạm tới, tab của nó sẽ được active.
+            // Ở đây, ta lấy điểm ngay dưới TabLayout làm mốc (top của ScrollView + một chút padding)
+            int activeThreshold = (int)(16 * getResources().getDisplayMetrics().density); // Ví dụ: 16dp từ top của ScrollView
+
+            int episodesTop = anchorEpisodes.getTop();
+            int forYouTop = anchorForYou.getTop();
+            int commentsTop = anchorComments.getTop();
+
+            int currentSelectedTab = tabLayout.getSelectedTabPosition();
+            int newSelectedTab = -1;
+
+            if (scrollY + activeThreshold >= commentsTop) {
+                newSelectedTab = 2; // Comments
+            } else if (scrollY + activeThreshold >= forYouTop) {
+                newSelectedTab = 1; // For You
+            } else if (scrollY + activeThreshold >= episodesTop) {
+                newSelectedTab = 0; // Episodes
+            } else {
+                // Nếu đang ở phần trên cùng (thông tin phim), có thể không chọn tab nào hoặc chọn tab đầu tiên
+                // newSelectedTab = 0; // hoặc -1 tùy ý bạn muốn
+            }
+
+            if (newSelectedTab != -1 && newSelectedTab != currentSelectedTab) {
+                TabLayout.Tab tabToSelect = tabLayout.getTabAt(newSelectedTab);
+                if (tabToSelect != null) {
+                    // isUserScrolling = false; // Không cần thiết với logic isTabClickScrolling
+                    tabToSelect.select(); // Việc này sẽ trigger onTabSelected, nhưng isTabClickScrolling sẽ chặn scroll lại
+                }
+            }
+        });
+    }
 
     private void initializePlayerListener() {
         playerListener = new Player.Listener() {
@@ -458,8 +578,6 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
         builder.create().show();
     }
-
-
     // --- ExoPlayer Lifecycle Management ---
     @OptIn(markerClass = UnstableApi.class)
     @Override
@@ -682,6 +800,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         });
     }
 
+
     // --- DOWNLOAD: Methods ---
     private void updateDownloadButtonState() {
         if (iconDownloadMovieButton == null || movieId == null || TextUtils.isEmpty(currentMovieSlug)) {
@@ -898,6 +1017,31 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                     // --- KẾT THÚC THAY ĐỔI ---
                 }
             }
+        }
+    }
+    private void playVideo() {
+        if (episodeUrl != null && !episodeUrl.isEmpty()) {
+            initializePlayer();
+            if (player != null) {
+                try {
+                    MediaItem mediaItem = MediaItem.fromUri(Uri.parse(episodeUrl));
+                    player.setMediaItem(mediaItem);
+                    player.prepare();
+                    player.play();
+                    if(btnPlay != null) btnPlay.setVisibility(View.GONE);
+                    if(coverImage != null) coverImage.setVisibility(View.GONE);
+                    if(playerView != null) playerView.setVisibility(View.VISIBLE);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error setting media item or playing video", e);
+                    Toast.makeText(this, "Lỗi khi phát video.", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Log.e(TAG, "Player is null after initialization attempt.");
+                Toast.makeText(this, "Không thể khởi tạo trình phát.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Log.w(TAG, "Episode URL is not available yet.");
+            Toast.makeText(this, "Đang tải dữ liệu video...", Toast.LENGTH_SHORT).show();
         }
     }
 }
