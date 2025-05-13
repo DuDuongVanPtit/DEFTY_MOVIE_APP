@@ -45,6 +45,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.adapter.CastCrewAdapter;
+import com.example.defty_movie_app.adapter.EpisodeAdapter;
 import com.example.defty_movie_app.adapter.RecommendedMovieAdapter;
 import com.example.defty_movie_app.data.dto.DownloadedMovie; // --- DOWNLOAD ---
 import com.example.defty_movie_app.data.model.adapter.CastCrew;
@@ -66,7 +67,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class WatchActivity extends AppCompatActivity {
+public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.OnEpisodeClickListener{
 
     private static final String TAG = "WatchActivity";
 
@@ -103,7 +104,9 @@ public class WatchActivity extends AppCompatActivity {
     private String currentCoverImageUrl;
     // --- DOWNLOAD: End Variables ---
 
-    // --- DOWNLOAD: For Localization (if used) ---
+    private RecyclerView recyclerViewEpisodes; // Thêm RecyclerView cho tập phim
+    private EpisodeAdapter episodeAdapter;     // Thêm Adapter cho tập phim
+    private String currentPlayingEpisodeSlug;  // Lưu slug của tập đang phát
     @Override
     protected void attachBaseContext(Context newBase) {
         SharedPreferences prefs = newBase.getSharedPreferences("Settings", Context.MODE_PRIVATE);
@@ -194,6 +197,8 @@ public class WatchActivity extends AppCompatActivity {
             Log.e(TAG, "iconDownloadMovieButton not found in layout. Download functionality will be affected.");
         }
         // --- DOWNLOAD: End find download button ---
+
+        recyclerViewEpisodes = findViewById(R.id.recyclerViewEpisodes);
     }
 
     private void setupRecyclerViews() {
@@ -209,6 +214,11 @@ public class WatchActivity extends AppCompatActivity {
         }
         recommendedAdapter = new RecommendedMovieAdapter(new ArrayList<>());
         recyclerViewRecommended.setAdapter(recommendedAdapter);
+
+        recyclerViewEpisodes.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recyclerViewEpisodes.setHasFixedSize(true);
+        episodeAdapter = new EpisodeAdapter(this, this);
+        recyclerViewEpisodes.setAdapter(episodeAdapter);
     }
 
     private void setupListeners() {
@@ -535,6 +545,21 @@ public class WatchActivity extends AppCompatActivity {
                                 .into(coverImage);
                     }
 
+                    if (movie.episode != null && !movie.episode.isEmpty()) {
+                        episodeAdapter.updateEpisodes(movie.episode);
+                        // Nếu currentPlayingEpisodeSlug chưa được set (lần đầu load),
+                        // và fetchEpisode đã chạy và có slug của tập đầu tiên,
+                        // thì set nó ở đây. Hoặc set nó ngay sau khi fetchEpisode thành công.
+                        if (currentPlayingEpisodeSlug != null) {
+                            episodeAdapter.setCurrentPlayingEpisode(currentPlayingEpisodeSlug);
+                        } else if (!movie.episode.isEmpty()){
+                            // Mặc định chọn tập đầu tiên nếu chưa có gì đang phát
+                            // (Điều này cần phối hợp với fetchEpisode)
+                            // currentPlayingEpisodeSlug = movie.episode.get(0).getSlug();
+                            // episodeAdapter.setCurrentPlayingEpisode(currentPlayingEpisodeSlug);
+                        }
+                    }
+
                     List<CastCrew> castList = new ArrayList<>();
                     if (movie.director != null) castList.add(new CastCrew(movie.director.getName(), "Director", movie.director.getThumbnail()));
                     if (movie.actor != null) {
@@ -578,6 +603,14 @@ public class WatchActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && response.body().data != null) {
                     EpisodeResponse.Episode episode = response.body().data;
                     episodeUrl = episode.getLink(); // episodeUrl is crucial for download too
+                    if (episode.getSlug() != null) { // Model EpisodeResponse.Episode cần có getSlug()
+                        currentPlayingEpisodeSlug = episode.getSlug();
+                        Log.d(TAG, "Initial playing episode slug: " + currentPlayingEpisodeSlug);
+                        // Cập nhật adapter nếu nó đã có dữ liệu
+                        if (episodeAdapter != null && episodeAdapter.getItemCount() > 0) {
+                            episodeAdapter.setCurrentPlayingEpisode(currentPlayingEpisodeSlug);
+                        }
+                    }
                     Log.d(TAG, "Episode URL fetched: " + episodeUrl);
                     if (btnPlay != null) btnPlay.setEnabled(true); // Check btnPlay for null
                 } else {
@@ -727,6 +760,21 @@ public class WatchActivity extends AppCompatActivity {
                 Toast.makeText(this, "Quyền lưu trữ bị từ chối. Không thể tải phim.", Toast.LENGTH_LONG).show();
             }
             pendingMovieToDownload = null; // Clear pending movie after permission result
+        }
+    }
+
+    @Override
+    public void onEpisodeClick(MovieDetailResponse.Episode episode) {
+        Toast.makeText(this, "Chuyển sang: " + episode.getDescription(), Toast.LENGTH_SHORT).show();
+        if (episode.getLink() != null && !episode.getLink().isEmpty()) {
+            episodeUrl = episode.getLink(); // Cập nhật URL
+            currentPlayingEpisodeSlug = episode.getSlug(); // Cập nhật slug tập đang phát
+            playVideo(); // Phát video mới
+
+            // Cập nhật trạng thái highlight trong adapter
+            episodeAdapter.setCurrentPlayingEpisode(currentPlayingEpisodeSlug);
+        } else {
+            Toast.makeText(this, "Link tập phim không hợp lệ", Toast.LENGTH_SHORT).show();
         }
     }
 }
