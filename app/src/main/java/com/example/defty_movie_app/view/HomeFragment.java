@@ -47,11 +47,10 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-// Implement only BannerAdapter.OnBannerClickListener if needed for banners
-// Removed MovieHomeAdapter.OnMovieClickListener as navigation is now in adapter
+// Implement the click listener interfaces defined within the adapters
 public class HomeFragment extends Fragment implements
-        BannerAdapter.OnBannerClickListener,
-        MovieHomeAdapter.OnMovieClickListener
+        BannerAdapter.OnBannerClickListener, // Implement Banner click listener
+        MovieHomeAdapter.OnMovieClickListener // Implement Movie item click listener
 {
 
     private static final String TAG = "HomeFragment"; // Tag for logging
@@ -118,11 +117,10 @@ public class HomeFragment extends Fragment implements
 
         setupToolbarScroll();
         setupClickListeners();
-        setupTabLayout();
-        // Pass 'this' as the BannerAdapter.OnBannerClickListener, but not for MovieHomeAdapter
-        setupAdaptersAndLayouts();
+        // setupTabLayout() will now be called from the categories observer
+        setupAdaptersAndLayouts(); // This will now pass the Fragment as listeners
         observeViewModelData();
-        fetchInitialData();
+        fetchInitialData(); // This will trigger fetching showons and banners, which will update LiveData
     }
 
     @Override
@@ -166,7 +164,7 @@ public class HomeFragment extends Fragment implements
             appBarLayout.removeOnOffsetChangedListener(toolbarScrollListener);
         }
         if (categoryTabLayout != null) {
-            categoryTabLayout.clearOnTabSelectedListeners();
+            categoryTabLayout.clearOnTabSelectedListeners(); // Clear tab listeners
         }
         if (autoScrollHandler != null && autoScrollRunnable != null) {
             autoScrollHandler.removeCallbacks(autoScrollRunnable); // Remove pending runnables
@@ -273,16 +271,37 @@ public class HomeFragment extends Fragment implements
         }
     }
 
-    private void setupTabLayout() {
+    /**
+     * Sets up the TabLayout with categories fetched from the ViewModel.
+     * This method is now called from the categories observer.
+     * @param categories The list of category names.
+     */
+    private void setupTabLayout(List<String> categories) {
         Context context = getContext();
         if (context == null || categoryTabLayout == null) return;
 
-        categoryTabLayout.removeAllTabs();
-        String[] categories = {"For You", "Drama", "Comedy", "Romance", "Action", "Thriller", "Horror", "Sci-Fi", "Animation"};
-        for (String category : categories) {
-            categoryTabLayout.addTab(categoryTabLayout.newTab().setText(category));
+        categoryTabLayout.removeAllTabs(); // Clear existing tabs
+
+        // Check if categories list is valid
+        if (categories == null) { // Handle null categories list
+            Log.d(TAG, "setupTabLayout: Categories list is null.");
+            // Optionally add just the "Tất cả" tab if the list is null
+            categoryTabLayout.addTab(categoryTabLayout.newTab().setText("Tất cả"));
+        } else {
+            // Create a new list and add "Tất cả" at the beginning
+            List<String> categoriesWithAll = new ArrayList<>(categories);
+            // Use string resource for "Tất cả"
+            categoriesWithAll.add(0, "Tất cả");
+
+
+            // Add tabs for each category including "Tất cả"
+            for (String category : categoriesWithAll) {
+                categoryTabLayout.addTab(categoryTabLayout.newTab().setText(category));
+            }
         }
 
+
+        // Select the first tab ("Tất cả") if tabs were added
         if (categoryTabLayout.getTabCount() > 0) {
             TabLayout.Tab firstTab = categoryTabLayout.getTabAt(0);
             if (firstTab != null) {
@@ -290,6 +309,7 @@ public class HomeFragment extends Fragment implements
             }
         }
 
+        // Clear previous listeners and add the new one
         categoryTabLayout.clearOnTabSelectedListeners();
         categoryTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -297,8 +317,14 @@ public class HomeFragment extends Fragment implements
                 String selectedCategory = tab != null && tab.getText() != null ? tab.getText().toString() : "";
                 // Check context again inside listener
                 if (getContext() != null && !selectedCategory.isEmpty()) {
-                    Toast.makeText(getContext(), "Selected: " + selectedCategory, Toast.LENGTH_SHORT).show();
-                    // TODO: Implement filtering
+                    if ("Tất cả".equals(selectedCategory)) {
+                        // If "Tất cả" is selected, fetch all showons (or a default set)
+                        libraryViewModel.fetchShowons(0, 10, null, null, 1); // Adjust parameters as needed for "All"
+                    } else {
+                        // If a specific category is selected, fetch showons for that category
+                        libraryViewModel.fetchShowons(0, 10, "category", selectedCategory, 1); // Use "category" and the selectedCategory name
+                    }
+                    // --- End FIX ---
                 }
             }
 
@@ -308,9 +334,20 @@ public class HomeFragment extends Fragment implements
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
+                String selectedCategory = tab != null && tab.getText() != null ? tab.getText().toString() : "";
+                if (getContext() != null && !selectedCategory.isEmpty()) {
+                    // Optionally refetch data on reselection
+                    Toast.makeText(getContext(), "Reselected: " + selectedCategory, Toast.LENGTH_SHORT).show();
+                    if ("Tất cả".equals(selectedCategory)) {
+                        libraryViewModel.fetchShowons(0, 10, null, null, 1);
+                    } else {
+                        libraryViewModel.fetchShowons(0, 10, "category", selectedCategory, 1);
+                    }
+                }
             }
         });
     }
+
 
     private void setupAdaptersAndLayouts() {
         Context context = getContext();
@@ -431,14 +468,27 @@ public class HomeFragment extends Fragment implements
                 }
             }
         });
+
+        // --- Observer for Categories LiveData ---
+        libraryViewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
+            Log.d(TAG, "Categories data observed. Count: " + (categories != null ? categories.size() : "null"));
+            // Call setupTabLayout with the received categories
+            setupTabLayout(categories); // Pass the received categories list
+        });
+
+        // Optional: Observe loading/error for categories if needed for UI feedback
+        // libraryViewModel.getCategoriesLoading().observe(getViewLifecycleOwner(), isLoading -> { ... });
+        // libraryViewModel.getCategoriesError().observe(getViewLifecycleOwner(), errorMessage -> { ... });
     }
 
 
     private void fetchInitialData() {
-        Log.d(TAG, "fetchInitialData: Fetching banners and showons");
+        Log.d(TAG, "fetchInitialData: Fetching banners, showons, and categories");
         bannerViewModel.fetchBanners(0, 5, null, null);
         // if (showonLoadingProgressBar != null) showonLoadingProgressBar.setVisibility(View.VISIBLE);
-        libraryViewModel.fetchShowons(0, 10, null, null, 1);
+        // Initial fetch for showons should be for "Tất cả"
+        libraryViewModel.fetchShowons(0, 10, null, null, 1); // Fetch for "All" initially
+        libraryViewModel.fetchCategories(); // Trigger fetching categories
     }
 
 
@@ -472,8 +522,8 @@ public class HomeFragment extends Fragment implements
 
                     sectionTitleTextView.setText(sectionName);
 
-                    // --- FIX: Pass context only to the adapter constructor ---
-                    MovieHomeAdapter sectionAdapter = new MovieHomeAdapter(context, this); // Pass context only
+                    // --- FIX: Pass the Fragment (which implements MovieHomeAdapter.OnMovieClickListener) to the adapter ---
+                    MovieHomeAdapter sectionAdapter = new MovieHomeAdapter(context, this); // Pass 'this' as the listener
                     sectionRecyclerView.setAdapter(sectionAdapter);
                     sectionRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
                     sectionRecyclerView.setHasFixedSize(true);
