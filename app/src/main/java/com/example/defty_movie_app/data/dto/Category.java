@@ -8,13 +8,15 @@ public class Category {
     List<String> paidCategories;
     List<Integer> releaseDates;
     List<String> categories;
+    List<String> slugs;
 
-    public Category(List<Movie> movies, List<String> regions, List<String> paidCategories, List<Integer> releaseDates, List<String> categories) {
+    public Category(List<Movie> movies, List<String> regions, List<String> paidCategories, List<Integer> releaseDates, List<String> categories, List<String> slugs) {
         this.movies = movies;
         this.regions = regions;
         this.paidCategories = paidCategories;
         this.releaseDates = releaseDates;
         this.categories = categories;
+        this.slugs = slugs;
     }
 
     public List<Movie> getMovies() {
@@ -55,5 +57,13 @@ public class Category {
 
     public void setCategories(List<String> categories) {
         this.categories = categories;
+    }
+
+    public List<String> getSlugs() {
+        return slugs;
+    }
+
+    public void setSlugs(List<String> slugs) {
+        this.slugs = slugs;
     }
 }
