@@ -45,4 +45,8 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>
+
+    <style name="AlertDialogCustom" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:background">#2C2C2E</item> <item name="android:textColorPrimary">#FFFFFF</item> <item name="android:textColorSecondary">#E0E0E0</item> <item name="colorAccent">@color/green</item> </style>
+
 </resources>
