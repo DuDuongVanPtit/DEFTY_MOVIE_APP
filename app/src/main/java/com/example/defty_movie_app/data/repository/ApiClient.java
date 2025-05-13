@@ -7,7 +7,8 @@ public class ApiClient {
 
     private static Retrofit retrofit;
 
-    private static final String BASE_URL = "http://10.0.2.2:8088/"; // Địa chỉ server
+//    private static final String BASE_URL = "http://10.0.2.2:8088/"; // Địa chỉ server
+    private static final String BASE_URL = "http://192.168.100.20:8088/"; // Địa chỉ server
 
     public static Retrofit getRetrofitInstance() {
         if (retrofit == null) {

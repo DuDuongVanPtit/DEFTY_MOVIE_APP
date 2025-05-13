@@ -1,6 +1,7 @@
 package com.example.defty_movie_app.view;
 
 import android.content.Context;
+import android.content.Intent; // Import Intent
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,11 +29,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.defty_movie_app.R;
-import com.example.defty_movie_app.adapter.BannerAdapter;
-import com.example.defty_movie_app.adapter.MovieHomeAdapter;
-import com.example.defty_movie_app.data.dto.Movie;
+import com.example.defty_movie_app.adapter.BannerAdapter; // Import BannerAdapter
+import com.example.defty_movie_app.adapter.MovieHomeAdapter; // Import MovieHomeAdapter
+import com.example.defty_movie_app.data.dto.Banner; // Import Banner DTO (assuming BannerAdapter uses it)
+import com.example.defty_movie_app.data.dto.Movie; // Import Movie DTO
 import com.example.defty_movie_app.data.model.response.ShowonResponse;
 import com.example.defty_movie_app.viewmodel.BannerViewModel;
+// Removed EpisodeViewModel import as it's no longer used for navigation directly
+// import com.example.defty_movie_app.viewmodel.EpisodeViewModel;
 import com.example.defty_movie_app.viewmodel.LibraryViewModel;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.tabs.TabLayout;
@@ -43,7 +47,12 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class HomeFragment extends Fragment {
+// Implement only BannerAdapter.OnBannerClickListener if needed for banners
+// Removed MovieHomeAdapter.OnMovieClickListener as navigation is now in adapter
+public class HomeFragment extends Fragment implements
+        BannerAdapter.OnBannerClickListener,
+        MovieHomeAdapter.OnMovieClickListener
+{
 
     private static final String TAG = "HomeFragment"; // Tag for logging
 
@@ -62,10 +71,14 @@ public class HomeFragment extends Fragment {
 
     // --- Adapters ---
     private BannerAdapter bannerAdapter;
+    // MovieHomeAdapter instances will be created within updateShowonSections
 
     // --- ViewModels ---
     private BannerViewModel bannerViewModel;
     private LibraryViewModel libraryViewModel;
+    // Removed EpisodeViewModel declaration
+    // private EpisodeViewModel episodeViewModel;
+
 
     // --- Drawables ---
     private Drawable toolbarBackgroundDrawable;
@@ -82,6 +95,7 @@ public class HomeFragment extends Fragment {
     private final long AUTO_SCROLL_PERIOD = 5000;
     private volatile boolean isUserDragging = false; // Make volatile for thread visibility
 
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -96,12 +110,16 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // Initialize ViewModels using ViewModelProvider
         bannerViewModel = new ViewModelProvider(this).get(BannerViewModel.class);
         libraryViewModel = new ViewModelProvider(this).get(LibraryViewModel.class);
+        // Removed EpisodeViewModel initialization
+        // episodeViewModel = new ViewModelProvider(this).get(EpisodeViewModel.class);
 
         setupToolbarScroll();
         setupClickListeners();
         setupTabLayout();
+        // Pass 'this' as the BannerAdapter.OnBannerClickListener, but not for MovieHomeAdapter
         setupAdaptersAndLayouts();
         observeViewModelData();
         fetchInitialData();
@@ -129,7 +147,8 @@ public class HomeFragment extends Fragment {
             Log.d(TAG, "onResume: Conditions not met for auto scroll start.");
             if (isUserDragging) Log.d(TAG, "Reason: User is dragging");
             if (bannerAdapter == null) Log.d(TAG, "Reason: bannerAdapter is null");
-            else if (bannerAdapter.getItemCount() <= 1) Log.d(TAG, "Reason: bannerAdapter item count <= 1");
+            else if (bannerAdapter.getItemCount() <= 1)
+                Log.d(TAG, "Reason: bannerAdapter item count <= 1");
             // Add more checks if needed
         }
     }
@@ -199,7 +218,8 @@ public class HomeFragment extends Fragment {
 
     private final AppBarLayout.OnOffsetChangedListener toolbarScrollListener = (appBarLayout, verticalOffset) -> {
         // Added null check for safety, although less likely here
-        if (appBarLayout == null || toolbar == null || categoryTabLayout == null || getContext() == null) return;
+        if (appBarLayout == null || toolbar == null || categoryTabLayout == null || getContext() == null)
+            return;
 
         float totalScrollRange = appBarLayout.getTotalScrollRange();
         if (totalScrollRange == 0) return;
@@ -226,7 +246,8 @@ public class HomeFragment extends Fragment {
     };
 
     private void setupToolbarScroll() {
-        if (toolbar == null || categoryTabLayout == null || appBarLayout == null) return; // Safety check
+        if (toolbar == null || categoryTabLayout == null || appBarLayout == null)
+            return; // Safety check
         toolbar.setBackground(defaultToolbarBackgroundDrawable);
         categoryTabLayout.setBackground(categoryBackgroundDefault);
         toolbar.setElevation(0f);
@@ -280,8 +301,14 @@ public class HomeFragment extends Fragment {
                     // TODO: Implement filtering
                 }
             }
-            @Override public void onTabUnselected(TabLayout.Tab tab) {}
-            @Override public void onTabReselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
         });
     }
 
@@ -293,14 +320,11 @@ public class HomeFragment extends Fragment {
             return;
         }
 
-        // Initialize adapter only if null
+        // Initialize BannerAdapter, passing 'this' as the OnBannerClickListener
         if (bannerAdapter == null) {
-            bannerAdapter = new BannerAdapter(context);
+            bannerAdapter = new BannerAdapter(context, this); // Pass 'this' as the listener
         }
         bannerViewPager.setAdapter(bannerAdapter);
-
-        // --- REMOVED try-catch block for dotsIndicator.detach() ---
-        // The detach() method doesn't exist in this library. attachTo() handles re-attachment.
 
         // Attach the indicator to the ViewPager2
         dotsIndicator.attachTo(bannerViewPager);
@@ -312,6 +336,7 @@ public class HomeFragment extends Fragment {
 
     private void observeViewModelData() {
         Context context = getContext();
+        // Removed episodeViewModel check
         if (context == null || getViewLifecycleOwner() == null) {
             Log.e(TAG, "observeViewModelData: Context or LifecycleOwner is null");
             return;
@@ -389,7 +414,7 @@ public class HomeFragment extends Fragment {
             // if (showonLoadingProgressBar != null) showonLoadingProgressBar.setVisibility(View.GONE);
 
             if (showonResponses != null && !showonResponses.isEmpty()) {
-                updateShowonSections(showonResponses);
+                updateShowonSections(showonResponses); // This will now pass the Fragment as listener
             } else {
                 Log.d(TAG, "Showon observer: No sections or null list received.");
                 showonSectionsContainer.removeAllViews(); // Clear existing
@@ -406,8 +431,6 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
-
-        // Optional: Observe loading/error for showon sections
     }
 
 
@@ -421,6 +444,7 @@ public class HomeFragment extends Fragment {
 
     private void updateShowonSections(@NonNull List<ShowonResponse> showonList) {
         Context context = getContext();
+        // Removed episodeViewModel check
         if (context == null || showonSectionsContainer == null) {
             Log.w(TAG, "updateShowonSections: Cannot update - Context or container is null.");
             return;
@@ -446,10 +470,10 @@ public class HomeFragment extends Fragment {
                         continue; // Skip this section if views are missing
                     }
 
-
                     sectionTitleTextView.setText(sectionName);
 
-                    MovieHomeAdapter sectionAdapter = new MovieHomeAdapter(context); // Use current context
+                    // --- FIX: Pass context only to the adapter constructor ---
+                    MovieHomeAdapter sectionAdapter = new MovieHomeAdapter(context, this); // Pass context only
                     sectionRecyclerView.setAdapter(sectionAdapter);
                     sectionRecyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
                     sectionRecyclerView.setHasFixedSize(true);
@@ -585,12 +609,47 @@ public class HomeFragment extends Fragment {
                 }
             }
         }
+
         // onPageSelected and onPageScrolled can be overridden if needed for more detailed logging
         @Override
         public void onPageSelected(int position) {
             // Log page selection if helpful for debugging
-            // Log.d(TAG, "Page selected: " + position);
+            // Log.d(TAG, "Auto
         }
     };
 
+    // --- Implementation of BannerAdapter.OnBannerClickListener ---
+    @Override
+    public void onBannerClick(Banner banner) {
+        Context context = getContext();
+        if (context != null && banner != null && banner.getContentSlug() != null && !banner.getContentSlug().isEmpty()) {
+            Log.d(TAG, "onBannerClick: Banner clicked with slug: " + banner.getContentSlug());
+            // Start WatchActivity directly with the banner's content slug
+            Intent intent = new Intent(context, WatchActivity.class);
+            intent.putExtra("MOVIE_SLUG_ID", banner.getContentSlug()); // Use a consistent key
+            context.startActivity(intent);
+        } else {
+            Log.w(TAG, "onBannerClick: Cannot start WatchActivity. Context null or banner/slug empty.");
+            if (context != null) {
+                Toast.makeText(context, "Cannot open banner content.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
+    public void onMovieClick(Movie movie) {
+        Context context = getContext();
+        if (context != null && movie != null && movie.getSlug() != null && !movie.getSlug().isEmpty()) {
+            Log.d(TAG, "onMovieClick: Movie clicked with slug: " + movie.getSlug());
+            // Start WatchActivity directly with the banner's content slug
+            Intent intent = new Intent(context, WatchActivity.class);
+            intent.putExtra("MOVIE_SLUG_ID", movie.getSlug()); // Use a consistent key
+            context.startActivity(intent);
+        } else {
+            Log.w(TAG, "onBannerClick: Cannot start WatchActivity. Context null or banner/slug empty.");
+            if (context != null) {
+                Toast.makeText(context, "Cannot open banner content.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 }
