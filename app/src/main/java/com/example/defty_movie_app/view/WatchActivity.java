@@ -1,5 +1,7 @@
 package com.example.defty_movie_app.view;
 
+import static java.security.AccessController.getContext;
+
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -68,6 +70,7 @@ import com.example.defty_movie_app.adapter.CommentAdapter;
 import com.example.defty_movie_app.adapter.EpisodeAdapter;
 import com.example.defty_movie_app.adapter.RecommendedMovieAdapter;
 import com.example.defty_movie_app.data.dto.DownloadedMovie;
+import com.example.defty_movie_app.data.dto.Movie;
 import com.example.defty_movie_app.data.model.adapter.CastCrew;
 import com.example.defty_movie_app.data.model.request.MovieCommentRequest; // Đổi tên package nếu cần
 import com.example.defty_movie_app.data.model.response.EpisodeResponse;
@@ -86,6 +89,7 @@ import com.example.defty_movie_app.utils.LocaleHelper;
 import com.example.defty_movie_app.viewmodel.DownloadViewModel;
 import com.google.android.material.tabs.TabLayout;
 
+import java.security.AccessControlContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -94,7 +98,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.OnEpisodeClickListener, CommentAdapter.CommentInteractionListener {
+public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.OnEpisodeClickListener, CommentAdapter.CommentInteractionListener, RecommendedMovieAdapter.OnMovieClickListener {
 
     private static final String TAG = "WatchActivity";
 
@@ -274,7 +278,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
             } catch (Exception e) {
                 Log.w(TAG, "GridSpacingItemDecoration error.", e);
             }
-            recommendedAdapter = new RecommendedMovieAdapter(new ArrayList<>());
+            recommendedAdapter = new RecommendedMovieAdapter(new ArrayList<>(), this);
             recyclerViewRecommended.setAdapter(recommendedAdapter);
         }
 
@@ -697,17 +701,6 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                 TabLayout.Tab tabToSelect = tabLayout.getTabAt(newSelectedTab);
                 if (tabToSelect != null) {
                     tabToSelect.select();
-                }
-            }
-
-            // 👉 Kiểm tra nếu đã gần cuối trang và có thể là phần comment
-            if (commentInputBox != null && isUserLoggedIn()) {
-                boolean isNearBottom = (scrollY + scrollViewHeight + activeThreshold) >= contentHeight;
-                if (scrollY + activeThreshold >= commentsTop || isNearBottom) {
-                    commentInputBox.setVisibility(View.VISIBLE);
-                } else {
-                    commentInputBox.setVisibility(View.GONE);
-                    hideKeyboard();
                 }
             }
         });
@@ -1326,10 +1319,10 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                                 // Trường "data" trong SimpleResponse là null
                                 Log.e(TAG, "fetchCommentsForEpisode: 'data' field in SimpleResponse is null. Response status: " + simpleResponse.getStatus() + ", message: " + simpleResponse.getMessage());
                                 if (commentAdapter != null && commentAdapter.getItemCount() == 0 && textNoComments != null) {
-                                    textNoComments.setText("Lỗi tải bình luận (dữ liệu rỗng).");
+//                                    textNoComments.setText("Lỗi tải bình luận (dữ liệu rỗng).");
                                     textNoComments.setVisibility(View.VISIBLE);
                                 }
-                                Toast.makeText(WatchActivity.this, "Lỗi tải bình luận (dữ liệu không hợp lệ).", Toast.LENGTH_SHORT).show();
+//                                Toast.makeText(WatchActivity.this, "Lỗi tải bình luận (dữ liệu không hợp lệ).", Toast.LENGTH_SHORT).show();
                             }
                         } else {
                             // Phản hồi API không thành công (ví dụ: lỗi 4xx, 5xx)
@@ -1756,6 +1749,22 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         } else {
             Log.w(TAG, "Episode URL is not available yet.");
             Toast.makeText(this, "Đang tải dữ liệu video...", Toast.LENGTH_SHORT).show();
+        }
+    }
+    @Override
+    public void onMovieClick(RecommendedMovieResponse.RecommendedMovie movie) {
+        Context context = WatchActivity.this;
+        if (context != null && movie != null && movie.slug != null && !movie.slug.isEmpty()) {
+            Log.d(TAG, "onMovieClick: Movie clicked with slug: " + movie.slug);
+            // Start WatchActivity directly with the banner's content slug
+            Intent intent = new Intent(context, WatchActivity.class);
+            intent.putExtra("MOVIE_SLUG_ID", movie.slug); // Use a consistent key
+            context.startActivity(intent);
+        } else {
+            Log.w(TAG, "onBannerClick: Cannot start WatchActivity. Context null or banner/slug empty.");
+            if (context != null) {
+                Toast.makeText(context, "Cannot open banner content.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

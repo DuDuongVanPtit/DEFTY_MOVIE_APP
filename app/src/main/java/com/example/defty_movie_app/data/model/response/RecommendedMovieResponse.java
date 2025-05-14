@@ -20,5 +20,7 @@ public class RecommendedMovieResponse {
 
         @SerializedName("cover_image")
         public String coverImage;
+        @SerializedName("thumbnail")
+        public String thubnail;
     }
 }
