@@ -13,20 +13,22 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler; // Thêm import
-import android.os.Looper;  // Thêm import
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver; // Thêm import
+import android.view.ViewTreeObserver;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-//import android.widget.ScrollView;
-import androidx.core.widget.NestedScrollView;
+import androidx.core.widget.NestedScrollView; // Đảm bảo dùng NestedScrollView
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,18 +42,20 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager; // Cho Download
+import androidx.media3.common.C;
+import androidx.media3.common.Format;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
-import androidx.media3.common.TrackGroup;
-import androidx.media3.common.TrackSelectionOverride;
 import androidx.media3.common.Tracks;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.source.TrackGroupArray;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 import androidx.media3.exoplayer.trackselection.MappingTrackSelector;
+import androidx.media3.exoplayer.trackselection.DefaultTrackSelector.SelectionOverride;
 import androidx.media3.ui.PlayerView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -60,18 +64,23 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.adapter.CastCrewAdapter;
+import com.example.defty_movie_app.adapter.CommentAdapter;
 import com.example.defty_movie_app.adapter.EpisodeAdapter;
 import com.example.defty_movie_app.adapter.RecommendedMovieAdapter;
 import com.example.defty_movie_app.data.dto.DownloadedMovie;
 import com.example.defty_movie_app.data.model.adapter.CastCrew;
+import com.example.defty_movie_app.data.model.request.MovieCommentRequest; // Đổi tên package nếu cần
 import com.example.defty_movie_app.data.model.response.EpisodeResponse;
+import com.example.defty_movie_app.data.model.response.MovieCommentResponse; // Đổi tên package nếu cần
 import com.example.defty_movie_app.data.model.response.MovieDetailResponse;
+import com.example.defty_movie_app.data.model.response.PageableResponse;
 import com.example.defty_movie_app.data.model.response.RecommendedMovieResponse;
+import com.example.defty_movie_app.data.model.response.SimpleResponse;
 import com.example.defty_movie_app.data.remote.AuthApiService;
 import com.example.defty_movie_app.data.remote.RecommenderServiceApi;
 import com.example.defty_movie_app.data.repository.AuthRepository;
 import com.example.defty_movie_app.data.repository.CallRecommender;
-import com.example.defty_movie_app.utils.DownloadCompletionReceiver;
+import com.example.defty_movie_app.utils.DownloadCompletionReceiver; // Cho Download
 import com.example.defty_movie_app.utils.GridSpacingItemDecoration;
 import com.example.defty_movie_app.utils.LocaleHelper;
 import com.example.defty_movie_app.viewmodel.DownloadViewModel;
@@ -85,23 +94,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import androidx.media3.common.C;
-import androidx.media3.common.Format;
-import androidx.media3.common.MediaItem;
-import androidx.media3.common.PlaybackParameters;
-import androidx.media3.common.Player;
-import androidx.media3.common.TrackGroup;
-import androidx.media3.common.TrackSelectionOverride;
-import androidx.media3.common.Tracks;
-import androidx.media3.common.util.UnstableApi;
-import androidx.media3.common.util.Util;
-import androidx.media3.exoplayer.ExoPlayer;
-import androidx.media3.exoplayer.source.TrackGroupArray; // Quan trọng: Import đúng TrackGroupArray
-import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
-import androidx.media3.exoplayer.trackselection.MappingTrackSelector;
-import androidx.media3.ui.PlayerView;
-
-public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.OnEpisodeClickListener {
+public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.OnEpisodeClickListener, CommentAdapter.CommentInteractionListener {
 
     private static final String TAG = "WatchActivity";
 
@@ -109,8 +102,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     private TextView textTitle, textDescription, textDescription1, btnToggleDescription;
     private ImageView coverImage;
     private ImageButton btnPlay;
-//    private ScrollView scrollContent;
-    private androidx.core.widget.NestedScrollView scrollContent;
+    private NestedScrollView scrollContent; // Đã sửa thành NestedScrollView
     private RecyclerView recyclerViewCastCrew;
     private ProgressBar progressBarRecommended;
     private RecyclerView recyclerViewRecommended;
@@ -136,20 +128,33 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
 
     // Tabs & Anchors for ScrollSpy
     private TabLayout tabLayout;
-    private TextView anchorEpisodes, anchorForYou, anchorComments; // Các View làm điểm neo
-    private boolean isTabClickScrolling = false; // Cờ tránh vòng lặp scroll/tab select
-    private boolean isUserScrolling = true; // Cờ kiểm soát việc scroll do người dùng hay do code
+    private TextView anchorEpisodes, anchorForYou, anchorComments;
+    private boolean isTabClickScrolling = false;
+    private boolean isUserScrolling = true;
     private Handler scrollSyncHandler = new Handler(Looper.getMainLooper());
-    private int tabScrollOffset = 0; // Offset để cuộn (ví dụ: chiều cao của TabLayout)
+    private int tabLayoutHeight = 0; // Sửa: Biến này sẽ được dùng để tính offset
 
+    // Comments
+    private RecyclerView recyclerViewComments;
+    private CommentAdapter commentAdapter;
+    private EditText editTextCommentInput;
+    private ImageButton buttonSendComment;
+    private ProgressBar progressBarComments;
+    private TextView textNoComments;
+    private View commentInputBox; // View cho toàn bộ ô nhập liệu
+    private LinearLayout pageContainerScrollableContent; // Thêm biến này
 
-    // Comments (giữ lại nếu layout XML có, logic chưa xử lý)
-    private View commentList; // Giả sử là LinearLayout tĩnh
-    private View commentInputBox;
+    private int currentCommentPage = 0;
+    private boolean isLoadingComments = false;
+    private boolean isLastCommentPage = false;
+    private Integer currentEpisodeIdForComments;
 
     // Data
     private Integer movieId;
     private String currentMovieSlug;
+    private Integer episodeId; // ID của tập phim hiện tại (cho download và comment)
+    private Integer episodeNumber; // Số thứ tự tập (cho download)
+
 
     // --- DOWNLOAD: Variables ---
     private ImageButton iconDownloadMovieButton;
@@ -158,11 +163,8 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     private DownloadedMovie pendingMovieToDownload;
     private String currentMovieTitle;
     private String currentCoverImageUrl;
-    private Integer episodeId;
-    private Integer episodeNumber;
     private BroadcastReceiver downloadStatusReceiver;
-
-    private int tabLayoutHeight = 0; // Biến lưu chiều cao của TabLayout để tính offset
+    // --- DOWNLOAD: End Variables ---
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -177,22 +179,27 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details);
 
-        findViews();
+        findViews(); // Gọi đầu tiên để ánh xạ tất cả views
 
+        // Lấy chiều cao của TabLayout sau khi nó được vẽ
         if (tabLayout != null) {
             tabLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
-                    tabLayoutHeight = tabLayout.getHeight();
-                    // Gỡ bỏ listener sau khi lấy được chiều cao để tránh gọi lại nhiều lần
-                    tabLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    if (tabLayout.getHeight() > 0) {
+                        tabLayoutHeight = tabLayout.getHeight();
+                        tabLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        Log.d(TAG, "TabLayout height calculated: " + tabLayoutHeight);
+                        // Gọi setupTabsAndScrollListener sau khi có tabLayoutHeight nếu cần offset chính xác ngay
+                        // Hoặc đảm bảo logic trong listener sử dụng tabLayoutHeight một cách an toàn
+                    }
                 }
             });
         }
 
         setupRecyclerViews();
         setupFullscreenLauncher();
-        setupTabsAndScrollListener();
+        setupTabsAndScrollListener(); // Setup Tab và ScrollSpy
 
         currentMovieSlug = getIntent().getStringExtra("MOVIE_SLUG_ID");
 
@@ -205,10 +212,10 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         }
 
         initializeDownloadFeature();
-        setupDownloadStatusReceiver();
+        setupDownloadStatusReceiver(); // Đăng ký receiver
         fetchMovieDetail(currentMovieSlug);
         fetchEpisode(currentMovieSlug);
-        setupOtherListeners(); // Đổi tên từ setupListeners để phân biệt
+        setupOtherListeners();
     }
 
     private void findViews() {
@@ -222,41 +229,94 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         recyclerViewCastCrew = findViewById(R.id.recyclerCastCrew);
         recyclerViewRecommended = findViewById(R.id.recyclerViewRecommended);
         progressBarRecommended = findViewById(R.id.progressBar);
-        scrollContent = findViewById(R.id.scrollContent);
+        scrollContent = findViewById(R.id.scrollContent); // Đảm bảo ID này trỏ đến NestedScrollView
 
         recyclerViewEpisodes = findViewById(R.id.recyclerViewEpisodes);
         episodeRangeContainer = findViewById(R.id.episode_range_container);
 
-        // Tabs & Anchors
         tabLayout = findViewById(R.id.tabLayout);
-        scrollContent = findViewById(R.id.scrollContent);
         anchorEpisodes = findViewById(R.id.anchor_episodes);
         anchorForYou = findViewById(R.id.anchor_for_you);
         anchorComments = findViewById(R.id.anchor_comments);
 
-        commentList = findViewById(R.id.commentList);
-        commentInputBox = findViewById(R.id.commentInputBox);
         iconDownloadMovieButton = findViewById(R.id.iconDownloadMovieButton);
+
+        recyclerViewComments = findViewById(R.id.recyclerViewComments);
+        editTextCommentInput = findViewById(R.id.commentInput);
+        buttonSendComment = findViewById(R.id.sendButton);
+        commentInputBox = findViewById(R.id.commentInputBox); // Ánh xạ commentInputBox
+        progressBarComments = findViewById(R.id.progressBarComments);
+        textNoComments = findViewById(R.id.text_no_comments);
+
+        // Ánh xạ LinearLayout chứa nội dung cuộn được
+        pageContainerScrollableContent = findViewById(R.id.pageContainer_scrollable_content);
+        if (pageContainerScrollableContent == null) {
+            Log.e(TAG, "pageContainer_scrollable_content not found! Check your layout ID.");
+        }
     }
 
     private void setupRecyclerViews() {
-        recyclerViewCastCrew.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        recyclerViewCastCrew.setHasFixedSize(true);
-
-        recyclerViewRecommended.setLayoutManager(new GridLayoutManager(this, 3));
-        recyclerViewRecommended.setHasFixedSize(true);
-        try {
-            recyclerViewRecommended.addItemDecoration(new GridSpacingItemDecoration(3, 16));
-        } catch (Exception e) {
-            Log.w(TAG, "GridSpacingItemDecoration error.", e);
+        // Cast & Crew
+        if (recyclerViewCastCrew != null) {
+            recyclerViewCastCrew.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+            recyclerViewCastCrew.setHasFixedSize(true);
+            // Adapter sẽ được set trong fetchMovieDetail
         }
-        recommendedAdapter = new RecommendedMovieAdapter(new ArrayList<>());
-        recyclerViewRecommended.setAdapter(recommendedAdapter);
 
-        recyclerViewEpisodes.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        recyclerViewEpisodes.setHasFixedSize(true);
-        episodeAdapter = new EpisodeAdapter(this, this);
-        recyclerViewEpisodes.setAdapter(episodeAdapter);
+        // Recommended Movies
+        if (recyclerViewRecommended != null) {
+            recyclerViewRecommended.setLayoutManager(new GridLayoutManager(this, 3));
+            recyclerViewRecommended.setHasFixedSize(true);
+            try {
+                recyclerViewRecommended.addItemDecoration(new GridSpacingItemDecoration(3, 16));
+            } catch (Exception e) {
+                Log.w(TAG, "GridSpacingItemDecoration error.", e);
+            }
+            recommendedAdapter = new RecommendedMovieAdapter(new ArrayList<>());
+            recyclerViewRecommended.setAdapter(recommendedAdapter);
+        }
+
+        // Episodes List
+        if (recyclerViewEpisodes != null) {
+            recyclerViewEpisodes.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+            recyclerViewEpisodes.setHasFixedSize(true);
+            episodeAdapter = new EpisodeAdapter(this, this);
+            recyclerViewEpisodes.setAdapter(episodeAdapter);
+        }
+
+        // Setup cho recyclerViewComments
+        if (recyclerViewComments != null) {
+            recyclerViewComments.setLayoutManager(new LinearLayoutManager(this));
+            recyclerViewComments.setNestedScrollingEnabled(false);
+            commentAdapter = new CommentAdapter(this, this);
+            recyclerViewComments.setAdapter(commentAdapter);
+
+            recyclerViewComments.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+
+                    // Chỉ xử lý nếu người dùng thực sự cuộn xuống (dy > 0)
+                    if (dy > 0) {
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                        if (layoutManager != null && commentAdapter != null && commentAdapter.getItemCount() > 0) {
+                            int lastVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition();
+                            int totalItemCount = commentAdapter.getItemCount();
+
+                            // Load more khi item cuối cùng hiển thị VÀ danh sách không rỗng
+                            // Thêm một khoảng đệm nhỏ (ví dụ: 1-2 item) để tải sớm hơn một chút
+                            int threshold = 1;
+                            if (lastVisibleItemPosition >= totalItemCount - 1 - threshold) {
+                                if (!isLoadingComments && !isLastCommentPage && currentEpisodeIdForComments != null) {
+                                    Log.d(TAG, "SCROLL LISTENER: Load more comments for episode: " + currentEpisodeIdForComments + ", page: " + (currentCommentPage + 1));
+                                    fetchCommentsForEpisode(currentEpisodeIdForComments, currentCommentPage + 1, false);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
     // Đặt hàm này trong class WatchActivity.java
 
@@ -457,18 +517,109 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         }
         // --- DOWNLOAD: End set listener ---
 
-        // Optional: Scroll listener for comment box (if needed from original snippet)
-        if (scrollContent != null && commentList != null && commentInputBox != null) {
+        // --- KIỂM TRA ĐĂNG NHẬP KHI NHẤN VÀO Ô NHẬP BÌNH LUẬN ---
+        if (editTextCommentInput != null) {
+            editTextCommentInput.setOnClickListener(v -> checkLoginAndFocusComment());
+            editTextCommentInput.setOnFocusChangeListener((v, hasFocus) -> {
+                if (hasFocus) {
+                    checkLoginAndFocusComment();
+                }
+            });
+        }
+        // --- ---
+
+        if (buttonSendComment != null) {
+            buttonSendComment.setOnClickListener(v -> postNewCommentWithLoginCheck());
+        }
+
+        if (scrollContent != null && anchorComments != null && commentInputBox != null && recyclerViewComments != null) {
+
             scrollContent.getViewTreeObserver().addOnScrollChangedListener(() -> {
-                if (commentList == null || scrollContent == null || commentInputBox == null) return;
-                float commentListY = commentList.getY() - scrollContent.getScrollY();
-                int scrollHeight = scrollContent.getHeight();
-                if (commentListY >= 0 && commentListY <= scrollHeight) {
-                    commentInputBox.setVisibility(View.VISIBLE);
+
+                if (anchorComments == null || scrollContent == null || commentInputBox == null || recyclerViewComments == null) return;
+
+                int scrollY = scrollContent.getScrollY();
+
+                int scrollViewHeight = scrollContent.getHeight();
+                int anchorCommentsTop = anchorComments.getTop();
+                if (anchorCommentsTop < (scrollY + scrollViewHeight) && (anchorCommentsTop + anchorComments.getHeight()) > scrollY && commentAdapter != null && commentAdapter.getItemCount() > 0) {
+                    if (tabLayout != null && tabLayout.getSelectedTabPosition() == 2) {
+                        commentInputBox.setVisibility(View.VISIBLE);
+                    } else {
+                        commentInputBox.setVisibility(View.GONE);
+                    }
                 } else {
                     commentInputBox.setVisibility(View.GONE);
                 }
+
             });
+
+        }
+    }
+
+    // Implement các phương thức của CommentInteractionListener
+    @Override
+    public void onLikeClicked(MovieCommentResponse comment, int position) {
+        Toast.makeText(this, "Đã thích bình luận: " + comment.getContent().substring(0, Math.min(comment.getContent().length(), 10)) + "...", Toast.LENGTH_SHORT).show();
+        // TODO: Gọi API để like/unlike comment và cập nhật UI
+    }
+
+    @Override
+    public void onReplyClicked(MovieCommentResponse comment, int position) {
+        Toast.makeText(this, "Trả lời bình luận của: " + comment.getUserName(), Toast.LENGTH_SHORT).show();
+        // TODO: Hiển thị UI để nhập nội dung trả lời, có thể set parentCommentId
+        // Ví dụ: editTextCommentInput.setHint("Trả lời " + comment.getUserName() + "...");
+        // editTextCommentInput.requestFocus();
+        // InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        // imm.showSoftInput(editTextCommentInput, InputMethodManager.SHOW_IMPLICIT);
+        // Lưu parentCommentId để khi postNewComment sẽ gửi kèm.
+    }
+
+    @Override
+    public void onViewRepliesClicked(MovieCommentResponse comment, int position) {
+        Toast.makeText(this, "Xem trả lời cho bình luận của: " + comment.getUserName(), Toast.LENGTH_SHORT).show();
+        // TODO: Gọi API getMovieCommentReplies(comment.getCommentId(), page, size)
+        // và hiển thị replies (có thể trong một dialog, activity mới, hoặc nested RecyclerView)
+    }
+
+    // --- HÀM MỚI ĐỂ ĐIỀU CHỈNH PADDING CHO NỘI DUNG CUỘN ---
+    private void adjustScrollableContentPadding() {
+        if (pageContainerScrollableContent == null || commentInputBox == null) {
+            Log.w(TAG, "adjustScrollableContentPadding: pageContainer or commentInputBox is null.");
+            return;
+        }
+
+        if (commentInputBox.getVisibility() == View.VISIBLE) {
+            if (commentInputBox.getHeight() == 0) {
+                // Nếu commentInputBox chưa được đo, post một runnable để thực hiện sau khi layout pass
+                commentInputBox.post(() -> {
+                    if (commentInputBox.getHeight() > 0) {
+                        Log.d(TAG, "Adjusting padding. CommentInputBox height: " + commentInputBox.getHeight());
+                        pageContainerScrollableContent.setPadding(
+                                pageContainerScrollableContent.getPaddingLeft(),
+                                pageContainerScrollableContent.getPaddingTop(),
+                                pageContainerScrollableContent.getPaddingRight(),
+                                commentInputBox.getHeight() // Thêm padding bằng chiều cao của ô nhập
+                        );
+                    }
+                });
+            } else {
+                Log.d(TAG, "Adjusting padding. CommentInputBox height: " + commentInputBox.getHeight());
+                pageContainerScrollableContent.setPadding(
+                        pageContainerScrollableContent.getPaddingLeft(),
+                        pageContainerScrollableContent.getPaddingTop(),
+                        pageContainerScrollableContent.getPaddingRight(),
+                        commentInputBox.getHeight()
+                );
+            }
+        } else {
+            Log.d(TAG, "Adjusting padding. CommentInputBox is GONE. Setting bottom padding to 0.");
+            pageContainerScrollableContent.setPadding(
+                    pageContainerScrollableContent.getPaddingLeft(),
+                    pageContainerScrollableContent.getPaddingTop(),
+                    pageContainerScrollableContent.getPaddingRight(),
+                    0 // Xóa padding khi ô nhập ẩn
+            );
         }
     }
 
@@ -481,34 +632,36 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                if (isTabClickScrolling) { // Nếu đang cuộn do code (từ scroll listener) thì không làm gì
-                    return;
-                }
-
+                if (isTabClickScrolling) return;
                 View targetView = null;
                 switch (tab.getPosition()) {
                     case 0: targetView = anchorEpisodes; break;
                     case 1: targetView = anchorForYou; break;
                     case 2: targetView = anchorComments; break;
                 }
-
                 if (targetView != null) {
                     final View finalTargetView = targetView;
-                    // Dùng post để đảm bảo getTop() trả về giá trị đúng
                     finalTargetView.post(() -> {
-                        // Vị trí của anchor view là tương đối với cha của nó (LinearLayout trong ScrollView)
                         int targetY = finalTargetView.getTop();
-
-                        // Thêm một chút padding từ trên xuống để tiêu đề không bị dính sát
-                        int paddingTop = (int) (16 * getResources().getDisplayMetrics().density); // 16dp
-
+                        int paddingTopToAvoidTab = (int) (16 * getResources().getDisplayMetrics().density); // Khoảng đệm nhỏ
                         isTabClickScrolling = true;
-                        scrollContent.smoothScrollTo(0, targetY - paddingTop);
-
+                        scrollContent.smoothScrollTo(0, targetY - paddingTopToAvoidTab);
                         scrollSyncHandler.removeCallbacksAndMessages(null);
-                        scrollSyncHandler.postDelayed(() -> isTabClickScrolling = false, 350); // Tăng nhẹ delay
+                        scrollSyncHandler.postDelayed(() -> isTabClickScrolling = false, 350);
                     });
                 }
+
+                // --- HIỂN THỊ/ẨN COMMENT INPUT BOX KHI CHỌN TAB VÀ ĐIỀU CHỈNH PADDING ---
+                if (commentInputBox != null) {
+                    if (tab.getPosition() == 2 && isUserLoggedIn()) { // Tab "Bình luận" (index 2)
+                        commentInputBox.setVisibility(View.VISIBLE);
+                    } else {
+                        commentInputBox.setVisibility(View.GONE);
+                        hideKeyboard();
+                    }
+                    adjustScrollableContentPadding(); // Gọi sau khi thay đổi visibility
+                }
+                // --- ---
             }
             @Override public void onTabUnselected(TabLayout.Tab tab) {}
             @Override public void onTabReselected(TabLayout.Tab tab) { onTabSelected(tab); }
@@ -518,18 +671,16 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
             if (isTabClickScrolling || tabLayout == null || anchorEpisodes == null || anchorForYou == null || anchorComments == null) {
                 return;
             }
-            // isUserScrolling = true; // Không cần thiết nếu chỉ dựa vào isTabClickScrolling
 
             int scrollY = scrollContent.getScrollY();
-            // activeThreshold là điểm mà khi một section chạm tới, tab của nó sẽ được active.
-            // Ở đây, ta lấy điểm ngay dưới TabLayout làm mốc (top của ScrollView + một chút padding)
-            int activeThreshold = (int)(16 * getResources().getDisplayMetrics().density); // Ví dụ: 16dp từ top của ScrollView
+            int contentHeight = scrollContent.getChildAt(0).getHeight();
+            int scrollViewHeight = scrollContent.getHeight();
+            int activeThreshold = (int) (16 * getResources().getDisplayMetrics().density);
 
             int episodesTop = anchorEpisodes.getTop();
             int forYouTop = anchorForYou.getTop();
             int commentsTop = anchorComments.getTop();
 
-            int currentSelectedTab = tabLayout.getSelectedTabPosition();
             int newSelectedTab = -1;
 
             if (scrollY + activeThreshold >= commentsTop) {
@@ -538,19 +689,28 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                 newSelectedTab = 1; // For You
             } else if (scrollY + activeThreshold >= episodesTop) {
                 newSelectedTab = 0; // Episodes
-            } else {
-                // Nếu đang ở phần trên cùng (thông tin phim), có thể không chọn tab nào hoặc chọn tab đầu tiên
-                // newSelectedTab = 0; // hoặc -1 tùy ý bạn muốn
             }
 
+            int currentSelectedTab = tabLayout.getSelectedTabPosition();
             if (newSelectedTab != -1 && newSelectedTab != currentSelectedTab) {
                 TabLayout.Tab tabToSelect = tabLayout.getTabAt(newSelectedTab);
                 if (tabToSelect != null) {
-                    // isUserScrolling = false; // Không cần thiết với logic isTabClickScrolling
-                    tabToSelect.select(); // Việc này sẽ trigger onTabSelected, nhưng isTabClickScrolling sẽ chặn scroll lại
+                    tabToSelect.select();
+                }
+            }
+
+            // 👉 Kiểm tra nếu đã gần cuối trang và có thể là phần comment
+            if (commentInputBox != null && isUserLoggedIn()) {
+                boolean isNearBottom = (scrollY + scrollViewHeight + activeThreshold) >= contentHeight;
+                if (scrollY + activeThreshold >= commentsTop || isNearBottom) {
+                    commentInputBox.setVisibility(View.VISIBLE);
+                } else {
+                    commentInputBox.setVisibility(View.GONE);
+                    hideKeyboard();
                 }
             }
         });
+
     }
 
     private void initializePlayerListener() {
@@ -1017,6 +1177,12 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                     }
                     Log.d(TAG, "Episode URL fetched: " + episodeUrl);
                     if (btnPlay != null) btnPlay.setEnabled(true); // Check btnPlay for null
+
+                    // --- TẢI BÌNH LUẬN CHO TẬP ĐẦU TIÊN ---
+                    if (episode.getId() != null) { // Giả sử EpisodeResponse.Episode có getId()
+                        loadCommentsForEpisode(episode.getId(), true);
+                    }
+                    // --- ---
                 } else {
                     Log.e(TAG, "fetchEpisode - Response error. Code: " + response.code());
                     Toast.makeText(WatchActivity.this, "Không tải được link video", Toast.LENGTH_SHORT).show();
@@ -1067,6 +1233,259 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                 // Toast.makeText(WatchActivity.this, "Lỗi mạng khi tải phim đề xuất", Toast.LENGTH_SHORT).show(); // Optional
             }
         });
+    }
+
+
+    // --- Các hàm xử lý Bình luận ---
+
+    /**
+     * Gọi khi một tập phim mới được chọn hoặc khi load màn hình lần đầu.
+     * @param episodeId ID của tập phim để tải bình luận.
+     * @param resetExisting true nếu muốn xóa các bình luận cũ và tải lại từ trang đầu.
+     */
+    private void loadCommentsForEpisode(int episodeId, boolean resetExisting) {
+        Log.d(TAG, "Loading comments for episode ID: " + episodeId + ", reset: " + resetExisting);
+        currentEpisodeIdForComments = episodeId;
+        if (resetExisting) {
+            currentCommentPage = 0;
+            isLastCommentPage = false;
+            if (commentAdapter != null) {
+                commentAdapter.setComments(new ArrayList<>()); // Xóa bình luận cũ
+            }
+        }
+        fetchCommentsForEpisode(episodeId, currentCommentPage, resetExisting);
+    }
+
+
+    private void fetchCommentsForEpisode(int episodeId, int pageToFetch, boolean isRefreshing) {
+        // Kiểm tra nếu đang có một yêu cầu tải bình luận khác diễn ra
+        if (isLoadingComments && !isRefreshing) { // Cho phép refresh ngay cả khi đang loading trang cũ
+            Log.d(TAG, "fetchCommentsForEpisode: Already loading comments, request ignored for page " + pageToFetch);
+            return;
+        }
+        isLoadingComments = true;
+
+        // Hiển thị ProgressBar và ẩn TextView "không có bình luận" khi bắt đầu tải mới hoặc refresh
+        if (progressBarComments != null && (isRefreshing || pageToFetch == 0)) {
+            progressBarComments.setVisibility(View.VISIBLE);
+        }
+        if (textNoComments != null && (isRefreshing || pageToFetch == 0)) {
+            textNoComments.setVisibility(View.GONE);
+        }
+
+        Log.d(TAG, "Fetching comments for episode: " + episodeId + ", page: " + pageToFetch);
+
+        // Lấy instance của AuthApiService
+        AuthApiService apiService = AuthRepository.getInstance().getApi(); // Đảm bảo AuthRepository đã được khởi tạo
+
+        // Gọi API
+        apiService.getMovieComments(episodeId, pageToFetch, 10) // Ví dụ: mỗi trang lấy 10 bình luận
+                .enqueue(new Callback<SimpleResponse<PageableResponse<MovieCommentResponse>>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<SimpleResponse<PageableResponse<MovieCommentResponse>>> call,
+                                           @NonNull Response<SimpleResponse<PageableResponse<MovieCommentResponse>>> response) {
+                        isLoadingComments = false;
+                        if (progressBarComments != null) {
+                            progressBarComments.setVisibility(View.GONE);
+                        }
+
+                        if (response.isSuccessful() && response.body() != null) {
+                            SimpleResponse<PageableResponse<MovieCommentResponse>> simpleResponse = response.body();
+                            if (simpleResponse.getData() != null) {
+                                PageableResponse<MovieCommentResponse> pageableData = simpleResponse.getData();
+                                List<MovieCommentResponse> fetchedComments = pageableData.getContent();
+
+                                if (commentAdapter != null) {
+                                    if (isRefreshing) {
+                                        commentAdapter.setComments(fetchedComments); // Thay thế danh sách cũ
+                                    } else if (fetchedComments != null && !fetchedComments.isEmpty()) {
+                                        commentAdapter.addComments(fetchedComments); // Thêm vào danh sách hiện tại
+                                    }
+                                }
+
+                                currentCommentPage = pageableData.getNumber(); // Cập nhật số trang hiện tại (từ 0)
+                                isLastCommentPage = pageableData.isLast();     // Cập nhật cờ trang cuối
+
+                                // Kiểm tra và hiển thị "không có bình luận" nếu danh sách rỗng
+                                if (commentAdapter != null && commentAdapter.getItemCount() == 0) {
+                                    if (textNoComments != null) {
+                                        textNoComments.setText("Chưa có bình luận nào cho tập này.");
+                                        textNoComments.setVisibility(View.VISIBLE);
+                                    }
+                                    Log.d(TAG, "No comments found for episode " + episodeId);
+                                } else {
+                                    if (textNoComments != null) {
+                                        textNoComments.setVisibility(View.GONE);
+                                    }
+                                }
+                                Log.d(TAG, "Comments loaded. Page: " + currentCommentPage + ", IsLast: " + isLastCommentPage + ", Count: " + (fetchedComments != null ? fetchedComments.size() : 0));
+
+                            } else {
+                                // Trường "data" trong SimpleResponse là null
+                                Log.e(TAG, "fetchCommentsForEpisode: 'data' field in SimpleResponse is null. Response status: " + simpleResponse.getStatus() + ", message: " + simpleResponse.getMessage());
+                                if (commentAdapter != null && commentAdapter.getItemCount() == 0 && textNoComments != null) {
+                                    textNoComments.setText("Lỗi tải bình luận (dữ liệu rỗng).");
+                                    textNoComments.setVisibility(View.VISIBLE);
+                                }
+                                Toast.makeText(WatchActivity.this, "Lỗi tải bình luận (dữ liệu không hợp lệ).", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            // Phản hồi API không thành công (ví dụ: lỗi 4xx, 5xx)
+                            Log.e(TAG, "fetchCommentsForEpisode: Unsuccessful response. Code: " + response.code() + ", Message: " + response.message());
+                            if (commentAdapter != null && commentAdapter.getItemCount() == 0 && textNoComments != null) {
+                                textNoComments.setText("Lỗi tải bình luận (mã " + response.code() + ").");
+                                textNoComments.setVisibility(View.VISIBLE);
+                            }
+                            Toast.makeText(WatchActivity.this, "Lỗi tải bình luận: " + response.message(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<SimpleResponse<PageableResponse<MovieCommentResponse>>> call, @NonNull Throwable t) {
+                        isLoadingComments = false;
+                        if (progressBarComments != null) {
+                            progressBarComments.setVisibility(View.GONE);
+                        }
+                        if (commentAdapter != null && commentAdapter.getItemCount() == 0 && textNoComments != null) {
+                            textNoComments.setText("Lỗi mạng khi tải bình luận.");
+                            textNoComments.setVisibility(View.VISIBLE);
+                        }
+                        Log.e(TAG, "fetchCommentsForEpisode: API call failed.", t);
+                        Toast.makeText(WatchActivity.this, "Lỗi mạng khi tải bình luận.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+
+    // --- HÀM KIỂM TRA ĐĂNG NHẬP VÀ XỬ LÝ ---
+    private boolean isUserLoggedIn() {
+        // Đây là ví dụ, bạn cần thay thế bằng logic kiểm tra đăng nhập thực tế của bạn
+        // Ví dụ: Kiểm tra SharedPreferences, một Singleton quản lý session, hoặc ViewModel
+        SharedPreferences prefs = getSharedPreferences("UserData", Context.MODE_PRIVATE); // "UserData" là tên file prefs ví dụ
+        return prefs.getBoolean("isLoggedIn", true); // "isLoggedIn" là key ví dụ
+    }
+
+    private void showLoginPromptDialog() {
+        new AlertDialog.Builder(this, R.style.AlertDialogCustom)
+                .setTitle("Yêu cầu đăng nhập")
+                .setMessage("Bạn cần đăng nhập để sử dụng tính năng bình luận.")
+                .setPositiveButton("Đăng nhập", (dialog, which) -> {
+                    // Chuyển đến LoginActivity
+//                    Intent intent = new Intent(WatchActivity.this, LoginActivity.class); // Thay LoginActivity bằng Activity đăng nhập của bạn
+                    // Có thể thêm cờ để LoginActivity biết quay lại màn này sau khi đăng nhập thành công
+                    // intent.putExtra("redirect_to_watch_activity_slug", currentMovieSlug);
+//                    startActivity(intent);
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
+    private void checkLoginAndFocusComment() {
+        if (!isUserLoggedIn()) {
+            showLoginPromptDialog();
+            if (editTextCommentInput != null) {
+                editTextCommentInput.clearFocus(); // Bỏ focus nếu chưa đăng nhập
+                hideKeyboard();
+            }
+        } else {
+            // Đã đăng nhập, cho phép focus và hiện bàn phím
+            if (editTextCommentInput != null) {
+                editTextCommentInput.requestFocus();
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.showSoftInput(editTextCommentInput, InputMethodManager.SHOW_IMPLICIT);
+                }
+            }
+        }
+    }
+
+    private void postNewCommentWithLoginCheck() {
+        if (!isUserLoggedIn()) {
+            showLoginPromptDialog();
+            return;
+        }
+        // Nếu đã đăng nhập, tiến hành đăng bình luận
+        postNewComment();
+    }
+    // --- KẾT THÚC HÀM KIỂM TRA ĐĂNG NHẬP ---
+
+    private void postNewComment() {
+        if (editTextCommentInput == null) return;
+        String commentContent = editTextCommentInput.getText().toString().trim();
+        if (TextUtils.isEmpty(commentContent)) {
+            Toast.makeText(this, "Vui lòng nhập nội dung bình luận", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (currentEpisodeIdForComments == null) {
+            Toast.makeText(this, "Không xác định được tập phim để bình luận", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // TODO: Lấy userId từ SharedPreferences hoặc nơi bạn lưu thông tin người dùng đã đăng nhập
+        // Integer currentUserId = ... ;
+        // if (currentUserId == null) {
+        //     Toast.makeText(this, "Vui lòng đăng nhập để bình luận", Toast.LENGTH_SHORT).show();
+        //     return;
+        // }
+
+        MovieCommentRequest request = new MovieCommentRequest(currentEpisodeIdForComments, commentContent);
+        // Nếu là trả lời bình luận, bạn cần thêm parentCommentId:
+        // MovieCommentRequest request = new MovieCommentRequest(currentEpisodeIdForComments, commentContent, parentId);
+
+
+        // Hiển thị loading hoặc vô hiệu hóa nút gửi
+        if (buttonSendComment != null) buttonSendComment.setEnabled(false);
+        Toast.makeText(this, "Đang gửi bình luận...", Toast.LENGTH_SHORT).show();
+
+        AuthApiService apiService = AuthRepository.getInstance().getApi();
+        // Giả sử bạn có SimpleResponse hoặc một DTO cụ thể cho kết quả post comment
+        apiService.addMovieComment(request /*, "Bearer your_auth_token" nếu cần */)
+                .enqueue(new Callback<SimpleResponse>() { // Hoặc Call<YourPostCommentResponse>
+                    @Override
+                    public void onResponse(@NonNull Call<SimpleResponse> call, @NonNull Response<SimpleResponse> response) {
+                        if (buttonSendComment != null) buttonSendComment.setEnabled(true);
+                        if (response.isSuccessful() && response.body() != null) {
+                            // Giả sử response.body() chứa thông tin bình luận vừa tạo hoặc ID
+                            Toast.makeText(WatchActivity.this, "Đăng bình luận thành công!", Toast.LENGTH_SHORT).show();
+                            editTextCommentInput.setText(""); // Xóa nội dung đã nhập
+                            hideKeyboard();
+
+                            // Tải lại bình luận hoặc thêm bình luận mới vào đầu danh sách
+                            // Tùy chọn 1: Tải lại toàn bộ trang đầu
+                            loadCommentsForEpisode(currentEpisodeIdForComments, true);
+
+                            // Tùy chọn 2: Nếu API trả về bình luận vừa tạo, thêm nó vào đầu adapter
+                            // MovieCommentResponse newComment = parseCommentFromResponse(response.body());
+                            // if (newComment != null && commentAdapter != null) {
+                            //     commentAdapter.addCommentToTop(newComment);
+                            //     if (recyclerViewComments != null) recyclerViewComments.scrollToPosition(0);
+                            // }
+
+                        } else {
+                            Log.e(TAG, "postComment: Error posting comment, code: " + response.code() + ", message: " + response.message());
+                            Toast.makeText(WatchActivity.this, "Lỗi: Không thể đăng bình luận. " + response.message(), Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<SimpleResponse> call, @NonNull Throwable t) {
+                        if (buttonSendComment != null) buttonSendComment.setEnabled(true);
+                        Log.e(TAG, "postComment: API call failed", t);
+                        Toast.makeText(WatchActivity.this, "Lỗi mạng: Không thể đăng bình luận.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        }
     }
 
 
@@ -1198,6 +1617,10 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
             // Tìm xem tập này thuộc về range nào và có thể cập nhật lại currentRangeStart nếu cần
             // (Phần này có thể không cần thiết nếu người dùng chỉ click trong range hiện tại)
             // updateRangeButtonHighlight(); // Đảm bảo nút range vẫn đúng
+
+            // --- TẢI BÌNH LUẬN CHO TẬP MỚI ---
+            loadCommentsForEpisode(episode.getId(), true); // true để reset và tải lại từ đầu
+            // --- ---
         } else {
             Toast.makeText(this, "Link tập phim không hợp lệ", Toast.LENGTH_SHORT).show();
         }
