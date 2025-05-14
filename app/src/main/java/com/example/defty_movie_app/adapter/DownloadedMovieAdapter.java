@@ -107,7 +107,7 @@ public class DownloadedMovieAdapter extends RecyclerView.Adapter<DownloadedMovie
 
             switch (currentStatus) {
                 case DownloadedMovie.STATUS_COMPLETED:
-                    statusText = "Đã tải xong";
+                    statusText = "Đã tải xuống";
                     statusColor = Color.parseColor("#4CAF50"); // Xanh lá
                     break;
                 case DownloadedMovie.STATUS_DOWNLOADING:

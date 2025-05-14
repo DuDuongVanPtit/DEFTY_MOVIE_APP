@@ -19,6 +19,7 @@
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
     <LinearLayout
+        android:id="@+id/downloadedMovieTextContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -35,7 +36,7 @@
             android:textStyle="bold"
             android:maxLines="2"
             android:ellipsize="end"
-            tools:text="Tên Phim Đã Tải Xuống Rất Dài" />
+            tools:text="Tên Phim" />
 
         <TextView
             android:id="@+id/downloadedMovieInfoTextView"
@@ -45,6 +46,22 @@
             android:textSize="12sp"
             android:layout_marginTop="4dp"
             tools:text="Đã tải xuống | 1.2 GB" />
+
+        <Button
+            android:id="@+id/watchNowDownloadedMovieButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="@string/watch_now"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#0AAD2A"
+            android:textSize="12sp"
+            app:cornerRadius="5dp"
+            android:layout_marginTop="8dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp"/>
+
     </LinearLayout>
 
     <ImageView

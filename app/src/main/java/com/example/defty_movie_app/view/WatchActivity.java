@@ -165,6 +165,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     private String currentCoverImageUrl;
     private BroadcastReceiver downloadStatusReceiver;
     // --- DOWNLOAD: End Variables ---
+    private String processedLink;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -179,9 +180,8 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details);
 
-        findViews(); // Gọi đầu tiên để ánh xạ tất cả views
+        findViews();
 
-        // Lấy chiều cao của TabLayout sau khi nó được vẽ
         if (tabLayout != null) {
             tabLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -199,7 +199,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
 
         setupRecyclerViews();
         setupFullscreenLauncher();
-        setupTabsAndScrollListener(); // Setup Tab và ScrollSpy
+        setupTabsAndScrollListener();
 
         currentMovieSlug = getIntent().getStringExtra("MOVIE_SLUG_ID");
 
@@ -212,10 +212,10 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         }
 
         initializeDownloadFeature();
-        setupDownloadStatusReceiver(); // Đăng ký receiver
+        setupDownloadStatusReceiver();
         fetchMovieDetail(currentMovieSlug);
         fetchEpisode(currentMovieSlug);
-        setupOtherListeners();
+        setupOtherListeners(); // Đổi tên từ setupListeners để phân biệt
     }
 
     private void findViews() {
@@ -234,7 +234,9 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         recyclerViewEpisodes = findViewById(R.id.recyclerViewEpisodes);
         episodeRangeContainer = findViewById(R.id.episode_range_container);
 
+        // Tabs & Anchors
         tabLayout = findViewById(R.id.tabLayout);
+        scrollContent = findViewById(R.id.scrollContent);
         anchorEpisodes = findViewById(R.id.anchor_episodes);
         anchorForYou = findViewById(R.id.anchor_for_you);
         anchorComments = findViewById(R.id.anchor_comments);
@@ -551,7 +553,6 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                 } else {
                     commentInputBox.setVisibility(View.GONE);
                 }
-
             });
 
         }
@@ -1167,6 +1168,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                     episodeUrl = episode.getLink(); // episodeUrl is crucial for download too
                     episodeId=episode.getId();
                     episodeNumber=episode.getNumber();
+                    processedLink=episode.getProcessedLink();
                     if (episode.getSlug() != null) { // Model EpisodeResponse.Episode cần có getSlug()
                         currentPlayingEpisodeSlug = episode.getSlug();
                         Log.d(TAG, "Initial playing episode slug: " + currentPlayingEpisodeSlug);
@@ -1536,12 +1538,12 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
 
     private void handleDownloadClick() {
         if (movieId == null || TextUtils.isEmpty(currentMovieTitle) ||
-                TextUtils.isEmpty(currentCoverImageUrl) || TextUtils.isEmpty(episodeUrl) || // episodeUrl is important!
+                TextUtils.isEmpty(currentCoverImageUrl) || TextUtils.isEmpty(processedLink) || // processedLink is important!
                 TextUtils.isEmpty(currentMovieSlug)) {
             Toast.makeText(this, "Thông tin phim chưa sẵn sàng để tải. Vui lòng thử lại sau.", Toast.LENGTH_LONG).show();
             Log.d("DownloadInfo", "Thông tin còn thiếu để tải: movieId=" + movieId +
                     ", title=" + currentMovieTitle + ", cover=" + currentCoverImageUrl +
-                    ", episodeUrl=" + episodeUrl + ", slug=" + currentMovieSlug);
+                    ", processedLink=" + processedLink + ", slug=" + currentMovieSlug);
             return;
         }
 
@@ -1549,7 +1551,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                 episodeId,
                 currentMovieTitle,
                 currentCoverImageUrl,
-                episodeUrl, // Use the fetched episodeUrl
+                processedLink,
                 currentPlayingEpisodeSlug,
                 episodeNumber
         );
@@ -1608,6 +1610,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         Toast.makeText(this, "Chuyển sang: " + episode.getDescription(), Toast.LENGTH_SHORT).show();
         if (episode.getLink() != null && !episode.getLink().isEmpty()) {
             episodeUrl = episode.getLink();
+            processedLink=episode.getProcessedLink();
             currentPlayingEpisodeSlug = episode.getSlug();
             episodeId=episode.getId();
             playVideo();
