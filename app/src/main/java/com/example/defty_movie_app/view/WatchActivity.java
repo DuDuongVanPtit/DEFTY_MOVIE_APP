@@ -1293,6 +1293,10 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
             Log.w(TAG, "Raw link for playback URL is null or empty.");
             return null;
         }
+        if (rawLink.startsWith("http://") || rawLink.startsWith("https://")) {
+            Log.d(TAG, "Raw link is already a full URL: " + rawLink);
+            return rawLink;
+        }
         String tmp = AppConstants.DOMAIN + ":8080/videos/";
         return tmp + rawLink + "/master.m3u8";
     }
@@ -1732,6 +1736,10 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         if (rawProcessedLink == null || rawProcessedLink.isEmpty()) {
             Log.w(TAG, "Raw processed link for URL is null or empty.");
             return null;
+        }
+        if (rawProcessedLink.startsWith("http://") || rawProcessedLink.startsWith("https://")) {
+            Log.d(TAG, "Raw processed link is already a full URL: " + rawProcessedLink);
+            return rawProcessedLink;
         }
         String tmp = AppConstants.DOMAIN + ":8080/videos/";
         return tmp + rawProcessedLink;
