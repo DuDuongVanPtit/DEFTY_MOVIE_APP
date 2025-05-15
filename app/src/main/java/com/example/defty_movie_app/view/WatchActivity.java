@@ -69,6 +69,7 @@ import com.example.defty_movie_app.adapter.CastCrewAdapter;
 import com.example.defty_movie_app.adapter.CommentAdapter;
 import com.example.defty_movie_app.adapter.EpisodeAdapter;
 import com.example.defty_movie_app.adapter.RecommendedMovieAdapter;
+import com.example.defty_movie_app.config.AppConstants;
 import com.example.defty_movie_app.data.dto.DownloadedMovie;
 import com.example.defty_movie_app.data.dto.Movie;
 import com.example.defty_movie_app.data.model.adapter.CastCrew;
@@ -581,10 +582,83 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     }
 
     @Override
-    public void onViewRepliesClicked(MovieCommentResponse comment, int position) {
-        Toast.makeText(this, "Xem trả lời cho bình luận của: " + comment.getUserName(), Toast.LENGTH_SHORT).show();
-        // TODO: Gọi API getMovieCommentReplies(comment.getCommentId(), page, size)
-        // và hiển thị replies (có thể trong một dialog, activity mới, hoặc nested RecyclerView)
+    public void onViewRepliesClicked(MovieCommentResponse parentComment, int position) {
+        if (parentComment == null || parentComment.getId() == null) {
+            Toast.makeText(this, "Không thể tải trả lời, ID bình luận không hợp lệ.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Hiển thị một dialog loading tạm thời (tùy chọn)
+        // AlertDialog loadingDialog = new AlertDialog.Builder(this)
+        //         .setMessage("Đang tải trả lời...")
+        //         .setCancelable(false)
+        //         .show();
+
+        Log.d(TAG, "Fetching replies for comment ID: " + parentComment.getId());
+        Toast.makeText(this, "Đang tải trả lời cho bình luận của: " + parentComment.getUserName(), Toast.LENGTH_SHORT).show();
+
+
+        AuthApiService apiService = AuthRepository.getInstance().getApi();
+        apiService.getMovieCommentReplies(parentComment.getId())
+                .enqueue(new Callback<SimpleResponse<List<MovieCommentResponse>>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<SimpleResponse<List<MovieCommentResponse>>> call,
+                                           @NonNull Response<SimpleResponse<List<MovieCommentResponse>>> response) {
+                        // if (loadingDialog != null && loadingDialog.isShowing()) {
+                        //     loadingDialog.dismiss();
+                        // }
+
+                        if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                            List<MovieCommentResponse> replies = response.body().getData();
+                            if (replies.isEmpty()) {
+                                Toast.makeText(WatchActivity.this, "Không có trả lời nào cho bình luận này.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                showRepliesDialog(parentComment, replies);
+                            }
+                        } else {
+                            Log.e(TAG, "Error fetching replies: " + response.code() + " - " + response.message());
+                            Toast.makeText(WatchActivity.this, "Lỗi khi tải trả lời: " + response.message(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<SimpleResponse<List<MovieCommentResponse>>> call, @NonNull Throwable t) {
+                        // if (loadingDialog != null && loadingDialog.isShowing()) {
+                        //     loadingDialog.dismiss();
+                        // }
+                        Log.e(TAG, "Failure fetching replies", t);
+                        Toast.makeText(WatchActivity.this, "Lỗi mạng khi tải trả lời.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    // Hàm mới để hiển thị replies trong một AlertDialog
+    private void showRepliesDialog(MovieCommentResponse parentComment, List<MovieCommentResponse> replies) {
+        if (replies == null || replies.isEmpty()) {
+            return;
+        }
+
+        // Tạo một mảng CharSequence để hiển thị trong dialog
+        CharSequence[] items = new CharSequence[replies.size()];
+        for (int i = 0; i < replies.size(); i++) {
+            MovieCommentResponse reply = replies.get(i);
+            String replyText = "";
+            if (reply.getUser() != null && reply.getUser().getFullName() != null) {
+                replyText += reply.getUser().getFullName();
+            } else {
+                replyText += "Người dùng ẩn danh";
+            }
+            replyText += ": " + reply.getContent();
+            // Bạn có thể thêm thông tin thời gian nếu muốn
+            // replyText += "\n(" + commentAdapter.formatTimestamp(reply.getCreatedAt(), this) + ")"; // Cần commentAdapter hoặc hàm formatTimestamp ở đây
+            items[i] = replyText;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogCustom); // Sử dụng style tùy chỉnh của bạn
+        builder.setTitle("Trả lời cho: " + parentComment.getUserName());
+        builder.setItems(items, null); // null listener vì chỉ hiển thị, không có hành động khi click item
+        builder.setPositiveButton("Đóng", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
     }
 
     // --- HÀM MỚI ĐỂ ĐIỀU CHỈNH PADDING CHO NỘI DUNG CUỘN ---
@@ -1158,20 +1232,24 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
             public void onResponse(@NonNull Call<EpisodeResponse> call, @NonNull Response<EpisodeResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().data != null) {
                     EpisodeResponse.Episode episode = response.body().data;
-                    episodeUrl = episode.getLink(); // episodeUrl is crucial for download too
+
+                    // --- SỬ DỤNG HELPER METHOD ĐỂ XÂY DỰNG URL ---
+                    episodeUrl = constructEpisodePlaybackUrl(episode.getLink());
+                    processedLink = constructEpisodeProcessedUrl(episode.getProcessedLink());
+                    // --- KẾT THÚC SỬ DỤNG HELPER METHOD ---
+
                     episodeId=episode.getId();
                     episodeNumber=episode.getNumber();
-                    processedLink=episode.getProcessedLink();
-                    if (episode.getSlug() != null) { // Model EpisodeResponse.Episode cần có getSlug()
+
+                    if (episode.getSlug() != null) {
                         currentPlayingEpisodeSlug = episode.getSlug();
                         Log.d(TAG, "Initial playing episode slug: " + currentPlayingEpisodeSlug);
-                        // Cập nhật adapter nếu nó đã có dữ liệu
                         if (episodeAdapter != null && episodeAdapter.getItemCount() > 0) {
                             episodeAdapter.setCurrentPlayingEpisode(currentPlayingEpisodeSlug);
                         }
                     }
                     Log.d(TAG, "Episode URL fetched: " + episodeUrl);
-                    if (btnPlay != null) btnPlay.setEnabled(true); // Check btnPlay for null
+                    if (btnPlay != null) btnPlay.setEnabled(true);
 
                     // --- TẢI BÌNH LUẬN CHO TẬP ĐẦU TIÊN ---
                     if (episode.getId() != null) { // Giả sử EpisodeResponse.Episode có getId()
@@ -1191,6 +1269,15 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                 if (btnPlay != null) btnPlay.setEnabled(false);
             }
         });
+    }
+
+    private String constructEpisodePlaybackUrl(String rawLink) {
+        if (rawLink == null || rawLink.isEmpty()) {
+            Log.w(TAG, "Raw link for playback URL is null or empty.");
+            return null;
+        }
+        String tmp = AppConstants.DOMAIN + ":8080/videos/";
+        return tmp + rawLink + "/master.m3u8";
     }
 
     private void fetchRecommendedMovies(Integer movieIdToFetch) {
@@ -1601,25 +1688,36 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     @Override
     public void onEpisodeClick(MovieDetailResponse.Episode episode) {
         Toast.makeText(this, "Chuyển sang: " + episode.getDescription(), Toast.LENGTH_SHORT).show();
-        if (episode.getLink() != null && !episode.getLink().isEmpty()) {
-            episodeUrl = episode.getLink();
-            processedLink=episode.getProcessedLink();
+        // --- SỬ DỤNG HELPER METHOD ĐỂ XÂY DỰNG URL ---
+        String newEpisodeUrl = constructEpisodePlaybackUrl(episode.getLink());
+        String newProcessedLink = constructEpisodeProcessedUrl(episode.getProcessedLink());
+        // --- KẾT THÚC SỬ DỤNG HELPER METHOD ---
+
+
+        if (newEpisodeUrl != null) { // Chỉ tiếp tục nếu URL phát video hợp lệ
+            episodeUrl = newEpisodeUrl;
+            processedLink = newProcessedLink; // Cập nhật cả processedLink
             currentPlayingEpisodeSlug = episode.getSlug();
-            episodeId=episode.getId();
+            episodeId = episode.getId();
+            episodeNumber = episode.getNumber();
+
             playVideo();
             episodeAdapter.setCurrentPlayingEpisode(currentPlayingEpisodeSlug);
-            episodeNumber=episode.getNumber();
             updateDownloadButtonState();
-            // Tìm xem tập này thuộc về range nào và có thể cập nhật lại currentRangeStart nếu cần
-            // (Phần này có thể không cần thiết nếu người dùng chỉ click trong range hiện tại)
-            // updateRangeButtonHighlight(); // Đảm bảo nút range vẫn đúng
 
-            // --- TẢI BÌNH LUẬN CHO TẬP MỚI ---
-            loadCommentsForEpisode(episode.getId(), true); // true để reset và tải lại từ đầu
-            // --- ---
+            loadCommentsForEpisode(episode.getId(), true);
         } else {
             Toast.makeText(this, "Link tập phim không hợp lệ", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private String constructEpisodeProcessedUrl(String rawProcessedLink) {
+        if (rawProcessedLink == null || rawProcessedLink.isEmpty()) {
+            Log.w(TAG, "Raw processed link for URL is null or empty.");
+            return null;
+        }
+        String tmp = AppConstants.DOMAIN + ":8080/videos/";
+        return tmp + rawProcessedLink;
     }
 
     private void setupEpisodeRangeButtons() {

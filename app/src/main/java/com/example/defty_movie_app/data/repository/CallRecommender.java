@@ -1,5 +1,6 @@
 package com.example.defty_movie_app.data.repository;
 
+import com.example.defty_movie_app.config.AppConstants;
 import com.example.defty_movie_app.data.remote.RecommenderServiceApi;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -7,10 +8,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class CallRecommender {
     private static CallRecommender instance;
     private RecommenderServiceApi api;
-
+//    .baseUrl("http://10.0.2.2:5556/")
     public CallRecommender() {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://10.0.2.2:5556/")
+                .baseUrl(AppConstants.DOMAIN + ":5556/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

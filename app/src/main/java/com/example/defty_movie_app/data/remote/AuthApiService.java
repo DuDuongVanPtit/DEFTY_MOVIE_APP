@@ -13,6 +13,8 @@ import com.example.defty_movie_app.data.model.response.SignUpResponse;
 import com.example.defty_movie_app.data.model.response.SimpleResponse;
 import com.example.defty_movie_app.data.model.response.UserResponse;
 
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -87,11 +89,11 @@ public interface AuthApiService {
      * Lấy danh sách các bình luận trả lời cho một bình luận cha (phân trang).
      * Endpoint: GET /api/user/accessible/movie-comment/{commentId}/replies?page=0&size=5
      */
-    @GET("api/v1/user/accessible/movie-comment/{commentId}/replies")
-    Call<PageableResponse<MovieCommentResponse>> getMovieCommentReplies( // API của bạn trả về List, nhưng PageableResponse có thể linh hoạt hơn
-                                                                         @Path("commentId") int parentCommentId,
-                                                                         @Query("page") int page,
-                                                                         @Query("size") int size
+    @GET("api/v1/user/accessible/movie-comment/{commentId}/replies") // Đảm bảo path đúng, bỏ /api/v1 nếu base URL đã có
+    Call<SimpleResponse<List<MovieCommentResponse>>> getMovieCommentReplies(
+            @Path("commentId") int parentCommentId
+            // API backend của bạn cho replies không có tham số page/size trong path này
+            // Nếu backend có hỗ trợ phân trang cho replies, bạn sẽ thêm @Query("page") và @Query("size")
     );
 
     // --- Kết thúc API cho Bình luận Phim ---

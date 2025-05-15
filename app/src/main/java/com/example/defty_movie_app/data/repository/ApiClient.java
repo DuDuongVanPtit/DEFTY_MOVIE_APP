@@ -1,5 +1,7 @@
 package com.example.defty_movie_app.data.repository;
 
+import com.example.defty_movie_app.config.AppConstants;
+
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -7,8 +9,10 @@ public class ApiClient {
 
     private static Retrofit retrofit;
 
-//    private static final String BASE_URL = "http://10.0.2.2:8088/"; // Địa chỉ server
-    private static final String BASE_URL = "http://192.168.100.20:8088/"; // Địa chỉ server
+//    private static final String BASE_URL = "http://10.0.2.2:8089/";
+    static String domain = AppConstants.DOMAIN;
+    private static final String BASE_URL = domain + ":8089/";
+
 
     public static Retrofit getRetrofitInstance() {
         if (retrofit == null) {
