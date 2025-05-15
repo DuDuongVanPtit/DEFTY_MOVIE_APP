@@ -1,11 +1,8 @@
 package com.example.defty_movie_app.view;
 
-import static java.security.AccessController.getContext;
-
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -20,9 +17,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -33,6 +28,7 @@ import android.widget.ProgressBar;
 import androidx.core.widget.NestedScrollView; // Đảm bảo dùng NestedScrollView
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -172,6 +168,8 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     // --- DOWNLOAD: End Variables ---
     private String processedLink;
 
+    private Toolbar toolbarWatchActivity;
+
     @Override
     protected void attachBaseContext(Context newBase) {
         SharedPreferences prefs = newBase.getSharedPreferences("Settings", Context.MODE_PRIVATE);
@@ -186,6 +184,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         setContentView(R.layout.activity_movie_details);
 
         findViews();
+        setupToolbar();
 
         if (tabLayout != null) {
             tabLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -255,10 +254,28 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         progressBarComments = findViewById(R.id.progressBarComments);
         textNoComments = findViewById(R.id.text_no_comments);
 
+        toolbarWatchActivity = findViewById(R.id.toolbar_watch_activity);
+
         // Ánh xạ LinearLayout chứa nội dung cuộn được
         pageContainerScrollableContent = findViewById(R.id.pageContainer_scrollable_content);
         if (pageContainerScrollableContent == null) {
             Log.e(TAG, "pageContainer_scrollable_content not found! Check your layout ID.");
+        }
+    }
+
+    private void setupToolbar() {
+        if (toolbarWatchActivity != null) {
+            setSupportActionBar(toolbarWatchActivity); // Đặt Toolbar này làm ActionBar cho Activity
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Hiển thị nút Up (mũi tên quay lại)
+                getSupportActionBar().setDisplayShowTitleEnabled(false); // Ẩn tiêu đề mặc định của Toolbar (nếu bạn muốn tự quản lý tiêu đề hoặc không cần)
+                // Bạn có thể set icon khác cho nút Up nếu muốn:
+                // getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_your_custom_back_arrow);
+            }
+            // Xử lý sự kiện khi nút Up được nhấn
+            toolbarWatchActivity.setNavigationOnClickListener(v -> onBackPressed()); // Hoặc finish();
+        } else {
+            Log.e(TAG, "Toolbar (toolbar_watch_activity) not found in layout!");
         }
     }
 
