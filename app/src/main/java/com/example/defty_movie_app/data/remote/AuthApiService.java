@@ -58,7 +58,7 @@ public interface AuthApiService {
      * Thêm một bình luận mới.
      * Endpoint: POST /api/user/movie-comment
      */
-    @POST("api/v1/user/movie-comment")
+    @POST("api/v1/user/accessible/movie-comment")
     Call<SimpleResponse> addMovieComment( // Giả sử backend trả về một response đơn giản chứa ID hoặc message
                                           @Body MovieCommentRequest commentRequest
                                           // @Header("Authorization") String authToken // Nếu API yêu cầu token

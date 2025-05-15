@@ -105,7 +105,7 @@ public class AuthViewModel extends ViewModel {
                 if (response.isSuccessful() && response.body() != null) {
                     UserResponse userData = response.body().getData();
                     if (userData != null) {
-                        UserManager.saveUser(context, userData.getEmail(), userData.getFullName(), token);
+                        UserManager.saveUser(context, userData.getEmail(), userData.getFullName(), token, userData.getUsername());
                         new Handler(Looper.getMainLooper()).post(() -> {
                             userResponse.setValue(userData);
                         });
