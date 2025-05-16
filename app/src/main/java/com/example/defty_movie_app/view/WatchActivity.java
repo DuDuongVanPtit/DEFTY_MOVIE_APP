@@ -188,6 +188,8 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     private boolean soundPoolLoaded = false;
     private ProgressBar sendingCommentProgressBar;
 
+    private Integer membershipType;
+
     @Override
     protected void attachBaseContext(Context newBase) {
         SharedPreferences prefs = newBase.getSharedPreferences("Settings", Context.MODE_PRIVATE);
@@ -1210,6 +1212,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                     movieId = movie.id;
                     currentMovieTitle = movie.title;
                     currentCoverImageUrl = movie.coverImage;
+                    membershipType=movie.membershipType;
                     textTitle.setText(movie.title);
                     String rating = movie.rating != null ? "★ " + movie.rating : "N/A";
                     String year = movie.releaseDate != null && movie.releaseDate.length() >= 4 ? movie.releaseDate.substring(0, 4) : "N/A";
@@ -1653,7 +1656,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
             return;
         }
         DownloadedMovie movieToDownload = new DownloadedMovie(
-                episodeId, currentMovieTitle, currentCoverImageUrl, processedLink, currentPlayingEpisodeSlug, episodeNumber);
+                episodeId, currentMovieTitle, currentCoverImageUrl, processedLink, currentPlayingEpisodeSlug, episodeNumber, membershipType);
         pendingMovieToDownload = movieToDownload;
         if (checkAndRequestStoragePermission()) {
             if (downloadViewModel.startDownload(pendingMovieToDownload)) {

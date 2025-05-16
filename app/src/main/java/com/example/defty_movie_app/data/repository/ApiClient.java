@@ -11,7 +11,8 @@ public class ApiClient {
 
 //    private static final String BASE_URL = "http://10.0.2.2:8089/";
     static String domain = AppConstants.DOMAIN;
-    private static final String BASE_URL = domain + ":8088/";
+
+    private static final String BASE_URL = domain + ":8089/";
 
 
     public static Retrofit getRetrofitInstance() {
