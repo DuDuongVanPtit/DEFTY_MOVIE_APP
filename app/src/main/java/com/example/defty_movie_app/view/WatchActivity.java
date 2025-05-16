@@ -171,6 +171,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
 
     private Toolbar toolbarWatchActivity;
 
+    private Integer membershipType;
     @Override
     protected void attachBaseContext(Context newBase) {
         SharedPreferences prefs = newBase.getSharedPreferences("Settings", Context.MODE_PRIVATE);
@@ -1173,6 +1174,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                     // --- DOWNLOAD: Store movie title and cover image ---
                     currentMovieTitle = movie.title;
                     currentCoverImageUrl = movie.coverImage;
+                    membershipType=movie.membershipType;
                     // --- DOWNLOAD: End store ---
 
                     textTitle.setText(movie.title);
@@ -1665,7 +1667,8 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                 currentCoverImageUrl,
                 processedLink,
                 currentPlayingEpisodeSlug,
-                episodeNumber
+                episodeNumber,
+                membershipType
         );
         pendingMovieToDownload = movieToDownload;
 

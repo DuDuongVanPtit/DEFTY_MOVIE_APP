@@ -5,19 +5,17 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat; // THÊM IMPORT NÀY
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
-import com.bumptech.glide.request.RequestOptions;
+// import com.bumptech.glide.load.resource.bitmap.RoundedCorners; // KHÔNG CẦN NỮA
+// import com.bumptech.glide.request.RequestOptions; // KHÔNG CẦN NỮA
 import com.example.defty_movie_app.R;
-// Đảm bảo bạn đang import đúng package cho DownloadedMovie
-// Nếu bạn đặt nó trong data.model thì sửa thành:
-// import com.example.defty_movie_app.data.model.DownloadedMovie;
 import com.example.defty_movie_app.data.dto.DownloadedMovie;
-
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,6 +32,7 @@ public class DownloadedMovieAdapter extends RecyclerView.Adapter<DownloadedMovie
     public interface OnDownloadedMovieClickListener {
         void onMovieClicked(DownloadedMovie movie);
         void onDeleteClicked(DownloadedMovie movie, int position);
+        void onWatchNowClicked(DownloadedMovie movie);
     }
 
     public DownloadedMovieAdapter(Context context, OnDownloadedMovieClickListener listener) {
@@ -56,7 +55,6 @@ public class DownloadedMovieAdapter extends RecyclerView.Adapter<DownloadedMovie
             notifyItemRemoved(position);
         }
     }
-
 
     @NonNull
     @Override
@@ -81,6 +79,8 @@ public class DownloadedMovieAdapter extends RecyclerView.Adapter<DownloadedMovie
         TextView titleTextView;
         TextView infoTextView;
         ImageView deleteButton;
+        Button watchNowButton;
+        TextView membershipLabelTextView; // THÊM TEXTVIEW CHO NHÃN
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -88,50 +88,54 @@ public class DownloadedMovieAdapter extends RecyclerView.Adapter<DownloadedMovie
             titleTextView = itemView.findViewById(R.id.downloadedMovieTitleTextView);
             infoTextView = itemView.findViewById(R.id.downloadedMovieInfoTextView);
             deleteButton = itemView.findViewById(R.id.deleteDownloadedMovieButton);
+            watchNowButton = itemView.findViewById(R.id.watchNowDownloadedMovieButton);
+            membershipLabelTextView = itemView.findViewById(R.id.downloadedMovieMembershipLabel); // LẤY THAM CHIẾU
         }
 
         void bind(final DownloadedMovie movie, Context context, final OnDownloadedMovieClickListener listener, final int position) {
             titleTextView.setText(movie.getTitle());
 
             String statusText = "";
-            int statusColor = Color.parseColor("#AAAAAA"); // Màu mặc định
+            int statusColor = Color.parseColor("#AAAAAA");
+            boolean isCompleted = false;
+            String currentStatus = movie.getDownloadStatus();
 
-            String currentStatus = movie.getDownloadStatus(); // Lấy trạng thái
-
-            // THÊM KIỂM TRA NULL Ở ĐÂY
             if (currentStatus == null) {
-                currentStatus = DownloadedMovie.STATUS_PENDING; // Hoặc một trạng thái mặc định khác nếu muốn
-                // Hoặc bạn có thể hiển thị một thông báo lỗi/không xác định riêng
-                // statusText = "Trạng thái không xác định";
+                currentStatus = DownloadedMovie.STATUS_PENDING;
             }
 
             switch (currentStatus) {
                 case DownloadedMovie.STATUS_COMPLETED:
                     statusText = "Đã tải xuống";
-                    statusColor = Color.parseColor("#4CAF50"); // Xanh lá
+                    statusColor = Color.parseColor("#4CAF50");
+                    isCompleted = true;
                     break;
                 case DownloadedMovie.STATUS_DOWNLOADING:
                     statusText = "Đang tải...";
-                    statusColor = Color.parseColor("#2196F3"); // Xanh dương
+                    statusColor = Color.parseColor("#2196F3");
                     break;
                 case DownloadedMovie.STATUS_PENDING:
                     statusText = "Đang chờ tải...";
-                    statusColor = Color.parseColor("#FFC107"); // Vàng
+                    statusColor = Color.parseColor("#FFC107");
                     break;
                 case DownloadedMovie.STATUS_FAILED:
                     statusText = "Tải lỗi";
-                    statusColor = Color.parseColor("#F44336"); // Đỏ
+                    statusColor = Color.parseColor("#F44336");
                     break;
                 case DownloadedMovie.STATUS_PAUSED:
                     statusText = "Đã tạm dừng";
-                    statusColor = Color.parseColor("#FF9800"); // Cam
+                    statusColor = Color.parseColor("#FF9800");
                     break;
-                default: // Bao gồm cả trường hợp currentStatus là PENDING sau khi kiểm tra null
+                case DownloadedMovie.STATUS_CANCELLED:
+                    statusText = "Đã hủy tải";
+                    statusColor = Color.parseColor("#9E9E9E");
+                    break;
+                default:
                     if (DownloadedMovie.STATUS_PENDING.equals(currentStatus) && statusText.isEmpty()) {
-                        statusText = "Đang chờ tải..."; // Đảm bảo PENDING có text
+                        statusText = "Đang chờ tải...";
                         statusColor = Color.parseColor("#FFC107");
-                    } else if (statusText.isEmpty()) { // Nếu vẫn rỗng (trường hợp không mong muốn)
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                    } else if (statusText.isEmpty()) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
                         String dateString = sdf.format(new Date(movie.getDownloadDate()));
                         statusText = "Đã thêm: " + dateString;
                     }
@@ -140,13 +144,55 @@ public class DownloadedMovieAdapter extends RecyclerView.Adapter<DownloadedMovie
             infoTextView.setText(statusText);
             infoTextView.setTextColor(statusColor);
 
-
             Glide.with(context)
                     .load(movie.getThumbnail())
-                    .apply(new RequestOptions().transform(new RoundedCorners(8)))
+                    // Dòng .apply() với RoundedCorners đã được xóa để CardView xử lý bo góc
                     .placeholder(R.drawable.placeholder_image)
                     .error(R.drawable.error_image)
                     .into(thumbnailImageView);
+
+            if (isCompleted) {
+                watchNowButton.setVisibility(View.VISIBLE);
+                watchNowButton.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onWatchNowClicked(movie);
+                    }
+                });
+            } else {
+                watchNowButton.setVisibility(View.GONE);
+            }
+
+            // ---- XỬ LÝ HIỂN THỊ NHÃN LOẠI THÀNH VIÊN ----
+            Integer membershipType = movie.getMembershipType(); // Giả sử bạn đã có getter này trong DownloadedMovie
+            if (membershipType != null) {
+                String membershipText = "";
+                // Bạn cần đảm bảo các drawable và color này tồn tại trong project
+                // Ví dụ: R.drawable.label_type_premium, R.color.premium_text_color
+                // Giả sử: 1 là Premium, 3 là Normal (tương tự MovieAdapter trước)
+                // Bạn hãy điều chỉnh các giá trị và resource cho phù hợp
+                if (membershipType == 1) { // PREMIUM
+                    membershipText = "Premium"; // Hoặc tên bạn muốn hiển thị
+                    // Ví dụ sử dụng màu và background (bạn cần tạo các resource này)
+                    membershipLabelTextView.setBackgroundResource(R.drawable.label_type_premium); // Ví dụ: res/drawable/label_type_premium.xml
+                    membershipLabelTextView.setTextColor(ContextCompat.getColor(context, R.color.premiumText)); // Ví dụ: res/values/colors.xml -> premium_text_color
+                } else if (membershipType == 3) { // NORMAL / FREE
+                    membershipText = "Normal"; // Hoặc "Free"
+                    membershipLabelTextView.setBackgroundResource(R.drawable.label_type_normal); // Ví dụ: res/drawable/label_type_normal.xml
+                    membershipLabelTextView.setTextColor(ContextCompat.getColor(context,R.color.normalText)); // Ví dụ: res/values/colors.xml -> normal_text_color
+                }
+                // Thêm các else if cho các loại membership khác nếu có
+
+                if (!membershipText.isEmpty()) {
+                    membershipLabelTextView.setText(membershipText);
+                    membershipLabelTextView.setVisibility(View.VISIBLE);
+                } else {
+                    membershipLabelTextView.setVisibility(View.GONE); // Ẩn nếu không có text (ví dụ: loại membership không xác định)
+                }
+            } else {
+                membershipLabelTextView.setVisibility(View.GONE); // Ẩn nếu membershipType là null
+            }
+            // ---- KẾT THÚC XỬ LÝ NHÃN ----
+
 
             itemView.setOnClickListener(v -> {
                 if (listener != null) {

@@ -13,22 +13,22 @@ public class DownloadedMovie {
     private String slug;
     private Integer number;
 
-    // Trường mới
     private long downloadId; // ID từ DownloadManager
     private String downloadStatus; // Ví dụ: "PENDING", "DOWNLOADING", "COMPLETED", "FAILED"
+    private Integer membershipType;
 
     public static final String STATUS_PENDING = "PENDING";
     public static final String STATUS_DOWNLOADING = "DOWNLOADING";
     public static final String STATUS_COMPLETED = "COMPLETED";
     public static final String STATUS_FAILED = "FAILED";
     public static final String STATUS_PAUSED = "PAUSED";
-
+    public static final String STATUS_CANCELLED = "CANCELLED";
 
     public DownloadedMovie() {
     }
 
     // Constructor có thể được điều chỉnh để bao gồm các trường mới nếu cần khi khởi tạo
-    public DownloadedMovie(Integer id, String title, String thumbnail, String videoUrl, String slug,Integer number) {
+    public DownloadedMovie(Integer id, String title, String thumbnail, String videoUrl, String slug,Integer number,Integer membershipType) {
         this.id = id;
         this.title = title;
         this.thumbnail = thumbnail;
@@ -39,6 +39,7 @@ public class DownloadedMovie {
         this.downloadId = -1; // Chưa có ID tải xuống
         this.localFilePath = null; // Chưa có đường dẫn file cục bộ
         this.number=number;
+        this.membershipType=membershipType;
     }
 
 
@@ -53,6 +54,14 @@ public class DownloadedMovie {
 
     public Integer getNumber() {
         return number;
+    }
+
+    public Integer getMembershipType() {
+        return membershipType;
+    }
+
+    public void setMembershipType(Integer membershipType) {
+        this.membershipType = membershipType;
     }
 
     public void setNumber(Integer number) {
