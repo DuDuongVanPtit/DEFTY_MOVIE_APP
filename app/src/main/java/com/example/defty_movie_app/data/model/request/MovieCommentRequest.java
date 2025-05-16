@@ -13,18 +13,29 @@ public class MovieCommentRequest {
     @SerializedName("parentId") // Có thể null nếu là comment gốc
     private Integer parentId;
 
+    private String username;
+
     // User ID thường được lấy từ token xác thực ở backend, không cần gửi từ client
     // @SerializedName("userId")
     // private Integer userId;
 
-    public MovieCommentRequest(Integer episodeId, String content, Integer parentId) {
+    public MovieCommentRequest(Integer episodeId, String content, Integer parentId, String username) {
         this.episodeId = episodeId;
         this.content = content;
         this.parentId = parentId;
+        this.username = username;
     }
 
-    public MovieCommentRequest(Integer episodeId, String content) {
-        this(episodeId, content, null); // Constructor cho comment gốc
+    public MovieCommentRequest(Integer episodeId, String content, String username) {
+        this(episodeId, content, null, username); // Constructor cho comment gốc
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     // Getters (Setters có thể không cần nếu chỉ dùng để gửi đi)

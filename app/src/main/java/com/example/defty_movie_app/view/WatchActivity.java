@@ -80,6 +80,7 @@ import com.example.defty_movie_app.data.remote.AuthApiService;
 import com.example.defty_movie_app.data.remote.RecommenderServiceApi;
 import com.example.defty_movie_app.data.repository.AuthRepository;
 import com.example.defty_movie_app.data.repository.CallRecommender;
+import com.example.defty_movie_app.shared.UserManager;
 import com.example.defty_movie_app.utils.DownloadCompletionReceiver; // Cho Download
 import com.example.defty_movie_app.utils.GridSpacingItemDecoration;
 import com.example.defty_movie_app.utils.LocaleHelper;
@@ -700,9 +701,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         });
 
         scrollContent.getViewTreeObserver().addOnScrollChangedListener(() -> {
-            if (isTabClickScrolling || tabLayout == null || scrollContent == null ||
-                    anchorEpisodes == null || anchorForYou == null || anchorComments == null ||
-                    recyclerViewRecommended == null) {
+            if (isTabClickScrolling || tabLayout == null || anchorEpisodes == null || anchorForYou == null || anchorComments == null) {
                 return;
             }
 
@@ -895,7 +894,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     private void handleFastForward() {
         if (player != null) {
             long duration = player.getDuration();
-            if (duration != C.TIME_UNSET) {
+            if (duration != androidx.media3.common.C.TIME_UNSET) {
                 player.seekTo(Math.min(duration, player.getCurrentPosition() + 10000));
             }
         }
@@ -1295,6 +1294,16 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         return prefs.getBoolean("isLoggedIn", true); // true là để test, nên là false trong thực tế
     }
 
+    private boolean isUserLoggedInCheck() {
+        String username = UserManager.getUsername(this);
+        if(username.isEmpty()){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+
     private void showLoginPromptDialog() {
         new AlertDialog.Builder(this, R.style.AlertDialogCustom)
                 .setTitle("Yêu cầu đăng nhập")
@@ -1365,7 +1374,20 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
             Toast.makeText(this, "Không xác định được tập phim để bình luận", Toast.LENGTH_SHORT).show();
             return;
         }
-        MovieCommentRequest request = new MovieCommentRequest(currentEpisodeIdForComments, commentContent);
+
+        // TODO: Lấy userId từ SharedPreferences hoặc nơi bạn lưu thông tin người dùng đã đăng nhập
+        // Integer currentUserId = ... ;
+        // if (currentUserId == null) {
+        //     Toast.makeText(this, "Vui lòng đăng nhập để bình luận", Toast.LENGTH_SHORT).show();
+        //     return;
+        // }
+        String username = UserManager.getUsername(this);
+        MovieCommentRequest request = new MovieCommentRequest(currentEpisodeIdForComments, commentContent, username);
+        // Nếu là trả lời bình luận, bạn cần thêm parentCommentId:
+        // MovieCommentRequest request = new MovieCommentRequest(currentEpisodeIdForComments, commentContent, parentId);
+
+
+        // Hiển thị loading hoặc vô hiệu hóa nút gửi
         if (buttonSendComment != null) buttonSendComment.setEnabled(false);
         Toast.makeText(this, "Đang gửi bình luận...", Toast.LENGTH_SHORT).show();
         AuthRepository.getInstance().getApi().addMovieComment(request)

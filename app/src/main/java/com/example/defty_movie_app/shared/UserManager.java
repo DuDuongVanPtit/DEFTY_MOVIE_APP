@@ -11,21 +11,27 @@ public class UserManager {
     private static final String KEY_EMAIL = "user_email";
     private static final String KEY_FULLNAME = "user_fullname";
     private static final String KEY_TOKEN = "user_token";
+    private static final String KEY_USERNAME = "user_username";
     private static final String KEY_GENDER = "user_gender";
     private static final String KEY_DOB_TIMESTAMP = "user_dob_timestamp";
     private static final String KEY_PROFILE_IMAGE_PATH = "user_profile_image_path";
 
-    public static void saveUser(Context context, String email, String fullname, String token) {
+    public static void saveUser(Context context, String email, String fullname, String token, String username) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         prefs.edit()
                 .putString(KEY_EMAIL, email)
                 .putString(KEY_FULLNAME, fullname)
                 .putString(KEY_TOKEN, token)
+                .putString(KEY_USERNAME, username)
                 .apply();
     }
 
     public static String getEmail(Context context) {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString(KEY_EMAIL, "");
+    }
+
+    public static String getUsername(Context context) {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString(KEY_USERNAME, "");
     }
 
     public static String getFullName(Context context) {
