@@ -26,9 +26,9 @@ public class MovieCommentRequest {
         this.username = username;
     }
 
-    public MovieCommentRequest(Integer episodeId, String content, String username) {
-        this(episodeId, content, null, username); // Constructor cho comment gốc
-    }
+//    public MovieCommentRequest(Integer episodeId, String content, String username) {
+//        this(episodeId, content, null, username); // Constructor cho comment gốc
+//    }
 
     public String getUsername() {
         return username;

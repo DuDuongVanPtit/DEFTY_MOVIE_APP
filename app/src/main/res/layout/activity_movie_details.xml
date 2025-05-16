@@ -286,7 +286,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:visibility="gone"
-        android:padding="12dp"
+        android:padding="8dp"
         android:background="#1A1A1A"
         android:gravity="center_vertical"
         android:layout_gravity="bottom"
@@ -310,9 +310,10 @@
             android:textColorHint="#888888"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:maxLines="4"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:textSize="15dp"
+            android:maxLines="10"
             android:inputType="textMultiLine"
             android:imeOptions="actionSend" />
         <ImageButton
@@ -325,6 +326,13 @@
             app:tint="#00FF99"
             android:padding="8dp"
             android:layout_marginStart="8dp"/>
+        <ProgressBar
+            android:id="@+id/sending_comment_progress_bar"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

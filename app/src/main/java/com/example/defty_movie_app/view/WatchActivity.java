@@ -9,6 +9,9 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -174,6 +177,16 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     private String processedLink;
 
     private Toolbar toolbarWatchActivity;
+    private String loggedInUserAvatarUrl = null;
+
+    private MovieCommentResponse replyingToComment = null; // Lưu trữ comment đang được trả lời
+    private String originalCommentInputHint;
+
+    // === BIẾN MỚI CHO SOUNDPOOL ===
+    private SoundPool soundPool;
+    private int successSoundId;
+    private boolean soundPoolLoaded = false;
+    private ProgressBar sendingCommentProgressBar;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -190,6 +203,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
 
         findViews();
         setupToolbar();
+        initializeSoundPool();
 
         if (tabLayout != null) {
             tabLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -217,6 +231,9 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
             if (iconDownloadMovieButton != null) iconDownloadMovieButton.setEnabled(false);
             finish();
             return;
+        }
+        if (editTextCommentInput != null) { // editTextCommentInput là R.id.commentInput
+            originalCommentInputHint = editTextCommentInput.getHint().toString();
         }
 
         initializeDownloadFeature();
@@ -260,6 +277,58 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         pageContainerScrollableContent = findViewById(R.id.pageContainer_scrollable_content);
         if (pageContainerScrollableContent == null) {
             Log.e(TAG, "pageContainer_scrollable_content not found! Check your layout ID.");
+        }
+        sendingCommentProgressBar = findViewById(R.id.sending_comment_progress_bar);
+    }
+
+    private void initializeSoundPool() {
+        // Sử dụng AudioAttributes cho API 21+ (Lollipop)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION) // Hoặc USAGE_NOTIFICATION_EVENT
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+            soundPool = new SoundPool.Builder()
+                    .setMaxStreams(1) // Phát một âm thanh tại một thời điểm
+                    .setAudioAttributes(audioAttributes)
+                    .build();
+        } else {
+            // Cách cũ hơn cho API < 21
+            soundPool = new SoundPool(1, AudioManager.STREAM_NOTIFICATION, 0);
+        }
+
+        // Load âm thanh từ thư mục res/raw
+        // Bạn cần tạo một file âm thanh (ví dụ: success_sound.mp3 hoặc success_sound.ogg)
+        // và đặt nó vào thư mục res/raw (tạo thư mục raw nếu chưa có)
+        // Ví dụ: R.raw.success_sound
+        successSoundId = soundPool.load(this, R.raw.notification_sound, 1);
+
+        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool sp, int sampleId, int status) {
+                if (status == 0) {
+                    // Load thành công
+                    soundPoolLoaded = true;
+                    Log.d(TAG, "SoundPool loaded successfully. Sound ID: " + sampleId);
+                } else {
+                    // Load thất bại
+                    soundPoolLoaded = false;
+                    Log.e(TAG, "SoundPool load failed. Status: " + status);
+                }
+            }
+        });
+    }
+
+    private void playSuccessSound() {
+        if (soundPoolLoaded && soundPool != null) {
+            // Phát âm thanh
+            // Tham số: soundID, leftVolume, rightVolume, priority, loop, rate
+            soundPool.play(successSoundId, 1.0f, 1.0f, 1, 0, 1.0f);
+            Log.d(TAG, "Playing success sound. ID: " + successSoundId);
+        } else {
+            Log.w(TAG, "SoundPool not loaded or null, cannot play sound.");
+            // Fallback: Hiển thị Toast nếu không phát được âm thanh
+            Toast.makeText(WatchActivity.this, "Đăng thành công!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -525,60 +594,84 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     }
 
     @Override
-    public void onReplyClicked(MovieCommentResponse comment, int position) {
-        Toast.makeText(this, "Trả lời bình luận của: " + comment.getUserName(), Toast.LENGTH_SHORT).show();
+    public void onReplyClicked(MovieCommentResponse comment, int position, View itemView) { // itemView có thể không cần dùng tới
+        if (!isUserLoggedIn()) {
+            showLoginPromptDialog();
+            return;
+        }
+
+        this.replyingToComment = comment; // Lưu lại comment đang được trả lời
+
+        // Hiển thị ô nhập liệu chính (commentInputBox)
+        showCommentInputBox(true); // Phương thức này bạn đã có
+
+        if (editTextCommentInput != null) { // editTextCommentInput là R.id.commentInput
+            editTextCommentInput.setHint("Trả lời " + comment.getUserName() + "...");
+            editTextCommentInput.requestFocus();
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(editTextCommentInput, InputMethodManager.SHOW_IMPLICIT);
+            }
+            // Cuộn xuống cuối nếu cần, hoặc cuộn tới ô nhập liệu
+            // scrollContent.smoothScrollTo(0, commentInputBox.getTop()); // Hoặc tương tự
+        }
     }
 
     @Override
-    public void onViewRepliesClicked(MovieCommentResponse parentComment, int position) {
+    public void onViewRepliesClicked(MovieCommentResponse parentComment, int positionInAdapter) {
         if (parentComment == null || parentComment.getId() == null) {
-            Toast.makeText(this, "Không thể tải trả lời, ID bình luận không hợp lệ.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "ID bình luận không hợp lệ.", Toast.LENGTH_SHORT).show();
             return;
         }
-        Log.d(TAG, "Fetching replies for comment ID: " + parentComment.getId());
-        Toast.makeText(this, "Đang tải trả lời cho bình luận của: " + parentComment.getUserName(), Toast.LENGTH_SHORT).show();
+
+        Integer parentId = parentComment.getId();
+
+        // Kiểm tra xem commentAdapter có đang quản lý trạng thái này không
+        // Ví dụ, thông qua các phương thức của adapter:
+        if (commentAdapter.isRepliesExpanded(parentId)) {
+            commentAdapter.collapseReplies(parentId, positionInAdapter);
+        } else {
+            // Kiểm tra xem đã fetch replies trước đó chưa
+            List<MovieCommentResponse> cachedReplies = commentAdapter.getCachedReplies(parentId); // Lấy từ fetchedRepliesMap của adapter
+            if (cachedReplies != null) {
+                commentAdapter.expandReplies(parentId, cachedReplies, positionInAdapter);
+            } else {
+                // Fetch từ API
+                if (parentComment.getTotalReply() == 0) {
+                    Toast.makeText(this, "Không có trả lời nào.", Toast.LENGTH_SHORT).show();
+                    commentAdapter.markAsExpandedWithNoReplies(parentId); // Đánh dấu để không fetch lại
+                    return;
+                }
+                fetchAndDisplayReplies(parentComment, positionInAdapter);
+            }
+        }
+    }
+    private void fetchAndDisplayReplies(MovieCommentResponse parentComment, int positionInAdapter) {
+        Integer parentId = parentComment.getId();
+        // Hiển thị loading cho item đó nếu cần
+        // commentAdapter.notifyItemChanged(positionInAdapter); // Để hiển thị trạng thái loading
+
         AuthApiService apiService = AuthRepository.getInstance().getApi();
-        apiService.getMovieCommentReplies(parentComment.getId())
+        apiService.getMovieCommentReplies(parentId) // API lấy replies dựa trên parentId
                 .enqueue(new Callback<SimpleResponse<List<MovieCommentResponse>>>() {
                     @Override
                     public void onResponse(@NonNull Call<SimpleResponse<List<MovieCommentResponse>>> call,
                                            @NonNull Response<SimpleResponse<List<MovieCommentResponse>>> response) {
                         if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                             List<MovieCommentResponse> replies = response.body().getData();
-                            if (replies.isEmpty()) {
-                                Toast.makeText(WatchActivity.this, "Không có trả lời nào cho bình luận này.", Toast.LENGTH_SHORT).show();
-                            } else {
-                                showRepliesDialog(parentComment, replies);
-                            }
+                            commentAdapter.cacheAndExpandReplies(parentId, replies, positionInAdapter);
                         } else {
-                            Log.e(TAG, "Error fetching replies: " + response.code() + " - " + response.message());
-                            Toast.makeText(WatchActivity.this, "Lỗi khi tải trả lời: " + response.message(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(WatchActivity.this, "Lỗi khi tải trả lời.", Toast.LENGTH_SHORT).show();
+                            // commentAdapter.notifyItemChanged(positionInAdapter); // Reset trạng thái loading
                         }
                     }
+
                     @Override
                     public void onFailure(@NonNull Call<SimpleResponse<List<MovieCommentResponse>>> call, @NonNull Throwable t) {
-                        Log.e(TAG, "Failure fetching replies", t);
                         Toast.makeText(WatchActivity.this, "Lỗi mạng khi tải trả lời.", Toast.LENGTH_SHORT).show();
+                        // commentAdapter.notifyItemChanged(positionInAdapter); // Reset trạng thái loading
                     }
                 });
-    }
-
-    private void showRepliesDialog(MovieCommentResponse parentComment, List<MovieCommentResponse> replies) {
-        if (replies == null || replies.isEmpty()) {
-            return;
-        }
-        CharSequence[] items = new CharSequence[replies.size()];
-        for (int i = 0; i < replies.size(); i++) {
-            MovieCommentResponse reply = replies.get(i);
-            String replyText = (reply.getUser() != null && reply.getUser().getFullName() != null ? reply.getUser().getFullName() : "Người dùng ẩn danh") +
-                    ": " + reply.getContent();
-            items[i] = replyText;
-        }
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogCustom);
-        builder.setTitle("Trả lời cho: " + parentComment.getUserName());
-        builder.setItems(items, null);
-        builder.setPositiveButton("Đóng", (dialog, which) -> dialog.dismiss());
-        builder.create().show();
     }
 
     private void adjustScrollableContentPadding() {
@@ -701,7 +794,9 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         });
 
         scrollContent.getViewTreeObserver().addOnScrollChangedListener(() -> {
-            if (isTabClickScrolling || tabLayout == null || anchorEpisodes == null || anchorForYou == null || anchorComments == null) {
+            if (isTabClickScrolling || tabLayout == null || scrollContent == null ||
+                    anchorEpisodes == null || anchorForYou == null || anchorComments == null ||
+                    recyclerViewRecommended == null) {
                 return;
             }
 
@@ -783,6 +878,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
 
                 hideKeyboard(); // Gọi hàm ẩn bàn phím (hàm này nên dùng getCurrentFocus() hoặc nhận view cụ thể)
                 adjustScrollViewPadding(false); // Khôi phục padding khi box ẩn
+                resetReplyState();
             }
         }
     }
@@ -894,7 +990,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     private void handleFastForward() {
         if (player != null) {
             long duration = player.getDuration();
-            if (duration != androidx.media3.common.C.TIME_UNSET) {
+            if (duration != C.TIME_UNSET) {
                 player.seekTo(Math.min(duration, player.getCurrentPosition() + 10000));
             }
         }
@@ -1363,53 +1459,140 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         postNewComment();
     }
 
-    private void postNewComment() {
-        if (editTextCommentInput == null) return;
+    // Trong WatchActivity.java
+    private void postNewComment() { // Hoặc tên phương thức xử lý gửi của bạn
+        if (editTextCommentInput == null) return; // editTextCommentInput là R.id.commentInput
         String commentContent = editTextCommentInput.getText().toString().trim();
+
         if (TextUtils.isEmpty(commentContent)) {
-            Toast.makeText(this, "Vui lòng nhập nội dung bình luận", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "Vui lòng nhập nội dung", Toast.LENGTH_SHORT).show();
             return;
         }
+
         if (currentEpisodeIdForComments == null) {
-            Toast.makeText(this, "Không xác định được tập phim để bình luận", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Không xác định được tập phim", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // TODO: Lấy userId từ SharedPreferences hoặc nơi bạn lưu thông tin người dùng đã đăng nhập
-        // Integer currentUserId = ... ;
-        // if (currentUserId == null) {
-        //     Toast.makeText(this, "Vui lòng đăng nhập để bình luận", Toast.LENGTH_SHORT).show();
-        //     return;
-        // }
-        String username = UserManager.getUsername(this);
-        MovieCommentRequest request = new MovieCommentRequest(currentEpisodeIdForComments, commentContent, username);
-        // Nếu là trả lời bình luận, bạn cần thêm parentCommentId:
-        // MovieCommentRequest request = new MovieCommentRequest(currentEpisodeIdForComments, commentContent, parentId);
+        // Xác định parentId nếu đang trả lời một bình luận
+        Integer parentId = null;
+        if (this.replyingToComment != null) {
+            // Nếu comment đang được trả lời là một reply (có parentCommentId riêng),
+            // thì parentId của comment mới này sẽ là parentCommentId của replyingToComment (tức là comment cha gốc).
+            // Nếu comment đang được trả lời là một comment cha (không có parentCommentId),
+            // thì parentId của comment mới này sẽ là ID của replyingToComment.
+            if (this.replyingToComment.getParentCommentId() != null) {
+                // Đang trả lời một reply, parentId sẽ là ID của comment cha GỐC của reply đó.
+                parentId = this.replyingToComment.getParentCommentId();
+            } else {
+                // Đang trả lời một comment cha.
+                parentId = this.replyingToComment.getId();
+            }
+            Log.d(TAG, "Replying to comment. Parent ID for new comment: " + parentId);
+        } else {
+            Log.d(TAG, "Posting a new top-level comment.");
+        }
 
+        // Tạo đối tượng request
+        // Giả định MovieCommentRequest có constructor (Integer episodeId, String content, Integer parentCommentId)
+        // Nếu API của bạn yêu cầu thêm thông tin người dùng (ví dụ: username) trong body,
+        // bạn cần thêm nó vào MovieCommentRequest và constructor.
+         String username = UserManager.getUsername(this);
+         MovieCommentRequest request = new MovieCommentRequest(currentEpisodeIdForComments, commentContent, parentId, username);
+//        MovieCommentRequest request = new MovieCommentRequest(currentEpisodeIdForComments, commentContent, parentId, );
 
         // Hiển thị loading hoặc vô hiệu hóa nút gửi
-        if (buttonSendComment != null) buttonSendComment.setEnabled(false);
-        Toast.makeText(this, "Đang gửi bình luận...", Toast.LENGTH_SHORT).show();
+        if (buttonSendComment != null) {
+            buttonSendComment.setEnabled(false);
+        }
+
+        // HIỂN THỊ PROGRESSBAR, VÔ HIỆU HÓA NÚT GỬI
+        if (buttonSendComment != null) {
+            buttonSendComment.setEnabled(false);
+            // Nếu ProgressBar nằm chồng lên nút gửi, bạn có thể ẩn nút gửi
+            // buttonSendComment.setVisibility(View.INVISIBLE);
+        }
+        if (sendingCommentProgressBar != null) {
+            sendingCommentProgressBar.setVisibility(View.VISIBLE);
+        }
+//        Toast.makeText(this, "Đang gửi bình luận...", Toast.LENGTH_SHORT).show();
+
         AuthRepository.getInstance().getApi().addMovieComment(request)
-                .enqueue(new Callback<SimpleResponse>() {
+                .enqueue(new Callback<SimpleResponse>() { // Sửa ở đây: SimpleResponse, không phải SimpleResponse<MovieCommentResponse>
                     @Override
                     public void onResponse(@NonNull Call<SimpleResponse> call, @NonNull Response<SimpleResponse> response) {
-                        if (buttonSendComment != null) buttonSendComment.setEnabled(true);
+                        if (buttonSendComment != null) buttonSendComment.setEnabled(true); // buttonSendComment là R.id.sendButton
+
+                        if (sendingCommentProgressBar != null) {
+                            sendingCommentProgressBar.setVisibility(View.GONE);
+                        }
+
                         if (response.isSuccessful() && response.body() != null) {
-                            Toast.makeText(WatchActivity.this, "Đăng bình luận thành công!", Toast.LENGTH_SHORT).show();
-                            editTextCommentInput.setText("");
+                            // Kiểm tra thêm mã thành công cụ thể từ SimpleResponse nếu cần, ví dụ:
+                            // if (response.body().isSuccess()) { // Giả sử SimpleResponse có trường isSuccess
+                            playSuccessSound();
+//                            Toast.makeText(WatchActivity.this, "Đăng thành công!", Toast.LENGTH_SHORT).show();
+                            editTextCommentInput.setText(""); // editTextCommentInput là R.id.commentInput
                             hideKeyboard();
-                            loadCommentsForEpisode(currentEpisodeIdForComments, true);
+
+                            resetReplyState(); // Hàm này bạn đã có để reset hint và replyingToComment
+
+                            // Tải lại bình luận
+                            Integer parentIdBeingRepliedTo = (replyingToComment != null) ?
+                                    (replyingToComment.getParentCommentId() != null ? replyingToComment.getParentCommentId() : replyingToComment.getId())
+                                    : null;
+
+                            if (parentIdBeingRepliedTo != null) {
+                                int parentPosition = commentAdapter.findPositionById(parentIdBeingRepliedTo);
+                                if (parentPosition != -1) {
+                                    MovieCommentResponse actualParentComment = commentAdapter.getCommentAtPosition(parentPosition);
+                                    if (actualParentComment != null) {
+                                        // Fetch lại replies cho parentActualComment để bao gồm comment mới
+                                        // Đảm bảo hàm fetchAndDisplayReplies cũng làm mới cache trong adapter
+                                        fetchAndDisplayReplies(actualParentComment, parentPosition);
+                                    } else {
+                                        // Nếu không tìm thấy parent comment trong adapter (trường hợp hiếm), tải lại tất cả
+                                        loadCommentsForEpisode(currentEpisodeIdForComments, true);
+                                    }
+                                } else {
+                                    // Không tìm thấy vị trí của parent comment, có thể nó chưa được load hoặc list đã thay đổi
+                                    loadCommentsForEpisode(currentEpisodeIdForComments, true);
+                                }
+                            } else {
+                                // Bình luận gốc mới, tải lại toàn bộ
+                                loadCommentsForEpisode(currentEpisodeIdForComments, true);
+                            }
+                            // } else {
+                            //     // Xử lý trường hợp SimpleResponse báo lỗi từ server (ví dụ: response.body().getMessage())
+                            //     Toast.makeText(WatchActivity.this, "Lỗi: " + (response.body().getMessage() != null ? response.body().getMessage() : "Không thể đăng bình luận."), Toast.LENGTH_LONG).show();
+                            // }
                         } else {
-                            Toast.makeText(WatchActivity.this, "Lỗi: Không thể đăng bình luận. " + response.message(), Toast.LENGTH_LONG).show();
+
+                            // Lỗi HTTP hoặc body rỗng
+                            Toast.makeText(WatchActivity.this, "Lỗi đăng bình luận: " + response.code() + " " + response.message(), Toast.LENGTH_LONG).show();
                         }
                     }
+
                     @Override
                     public void onFailure(@NonNull Call<SimpleResponse> call, @NonNull Throwable t) {
                         if (buttonSendComment != null) buttonSendComment.setEnabled(true);
-                        Toast.makeText(WatchActivity.this, "Lỗi mạng: Không thể đăng bình luận.", Toast.LENGTH_SHORT).show();
+                        if (sendingCommentProgressBar != null) {
+                            sendingCommentProgressBar.setVisibility(View.GONE);
+                        }
+                        Toast.makeText(WatchActivity.this, "Lỗi mạng khi đăng bình luận.", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "postNewComment onFailure: ", t);
                     }
                 });
+    }
+
+    // Hàm mới để reset trạng thái trả lời
+    private void resetReplyState() {
+        this.replyingToComment = null;
+        if (editTextCommentInput != null && originalCommentInputHint != null) {
+            editTextCommentInput.setHint(originalCommentInputHint);
+        }
+        // Có thể cần ẩn commentInputBox nếu không muốn nó luôn hiện sau khi gửi
+        // showCommentInputBox(false); // Tùy theo luồng bạn muốn
     }
 
     private void hideKeyboard() {
