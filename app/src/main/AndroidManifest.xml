@@ -57,7 +57,10 @@
         </receiver>
 
         <activity
-            android:name=".view.WatchActivity" android:exported="true" android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize">
+            android:name=".view.WatchActivity"
+            android:exported="true"
+            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize"
+            android:windowSoftInputMode="adjustResize">
         </activity>
 
         <activity
