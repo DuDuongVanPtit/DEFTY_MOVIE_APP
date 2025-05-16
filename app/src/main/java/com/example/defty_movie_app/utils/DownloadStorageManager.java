@@ -45,24 +45,38 @@ public class DownloadStorageManager {
         List<DownloadedMovie> movies = getDownloadedMovies();
         boolean found = false;
         for (int i = 0; i < movies.size(); i++) {
-            // So sánh dựa trên equals (id và slug)
+            // Sử dụng equals đã được override trong DownloadedMovie (id, slug, number)
             if (movies.get(i).equals(movie)) {
                 // Nếu phim đã tồn tại, cập nhật thông tin của nó
-                // Điều này quan trọng để cập nhật downloadId, status, localFilePath
+                DownloadedMovie existingMovie = movies.get(i);
+                // Giữ lại localFilePath nếu phim mới không có (ví dụ cập nhật trạng thái mà không phải tải lại)
+                if (movie.getLocalFilePath() == null && DownloadedMovie.STATUS_COMPLETED.equals(existingMovie.getDownloadStatus())) {
+                    movie.setLocalFilePath(existingMovie.getLocalFilePath());
+                }
+                // Giữ lại downloadId nếu phim mới không có (ví dụ cập nhật trạng thái từ receiver)
+                if (movie.getDownloadId() == -1 && existingMovie.getDownloadId() != -1 &&
+                        !DownloadedMovie.STATUS_PENDING.equals(movie.getDownloadStatus())) { // Không ghi đè nếu là PENDING mới
+                    movie.setDownloadId(existingMovie.getDownloadId());
+                }
+
                 movies.set(i, movie);
                 found = true;
-                Log.d(TAG, "Updated existing movie: " + movie.getTitle());
+                Log.d(TAG, "Updated existing movie: " + movie.getTitle() + " with status: " + movie.getDownloadStatus());
                 break;
             }
         }
         if (!found) {
-            movie.setTitle(movie.getTitle()+"-Tập "+movie.getNumber());
+            // Đảm bảo tiêu đề có số tập nếu là phim mới
+            if (movie.getNumber() != null && !movie.getTitle().endsWith("-Tập " + movie.getNumber())) {
+                movie.setTitle(movie.getTitle() + "-Tập " + movie.getNumber());
+            }
             movies.add(0, movie); // Thêm phim mới vào đầu danh sách
-            Log.d(TAG, "Added new movie: " + movie.getTitle());
+            Log.d(TAG, "Added new movie: " + movie.getTitle() + " with status: " + movie.getDownloadStatus());
         }
         saveDownloadedMovies(movies);
         Log.d(TAG, "Total movies after add/update: " + movies.size());
     }
+
     public void updateDownloadedMovie(DownloadedMovie movieToUpdate) {
         if (movieToUpdate == null) {
             Log.e(TAG, "Attempted to update with a null movie.");
@@ -72,29 +86,38 @@ public class DownloadStorageManager {
         boolean updated = false;
         for (int i = 0; i < movies.size(); i++) {
             DownloadedMovie existingMovie = movies.get(i);
-            // Ưu tiên tìm bằng downloadId nếu có và hợp lệ
+            // Ưu tiên tìm bằng downloadId nếu có và hợp lệ (thường từ DownloadCompletionReceiver)
             if (movieToUpdate.getDownloadId() != -1 && existingMovie.getDownloadId() == movieToUpdate.getDownloadId()) {
+                // Khi cập nhật bằng downloadId, đảm bảo tên và số tập được giữ nguyên từ bản ghi cũ nếu bản cập nhật không có
+                if(movieToUpdate.getTitle() == null) movieToUpdate.setTitle(existingMovie.getTitle());
+                if(movieToUpdate.getNumber() == null) movieToUpdate.setNumber(existingMovie.getNumber());
+
                 movies.set(i, movieToUpdate);
                 updated = true;
+                Log.d(TAG, "Updated movie by downloadId: " + movieToUpdate.getTitle());
                 break;
             }
-            // Nếu không khớp downloadId (hoặc downloadId không hợp lệ), thử khớp bằng id và slug
-            else if (existingMovie.getId() == movieToUpdate.getId() &&
-                    existingMovie.getSlug() != null &&
-                    existingMovie.getSlug().equals(movieToUpdate.getSlug())) {
+            // Nếu không khớp downloadId, thử khớp bằng equals (id, slug, number)
+            // Điều này hữu ích khi cập nhật trạng thái trước khi có downloadId (VD: từ PENDING sang DOWNLOADING)
+            else if (existingMovie.equals(movieToUpdate)) {
+                // Khi cập nhật bằng equals, đảm bảo tên và số tập được giữ nguyên từ bản ghi cũ nếu bản cập nhật không có
+                if(movieToUpdate.getTitle() == null) movieToUpdate.setTitle(existingMovie.getTitle());
+                if(movieToUpdate.getNumber() == null) movieToUpdate.setNumber(existingMovie.getNumber());
+
                 movies.set(i, movieToUpdate);
                 updated = true;
+                Log.d(TAG, "Updated movie by equals: " + movieToUpdate.getTitle());
                 break;
             }
         }
 
         if (updated) {
             saveDownloadedMovies(movies);
-            Log.d(TAG, "Updated movie info for: " + movieToUpdate.getTitle());
         } else {
-            // Nếu không tìm thấy để cập nhật, bạn có thể quyết định thêm mới ở đây nếu muốn
-            // addDownloadedMovie(movieToUpdate);
-            Log.w(TAG, "Could not find movie to update (will not add as new): " + movieToUpdate.getTitle() + " with ID: " + movieToUpdate.getId() + " and Slug: " + movieToUpdate.getSlug());
+            // Nếu không tìm thấy để cập nhật, có thể thêm mới nếu logic yêu cầu
+            // Tuy nhiên, updateDownloadedMovie thường được gọi cho phim đã có trong danh sách
+            Log.w(TAG, "Could not find movie to update (not adding as new): " + movieToUpdate.getTitle() + " with Download ID: " + movieToUpdate.getDownloadId() + ", Movie ID: " + movieToUpdate.getId() + ", Slug: " + movieToUpdate.getSlug());
+            // addDownloadedMovie(movieToUpdate); // Cân nhắc nếu muốn thêm mới tại đây
         }
     }
 

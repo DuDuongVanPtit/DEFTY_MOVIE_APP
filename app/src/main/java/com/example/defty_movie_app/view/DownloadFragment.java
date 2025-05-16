@@ -1,10 +1,10 @@
 package com.example.defty_movie_app.view;
 
 import android.content.ActivityNotFoundException;
-import android.content.BroadcastReceiver; // Thêm import
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter; // Thêm import
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,14 +20,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager; // Thêm import
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.adapter.DownloadedMovieAdapter;
 import com.example.defty_movie_app.data.dto.DownloadedMovie;
-import com.example.defty_movie_app.utils.DownloadCompletionReceiver; // Thêm import để lấy ACTION
+import com.example.defty_movie_app.utils.DownloadCompletionReceiver;
 import com.example.defty_movie_app.viewmodel.DownloadViewModel;
 
 import java.io.File;
@@ -42,7 +42,7 @@ public class DownloadFragment extends Fragment implements DownloadedMovieAdapter
     private TextView emptyDownloadsTextView;
 
     private DownloadViewModel downloadViewModel;
-    private BroadcastReceiver downloadStatusUpdateReceiver; // Thêm BroadcastReceiver
+    private BroadcastReceiver downloadStatusUpdateReceiver;
 
     public DownloadFragment() {
         // Required empty public constructor
@@ -53,14 +53,13 @@ public class DownloadFragment extends Fragment implements DownloadedMovieAdapter
         super.onCreate(savedInstanceState);
         downloadViewModel = new ViewModelProvider(this).get(DownloadViewModel.class);
 
-        // Khởi tạo BroadcastReceiver
         downloadStatusUpdateReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (DownloadCompletionReceiver.ACTION_DOWNLOAD_STATUS_CHANGED.equals(intent.getAction())) {
                     Log.d(TAG, "Received ACTION_DOWNLOAD_STATUS_CHANGED in DownloadFragment. Reloading movies.");
                     if (downloadViewModel != null) {
-                        downloadViewModel.loadDownloadedMovies(); // Yêu cầu ViewModel tải lại
+                        downloadViewModel.loadDownloadedMovies();
                     }
                 }
             }
@@ -88,14 +87,11 @@ public class DownloadFragment extends Fragment implements DownloadedMovieAdapter
                 updateUIBasedOnMovieList(movies);
             }
         });
-        // ViewModel đã tự load lần đầu trong constructor hoặc khi LiveData active
-        // onResume sẽ load lại để đảm bảo cập nhật khi fragment quay lại
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        // Đăng ký BroadcastReceiver
         if (getContext() != null) {
             LocalBroadcastManager.getInstance(requireContext()).registerReceiver(
                     downloadStatusUpdateReceiver,
@@ -108,10 +104,7 @@ public class DownloadFragment extends Fragment implements DownloadedMovieAdapter
     @Override
     public void onResume() {
         super.onResume();
-        // Tải lại danh sách khi fragment hiển thị lại, phòng trường hợp
-        // broadcast bị lỡ khi fragment không active.
-        // Nếu broadcast đã được nhận và xử lý rồi thì việc load lại này cũng không sao,
-        // ViewModel có thể có cơ chế tránh load thừa nếu dữ liệu không đổi.
+        // Luôn tải lại danh sách khi fragment resume để đảm bảo dữ liệu mới nhất
         if (downloadViewModel != null) {
             downloadViewModel.loadDownloadedMovies();
         }
@@ -120,7 +113,6 @@ public class DownloadFragment extends Fragment implements DownloadedMovieAdapter
     @Override
     public void onStop() {
         super.onStop();
-        // Hủy đăng ký BroadcastReceiver
         if (getContext() != null) {
             LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(downloadStatusUpdateReceiver);
         }
@@ -148,54 +140,43 @@ public class DownloadFragment extends Fragment implements DownloadedMovieAdapter
 
     @Override
     public void onMovieClicked(DownloadedMovie movie) {
-        if (getContext() == null || movie == null) return;
+        if (getContext() == null || movie == null || downloadViewModel == null) return;
 
         String status = movie.getDownloadStatus();
         if (status == null) {
-            // Nếu trạng thái null, có thể coi là PENDING hoặc một trạng thái lỗi không xác định
-            // Dựa theo logic cập nhật màu, PENDING sẽ hiển thị màu xanh dương
-            status = DownloadedMovie.STATUS_PENDING;
+            status = DownloadedMovie.STATUS_PENDING; // Trạng thái mặc định
         }
 
-        if (DownloadedMovie.STATUS_COMPLETED.equals(status) && movie.getLocalFilePath() != null) {
-            File movieFile = new File(movie.getLocalFilePath());
-            if (movieFile.exists()) {
-                // Kiểm tra xem context có còn hợp lệ không trước khi dùng requireContext()
-                if (getActivity() == null || getActivity().isFinishing()) return;
-
-                Uri videoUri = FileProvider.getUriForFile(requireContext(), requireContext().getPackageName() + ".provider", movieFile);
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(videoUri, "video/*");
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                try {
-                    startActivity(intent);
-                } catch (ActivityNotFoundException e) {
-                    Toast.makeText(getContext(), "Không tìm thấy ứng dụng nào để phát video.", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "No activity found to handle video intent for URI: " + videoUri, e);
-                } catch (Exception e) {
-                    Toast.makeText(getContext(), "Lỗi khi mở video.", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "Error opening video with URI: " + videoUri, e);
-                }
-            } else {
-                Toast.makeText(getContext(), "File phim không tồn tại trên thiết bị.", Toast.LENGTH_SHORT).show();
-                Log.w(TAG, "Movie file not found at: " + movie.getLocalFilePath());
-                // Cân nhắc cập nhật trạng thái trong ViewModel
-                movie.setDownloadStatus(DownloadedMovie.STATUS_FAILED);
-                movie.setLocalFilePath(null); // Xóa đường dẫn file không hợp lệ
-                if (downloadViewModel != null) {
-                    // Thay vì chỉ load lại, nên có một hàm update cụ thể trong ViewModel
-                    // downloadViewModel.updateMovieStatus(movie); // Ví dụ
-                    downloadViewModel.loadDownloadedMovies(); // Tạm thời load lại toàn bộ danh sách
-                }
-            }
-        } else if (DownloadedMovie.STATUS_DOWNLOADING.equals(status)) {
-            Toast.makeText(getContext(), "Phim '" + movie.getTitle() + "' đang được tải xuống.", Toast.LENGTH_SHORT).show();
-        } else if (DownloadedMovie.STATUS_PENDING.equals(status)) {
-            Toast.makeText(getContext(), "Phim '" + movie.getTitle() + "' đang chờ tải.", Toast.LENGTH_SHORT).show();
-        } else if (DownloadedMovie.STATUS_FAILED.equals(status)) {
-            Toast.makeText(getContext(), "Tải phim '" + movie.getTitle() + "' thất bại. Vui lòng thử lại từ chi tiết phim.", Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(getContext(), "Phim '" + movie.getTitle() + "' chưa sẵn sàng hoặc có lỗi ("+ status +").", Toast.LENGTH_SHORT).show();
+        switch (status) {
+            case DownloadedMovie.STATUS_COMPLETED:
+                playMovie(movie);
+                break;
+            case DownloadedMovie.STATUS_DOWNLOADING:
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Hủy tải xuống?")
+                        .setMessage("Bạn có chắc muốn hủy tải xuống phim '" + movie.getTitle() + "' không?")
+                        .setPositiveButton("Hủy tải", (dialog, which) -> {
+                            downloadViewModel.cancelOngoingDownload(movie);
+                            // Toast đã được hiển thị trong ViewModel hoặc có thể thêm ở đây nếu muốn
+                        })
+                        .setNegativeButton("Không", null)
+                        .show();
+                break;
+            case DownloadedMovie.STATUS_PENDING:
+                Toast.makeText(getContext(), "Phim '" + movie.getTitle() + "' đang chờ tải.", Toast.LENGTH_SHORT).show();
+                break;
+            case DownloadedMovie.STATUS_FAILED:
+                Toast.makeText(getContext(), "Tải phim '" + movie.getTitle() + "' thất bại. Vui lòng xóa và thử lại.", Toast.LENGTH_LONG).show();
+                break;
+            case DownloadedMovie.STATUS_PAUSED:
+                Toast.makeText(getContext(), "Tải phim '" + movie.getTitle() + "' đã tạm dừng.", Toast.LENGTH_SHORT).show();
+                break;
+            case DownloadedMovie.STATUS_CANCELLED:
+                Toast.makeText(getContext(), "Tải phim '" + movie.getTitle() + "' đã được hủy.", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                Toast.makeText(getContext(), "Trạng thái phim '" + movie.getTitle() + "' (" + status + ") không xác định.", Toast.LENGTH_SHORT).show();
+                break;
         }
     }
 
@@ -204,12 +185,56 @@ public class DownloadFragment extends Fragment implements DownloadedMovieAdapter
         if (getContext() == null || downloadViewModel == null || movie == null) return;
 
         new AlertDialog.Builder(requireContext())
-                .setTitle("Xóa phim đã tải")
-                .setMessage("Bạn có chắc muốn xóa '" + movie.getTitle() + "' khỏi danh sách và bộ nhớ máy (nếu đã tải)?")
+                .setTitle("Xóa phim")
+                .setMessage("Bạn có chắc muốn xóa '" + movie.getTitle() + "'? Hành động này sẽ xóa phim khỏi danh sách và xóa file đã tải (nếu có).")
                 .setPositiveButton("Xóa", (dialog, which) -> {
                     downloadViewModel.deleteDownloadedMovie(movie);
                 })
                 .setNegativeButton("Hủy", null)
                 .show();
+    }
+
+    @Override
+    public void onWatchNowClicked(DownloadedMovie movie) {
+        Log.d(TAG, "Watch Now clicked for: " + movie.getTitle());
+        if (movie == null || getContext() == null) return;
+
+        if (DownloadedMovie.STATUS_COMPLETED.equals(movie.getDownloadStatus())) {
+            playMovie(movie);
+        } else {
+            Toast.makeText(getContext(), "Phim '" + movie.getTitle() + "' chưa tải xong.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void playMovie(DownloadedMovie movie) {
+        if (getContext() == null || movie == null || movie.getLocalFilePath() == null) {
+            Toast.makeText(getContext(), "Không thể phát phim, đường dẫn không hợp lệ.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        File movieFile = new File(movie.getLocalFilePath());
+        if (movieFile.exists() && movieFile.isFile()) { // Kiểm tra là file
+            if (getActivity() == null || getActivity().isFinishing()) return;
+
+            Uri videoUri = FileProvider.getUriForFile(requireContext(), requireContext().getPackageName() + ".provider", movieFile);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(videoUri, "video/*");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            try {
+                startActivity(intent);
+            } catch (ActivityNotFoundException e) {
+                Toast.makeText(getContext(), "Không tìm thấy ứng dụng nào để phát video.", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "No activity found to handle video intent for URI: " + videoUri, e);
+            } catch (Exception e) {
+                Toast.makeText(getContext(), "Lỗi khi mở video.", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Error opening video with URI: " + videoUri, e);
+            }
+        } else {
+            Toast.makeText(getContext(), "File phim không tồn tại hoặc không phải là file hợp lệ.", Toast.LENGTH_SHORT).show();
+            Log.w(TAG, "Movie file not found or not a file at: " + movie.getLocalFilePath());
+            if (downloadViewModel != null) {
+                downloadViewModel.markDownloadAsFailed(movie);
+            }
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.example.defty_movie_app.data.model.response;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 public class MovieDetailResponse {
@@ -21,6 +23,7 @@ public class MovieDetailResponse {
         public List<Actor> actor;
         public List<Category> category;
         public List<Episode> episode;
+        public Integer membershipType;
     }
 
     public static class Director {
@@ -161,6 +164,8 @@ public class MovieDetailResponse {
         public void setProcessedLink(String processedLink) {
             this.processedLink = processedLink;
         }
+
+
 
     }
     public static class Category {
