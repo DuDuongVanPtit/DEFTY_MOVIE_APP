@@ -9,6 +9,7 @@ import android.widget.EditText; // Không còn dùng EditText trong ViewHolder n
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout; // Không còn dùng LinearLayout replyInputContainer trong ViewHolder
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +45,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private Set<Integer> expandedParentCommentIds = new HashSet<>();
     private Map<Integer, List<MovieCommentResponse>> fetchedRepliesMap = new HashMap<>();
+    private Set<Integer> loadingRepliesParentIds = new HashSet<>();
     // Không còn replyingToPosition vì input box đã được quản lý bởi Activity
 
     public CommentAdapter(Context context, CommentInteractionListener listener) {
@@ -139,13 +141,23 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             itemParams.leftMargin = 0;
             commentHolder.itemView.setLayoutParams(itemParams);
 
-            commentHolder.textViewViewReplies.setVisibility(comment.getTotalReply() > 0 ? View.VISIBLE : View.GONE);
-            commentHolder.textViewViewReplies.setText(
-                    expandedParentCommentIds.contains(comment.getId()) ? "Ẩn trả lời" : "Xem " + comment.getTotalReply() + " trả lời"
-            );
+            if (loadingRepliesParentIds.contains(comment.getId())) {
+                commentHolder.textViewViewReplies.setVisibility(View.GONE);
+                commentHolder.progressBarLoadingReplies.setVisibility(View.VISIBLE);
+            } else {
+                commentHolder.progressBarLoadingReplies.setVisibility(View.GONE);
+                if (comment.getTotalReply() > 0) {
+                    commentHolder.textViewViewReplies.setVisibility(View.VISIBLE);
+                    commentHolder.textViewViewReplies.setText(
+                            expandedParentCommentIds.contains(comment.getId()) ? "Ẩn trả lời" : "Xem " + comment.getTotalReply() + " trả lời"
+                    );
+                } else {
+                    commentHolder.textViewViewReplies.setVisibility(View.GONE);
+                }
+            }
             commentHolder.textViewViewReplies.setOnClickListener(v -> {
                 int currentPosition = holder.getAdapterPosition();
-                if (currentPosition != RecyclerView.NO_POSITION) {
+                if (currentPosition != RecyclerView.NO_POSITION && !loadingRepliesParentIds.contains(comment.getId())) {
                     listener.onViewRepliesClicked(displayItems.get(currentPosition), currentPosition);
                 }
             });
@@ -164,6 +176,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             commentHolder.itemView.setLayoutParams(itemParams);
 
             commentHolder.textViewViewReplies.setVisibility(View.GONE);
+            commentHolder.progressBarLoadingReplies.setVisibility(View.GONE);
             commentHolder.buttonReplyComment.setVisibility(View.VISIBLE); // Hoặc GONE tùy theo UX bạn muốn
 
             commentHolder.buttonReplyComment.setOnClickListener(v -> {
@@ -173,6 +186,29 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 }
             });
         }
+    }
+
+    public void setLoadingRepliesState(Integer parentId, boolean isLoading) {
+        if (parentId == null) return;
+        boolean changed = false;
+        if (isLoading) {
+            changed = loadingRepliesParentIds.add(parentId);
+        } else {
+            changed = loadingRepliesParentIds.remove(parentId);
+        }
+
+        if (changed) {
+            int position = findPositionById(parentId);
+            if (position != -1) {
+                notifyItemChanged(position);
+            }
+        }
+    }
+    public boolean isLoadingReplies(Integer parentId) {
+        if (parentId == null) {
+            return false;
+        }
+        return loadingRepliesParentIds.contains(parentId);
     }
 
     @Override
@@ -297,6 +333,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         ImageButton buttonLikeComment, buttonReplyComment;
         TextView textViewCommentLikeCount, textViewCommentReplyLabel;
         TextView textViewViewReplies;
+        ProgressBar progressBarLoadingReplies;
 
         // Không còn các view cho input box riêng trong item
         // LinearLayout replyInputContainer;
@@ -318,6 +355,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             buttonReplyComment = itemView.findViewById(R.id.button_reply_comment);
             textViewCommentReplyLabel = itemView.findViewById(R.id.text_comment_reply_label);
             textViewViewReplies = itemView.findViewById(R.id.text_view_replies);
+            progressBarLoadingReplies = itemView.findViewById(R.id.progress_bar_loading_replies);
 
             // Không cần findViewById cho các view của reply input đã bị xóa khỏi item_comment.xml
         }

@@ -63,6 +63,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.defty_movie_app.R;
 import com.example.defty_movie_app.adapter.CastCrewAdapter;
 import com.example.defty_movie_app.adapter.CommentAdapter;
@@ -153,7 +154,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
     private View commentInputBox;
     private LinearLayout pageContainerScrollableContent;
     private boolean isCommentInputBoxVisible = false;
-
+    private ImageView imageCurrentUserAvatarCommentInput;
     private int currentCommentPage = 0;
     private boolean isLoadingComments = false;
     private boolean isLastCommentPage = false;
@@ -274,6 +275,7 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
         commentInputBox = findViewById(R.id.commentInputBox);
         progressBarComments = findViewById(R.id.progressBarComments);
         textNoComments = findViewById(R.id.text_no_comments);
+        imageCurrentUserAvatarCommentInput = findViewById(R.id.image_current_user_avatar_comment_input);
 
         toolbarWatchActivity = findViewById(R.id.toolbar_watch_activity);
         pageContainerScrollableContent = findViewById(R.id.pageContainer_scrollable_content);
@@ -625,53 +627,110 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
             Toast.makeText(this, "ID bình luận không hợp lệ.", Toast.LENGTH_SHORT).show();
             return;
         }
-
         Integer parentId = parentComment.getId();
 
-        // Kiểm tra xem commentAdapter có đang quản lý trạng thái này không
-        // Ví dụ, thông qua các phương thức của adapter:
-        if (commentAdapter.isRepliesExpanded(parentId)) {
-            commentAdapter.collapseReplies(parentId, positionInAdapter);
-        } else {
-            // Kiểm tra xem đã fetch replies trước đó chưa
-            List<MovieCommentResponse> cachedReplies = commentAdapter.getCachedReplies(parentId); // Lấy từ fetchedRepliesMap của adapter
-            if (cachedReplies != null) {
-                commentAdapter.expandReplies(parentId, cachedReplies, positionInAdapter);
+        // Kiểm tra xem có đang loading cho comment này không, nếu có thì không làm gì cả
+        // Giả sử CommentAdapter có phương thức isLoadingReplies (bạn cần thêm nếu chưa có)
+        if (commentAdapter != null && commentAdapter.isLoadingReplies(parentId)) {
+            Log.d(TAG, "Already loading replies for comment ID: " + parentId);
+            return; // Không làm gì nếu đang tải rồi
+        }
+
+        if (commentAdapter != null && commentAdapter.isRepliesExpanded(parentId)) {
+            // Tìm lại vị trí hiện tại của parentComment phòng trường hợp list thay đổi
+            int currentParentPos = commentAdapter.findPositionById(parentId);
+            if(currentParentPos != -1) {
+                commentAdapter.collapseReplies(parentId, currentParentPos);
             } else {
-                // Fetch từ API
+                Log.w(TAG, "onViewRepliesClicked (collapse): Parent comment not found: " + parentId);
+                // Nếu không tìm thấy, có thể list đã thay đổi nhiều, cân nhắc refresh
+            }
+        } else {
+            List<MovieCommentResponse> cachedReplies = (commentAdapter != null) ? commentAdapter.getCachedReplies(parentId) : null;
+            if (cachedReplies != null) {
+                int currentParentPos = commentAdapter.findPositionById(parentId);
+                if(currentParentPos != -1) {
+                    commentAdapter.expandReplies(parentId, cachedReplies, currentParentPos);
+                } else {
+                    Log.w(TAG, "onViewRepliesClicked (expand cached): Parent comment not found: " + parentId);
+                }
+            } else {
                 if (parentComment.getTotalReply() == 0) {
-                    Toast.makeText(this, "Không có trả lời nào.", Toast.LENGTH_SHORT).show();
-                    commentAdapter.markAsExpandedWithNoReplies(parentId); // Đánh dấu để không fetch lại
+                    // Toast.makeText(this, "Không có trả lời nào.", Toast.LENGTH_SHORT).show(); // Có thể bỏ Toast này
+                    if (commentAdapter != null) {
+                        commentAdapter.markAsExpandedWithNoReplies(parentId);
+                    }
                     return;
                 }
-                fetchAndDisplayReplies(parentComment, positionInAdapter);
+                // Gọi fetchAndDisplayReplies, nó sẽ tự set loading state
+                // Tìm lại vị trí hiện tại của parentComment trước khi fetch
+                int currentParentPos = commentAdapter.findPositionById(parentId);
+                if (currentParentPos != -1) {
+                    fetchAndDisplayReplies(parentComment, currentParentPos);
+                } else {
+                    Log.w(TAG, "onViewRepliesClicked (fetch new): Parent comment not found: " + parentId + ". Cannot initiate fetch.");
+                    // Có thể hiển thị thông báo lỗi cho người dùng hoặc refresh list
+                }
             }
         }
     }
     private void fetchAndDisplayReplies(MovieCommentResponse parentComment, int positionInAdapter) {
         Integer parentId = parentComment.getId();
-        // Hiển thị loading cho item đó nếu cần
-        // commentAdapter.notifyItemChanged(positionInAdapter); // Để hiển thị trạng thái loading
+        // Tìm lại vị trí hiện tại của parentComment phòng trường hợp list thay đổi
+        // Vì positionInAdapter có thể không còn đúng nếu list thay đổi giữa lúc click và lúc fetch
+        final int currentParentPosition = (commentAdapter != null) ? commentAdapter.findPositionById(parentId) : -1;
 
-        AuthApiService apiService = AuthRepository.getInstance().getApi();
-        apiService.getMovieCommentReplies(parentId) // API lấy replies dựa trên parentId
+        if (currentParentPosition == -1) {
+            Log.w(TAG, "fetchAndDisplayReplies: Parent comment " + parentId + " not found in adapter. Cannot fetch replies.");
+            // Nếu đã lỡ set loading state trước đó (ví dụ từ onViewRepliesClicked), cần clear nó
+            if (commentAdapter != null) {
+                commentAdapter.setLoadingRepliesState(parentId, false);
+            }
+            return;
+        }
+
+        // BẮT ĐẦU HIỂN THỊ LOADING
+        if (commentAdapter != null) {
+            commentAdapter.setLoadingRepliesState(parentId, true);
+        }
+
+        AuthRepository.getInstance().getApi().getMovieCommentReplies(parentId)
                 .enqueue(new Callback<SimpleResponse<List<MovieCommentResponse>>>() {
                     @Override
                     public void onResponse(@NonNull Call<SimpleResponse<List<MovieCommentResponse>>> call,
                                            @NonNull Response<SimpleResponse<List<MovieCommentResponse>>> response) {
+                        // KẾT THÚC HIỂN THỊ LOADING
+                        if (commentAdapter != null) {
+                            commentAdapter.setLoadingRepliesState(parentId, false);
+                        }
+
                         if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                             List<MovieCommentResponse> replies = response.body().getData();
-                            commentAdapter.cacheAndExpandReplies(parentId, replies, positionInAdapter);
+                            // Kiểm tra lại vị trí parent phòng trường hợp list thay đổi cực nhanh
+                            // hoặc item bị xóa trong lúc fetch
+                            int latestParentPosition = (commentAdapter != null) ? commentAdapter.findPositionById(parentId) : -1;
+                            if (latestParentPosition != -1 && commentAdapter != null) {
+                                commentAdapter.cacheAndExpandReplies(parentId, replies, latestParentPosition);
+                            } else {
+                                Log.w(TAG, "Parent comment with ID " + parentId + " disappeared or position changed before expanding replies.");
+                            }
                         } else {
-                            Toast.makeText(WatchActivity.this, "Lỗi khi tải trả lời.", Toast.LENGTH_SHORT).show();
-                            // commentAdapter.notifyItemChanged(positionInAdapter); // Reset trạng thái loading
+                            Toast.makeText(WatchActivity.this, "Lỗi khi tải trả lời: " + response.message(), Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "Error fetching replies: " + response.code() + " - " + response.message());
+                            // Nếu lỗi, và nếu đã cố gắng expand trước đó (ít khả năng xảy ra với logic setLoadingRepliesState),
+                            // có thể cần collapse lại. Tuy nhiên, với setLoadingRepliesState(false),
+                            // nút "Xem trả lời" sẽ hiện lại và người dùng có thể thử lại.
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<SimpleResponse<List<MovieCommentResponse>>> call, @NonNull Throwable t) {
+                        // KẾT THÚC HIỂN THỊ LOADING
+                        if (commentAdapter != null) {
+                            commentAdapter.setLoadingRepliesState(parentId, false);
+                        }
                         Toast.makeText(WatchActivity.this, "Lỗi mạng khi tải trả lời.", Toast.LENGTH_SHORT).show();
-                        // commentAdapter.notifyItemChanged(positionInAdapter); // Reset trạng thái loading
+                        Log.e(TAG, "Failure fetching replies for parentId " + parentId, t);
                     }
                 });
     }
@@ -864,8 +923,23 @@ public class WatchActivity extends AppCompatActivity implements EpisodeAdapter.O
                 // if (recyclerViewComments != null && commentAdapter != null && commentAdapter.getItemCount() > 0) {
                 //     recyclerViewComments.smoothScrollToPosition(commentAdapter.getItemCount() - 1);
                 // }
+
+                if (imageCurrentUserAvatarCommentInput != null) {
+                    String loggedInUserAvatarUrl = UserManager.getProfileImagePath(this);
+
+                    if (loggedInUserAvatarUrl != null && !loggedInUserAvatarUrl.isEmpty()) {
+                        Glide.with(this)
+                                .load(loggedInUserAvatarUrl)
+                                .apply(new RequestOptions().circleCrop())
+                                .placeholder(R.drawable.default_avt)
+                                .error(R.drawable.default_avt)
+                                .into(imageCurrentUserAvatarCommentInput);
+                    } else {
+                        imageCurrentUserAvatarCommentInput.setImageResource(R.drawable.default_avt);
+                    }
+                }
             }
-        } else { // Đây là trường hợp show == false (ẩn ô bình luận)
+        } else {
             if (isCommentInputBoxVisible) {
                 commentInputBox.setVisibility(View.GONE);
                 isCommentInputBoxVisible = false;

@@ -108,17 +108,29 @@
                 android:textColor="#A0A0A0"
                 android:textSize="12sp" />
 
-            <TextView
-                android:id="@+id/text_view_replies"
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:textColor="#00BFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                tools:text="Xem 3 trả lời"
-                tools:visibility="visible" />
+                android:layout_marginStart="16dp">
+
+                <TextView
+                    android:id="@+id/text_view_replies"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#00BFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" tools:text="Xem 3 trả lời"
+                    tools:visibility="visible" />
+
+                <ProgressBar
+                    android:id="@+id/progress_bar_loading_replies"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+            </FrameLayout>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
